@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ElButton, ElInput, ElCard } from 'element-plus'
+import { ElButton, ElInput, ElCard, ElCheckbox } from 'element-plus'
 import { BaseButton } from '@/components/Button/index'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ref } from 'vue'
@@ -36,6 +36,30 @@ const switchList = (listNumber: number) => {
   activeBtn.value = listNumber
   currentList.value = listNumber === 1 ? list1.value : list2.value
 }
+
+// 添加多选模式状态
+const isMultiSelect = ref(false)
+// 选中的卡片ID数组
+const selectedCards = ref<number[]>([])
+
+// 切换多选模式
+const toggleMultiSelect = () => {
+  isMultiSelect.value = !isMultiSelect.value
+  // 切换时清空选中状态
+  if (!isMultiSelect.value) {
+    selectedCards.value = []
+  }
+}
+
+// 切换卡片选中状态
+const toggleCardSelection = (index: number) => {
+  const position = selectedCards.value.indexOf(index)
+  if (position === -1) {
+    selectedCards.value.push(index)
+  } else {
+    selectedCards.value.splice(position, 1)
+  }
+}
 </script>
 
 <template>
@@ -53,6 +77,14 @@ const switchList = (listNumber: number) => {
       </div>
       <div>
         <ElInput />
+        <div class="flex items-center gap-2">
+          <span v-if="selectedCards.length > 0" class="text-sm text-gray-600">
+            已选择 {{ selectedCards.length }} 个
+          </span>
+          <ElButton @click="toggleMultiSelect">
+            {{ isMultiSelect ? '取消选择' : '选择多个Card，并进行对比' }}
+          </ElButton>
+        </div>
         <div class="btn flex relative">
           <div class="slider" :style="{ left: activeBtn === 1 ? '0' : '50%' }"></div>
           <ElButton
@@ -73,7 +105,19 @@ const switchList = (listNumber: number) => {
       </div>
     </nav>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <el-card style="max-width: 480px" v-for="(item, k) in currentList" :key="k">
+      <el-card
+        style="max-width: 480px"
+        v-for="(item, k) in currentList"
+        :key="k"
+        :class="{ 'card-selected': selectedCards.includes(k) }"
+        class="card-container"
+      >
+        <div v-if="isMultiSelect" class="checkbox-wrapper">
+          <el-checkbox
+            :model-value="selectedCards.includes(k)"
+            @change="() => toggleCardSelection(k)"
+          />
+        </div>
         <template #header>
           <div class="card-header">
             <span>{{ item.name }}</span>
@@ -116,6 +160,35 @@ const switchList = (listNumber: number) => {
 
   .el-button + .el-button {
     margin-left: 0px;
+  }
+}
+
+.card-header {
+  .el-checkbox {
+    margin-right: 0;
+  }
+}
+
+.el-card {
+  transition: all 0.3s ease;
+
+  &.card-selected {
+    border-color: var(--el-color-primary);
+    box-shadow: 0 0 8px rgba(var(--el-color-primary-rgb), 0.4);
+  }
+}
+
+.card-container {
+  position: relative;
+
+  .checkbox-wrapper {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    background-color: white;
+    padding: 4px;
+    border-radius: 4px;
   }
 }
 </style>
