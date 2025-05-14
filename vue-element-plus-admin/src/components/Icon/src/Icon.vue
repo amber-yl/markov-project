@@ -42,6 +42,7 @@ const getIconifyStyle = computed(() => {
 const getIconName = computed(() => {
   return props.icon.startsWith(ICON_PREFIX) ? props.icon.replace(ICON_PREFIX, '') : props.icon
 })
+console.log(props, '| props')
 </script>
 
 <template>

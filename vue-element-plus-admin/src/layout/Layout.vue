@@ -47,6 +47,7 @@ export default defineComponent({
   setup() {
     return () => (
       <section class={[prefixCls, `${prefixCls}__${layout.value}`, 'w-[100%] h-[100%] relative']}>
+        {/* 遮罩层 */}
         {mobile.value && !collapse.value ? (
           <div
             class="absolute top-0 left-0 w-full h-full opacity-30 z-99 bg-[var(--el-color-black)]"

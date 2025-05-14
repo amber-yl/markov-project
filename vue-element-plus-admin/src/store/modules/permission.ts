@@ -43,16 +43,18 @@ export const usePermissionStore = defineStore('permission', {
     ): Promise<unknown> {
       return new Promise<void>((resolve) => {
         let routerMap: AppRouteRecordRaw[] = []
-        if (type === 'server') {
-          // 模拟后端过滤菜单
-          routerMap = generateRoutesByServer(routers as AppCustomRouteRecordRaw[])
-        } else if (type === 'frontEnd') {
-          // 模拟前端过滤菜单
-          routerMap = generateRoutesByFrontEnd(cloneDeep(asyncRouterMap), routers as string[])
-        } else {
-          // 直接读取静态路由表
-          routerMap = cloneDeep(asyncRouterMap)
-        }
+        // if (type === 'server') {
+        //   // 模拟后端过滤菜单
+        //   routerMap = generateRoutesByServer(routers as AppCustomRouteRecordRaw[])
+        // } else if (type === 'frontEnd') {
+        //   // 模拟前端过滤菜单
+        //   routerMap = generateRoutesByFrontEnd(cloneDeep(asyncRouterMap), routers as string[])
+        // } else {
+        //   // 直接读取静态路由表
+        //   routerMap = cloneDeep(asyncRouterMap)
+        // }
+        routerMap = cloneDeep(asyncRouterMap)
+        console.log(routerMap, '| routerMap')
         // 动态路由，404一定要放到最后面
         this.addRouters = routerMap.concat([
           {

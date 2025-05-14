@@ -1,3 +1,6 @@
+:root.light {
+  --left-menu-bg-color: #fffff !important;
+}
 :root {
   --login-bg-color: #293146;
 

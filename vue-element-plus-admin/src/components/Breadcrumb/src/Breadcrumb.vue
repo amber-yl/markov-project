@@ -52,7 +52,8 @@ export default defineComponent({
           <ElBreadcrumbItem to={{ path: disabled ? '' : v.path }} key={v.name}>
             {meta?.icon && breadcrumbIcon.value ? (
               <>
-                <Icon icon={meta.icon} class="mr-[5px]"></Icon> {t(v?.meta?.title || '')}
+                <Icon icon={meta.icon} class="mr-[5px]"></Icon>
+                {t(v?.meta?.title || '')}
               </>
             ) : (
               t(v?.meta?.title || '')
