@@ -20,20 +20,9 @@ async function generateIcon() {
     ...(v as any),
     id
   }))
-
   const choices = collections.map((item) => ({ key: item.id, value: item.id, name: item.name }))
-
   inquirer
     .prompt([
-      // {
-      //   type: 'list',
-      //   name: 'useType',
-      //   choices: [
-      //     { key: 'local', value: 'local', name: 'Local' },
-      //     { key: 'onLine', value: 'onLine', name: 'OnLine' }
-      //   ],
-      //   message: 'How to use icons?'
-      // },
       {
         type: 'list',
         name: 'iconSet',

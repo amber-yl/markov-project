@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { ElButton, ElInput, ElCard, ElCheckbox } from 'element-plus'
-import { BaseButton } from '@/components/Button/index'
-import { useI18n } from '@/hooks/web/useI18n'
+import {
+  ElButton,
+  ElCard,
+  ElCheckbox,
+  ElTable,
+  ElTableColumn,
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElInput
+} from 'element-plus'
 import { ref } from 'vue'
 
 defineOptions({
   name: 'Menu12'
 })
 
-const { t } = useI18n()
-
-const text = ref('')
+// 添加视图模式状态
+const viewMode = ref('grid') // 'grid' 或 'table'
 
 // 定义两个不同的卡片列表数据
 const list1 = ref([
@@ -19,99 +26,114 @@ const list1 = ref([
   { name: 'Card 3', items: ['Item 3-1', 'Item 3-2', 'Item 3-3', 'Item 3-4'] }
 ])
 
-const list2 = ref([
-  { name: 'List A', items: ['Task A-1', 'Task A-2', 'Task A-3', 'Task A-4'] },
-  { name: 'List B', items: ['Task B-1', 'Task B-2', 'Task B-3', 'Task B-4'] },
-  { name: 'List C', items: ['Task C-1', 'Task C-2', 'Task C-3', 'Task C-4'] }
-])
-
 // 当前显示的列表
 const currentList = ref(list1.value)
-
-// 添加当前激活的按钮状态
-const activeBtn = ref(1)
-
-// 修改切换方法
-const switchList = (listNumber: number) => {
-  activeBtn.value = listNumber
-  currentList.value = listNumber === 1 ? list1.value : list2.value
-}
 
 // 添加多选模式状态
 const isMultiSelect = ref(false)
 // 选中的卡片ID数组
 const selectedCards = ref<number[]>([])
 
-// 切换多选模式
-const toggleMultiSelect = () => {
-  isMultiSelect.value = !isMultiSelect.value
-  // 切换时清空选中状态
-  if (!isMultiSelect.value) {
-    selectedCards.value = []
+// 切换视图模式
+const toggleView = (mode: 'grid' | 'table') => {
+  viewMode.value = mode
+}
+
+// 表格选择相关
+const tableSelection = ref<any[]>([])
+
+// 处理表格选择变化
+const handleSelectionChange = (selection: any[]) => {
+  tableSelection.value = selection
+  selectedCards.value = selection.map((_, index) => index)
+}
+
+// 弹框相关
+const dialogVisible = ref(false)
+const formData = ref({
+  name: '',
+  description: ''
+})
+
+// 打开弹框
+const openDialog = () => {
+  dialogVisible.value = true
+}
+
+// 关闭弹框
+const closeDialog = () => {
+  dialogVisible.value = false
+  formData.value = {
+    name: '',
+    description: ''
   }
 }
 
-// 切换卡片选中状态
-const toggleCardSelection = (index: number) => {
-  const position = selectedCards.value.indexOf(index)
-  if (position === -1) {
-    selectedCards.value.push(index)
-  } else {
-    selectedCards.value.splice(position, 1)
+// 提交表单
+const handleSubmit = () => {
+  // 这里处理表单提交逻辑
+  console.log('提交的数据：', formData.value)
+  closeDialog()
+}
+
+// 添加表格相关的功能
+const toggleMultiSelect = () => {
+  isMultiSelect.value = !isMultiSelect.value
+  if (!isMultiSelect.value) {
+    selectedCards.value = []
+    tableSelection.value = []
   }
+}
+
+// 添加操作列的处理函数
+const handleEdit = (row: any) => {
+  formData.value = {
+    name: row.name,
+    description: row.items.join(', ')
+  }
+  openDialog()
+}
+
+const handleDelete = (index: number) => {
+  currentList.value.splice(index, 1)
 }
 </script>
 
 <template>
-  <!-- <ContentWrap :title="t('levelDemo.menu')" /> -->
   <div>
+    <ElButton
+      type="primary"
+      :class="{ 'is-active': viewMode === 'grid' }"
+      @click="toggleView('grid')"
+      >Create</ElButton
+    >
     <nav class="flex justify-between items-center">
-      <div>
-        <p>Models</p>
-        <BaseButton :type="'primary'"> CreateNewSimulation </BaseButton>
-      </div>
-      <div>
-        <ElInput />
-        <div class="flex items-center gap-2">
-          <span v-if="selectedCards.length > 0" class="text-sm text-gray-600">
-            已选择 {{ selectedCards.length }} 个
-          </span>
-          <ElButton @click="toggleMultiSelect">
-            {{ isMultiSelect ? '取消选择' : '选择多个Card，并进行对比' }}
-          </ElButton>
-        </div>
-        <div class="btn flex relative">
-          <div class="slider" :style="{ left: activeBtn === 1 ? '0' : '50%' }"></div>
-          <ElButton
-            class="flex-1"
-            :class="{ 'is-active': activeBtn === 1 }"
-            @click="switchList(1)"
-            type="primary"
-            >btn1</ElButton
-          >
-          <ElButton
-            class="flex-1"
-            :class="{ 'is-active': activeBtn === 2 }"
-            @click="switchList(2)"
-            type="primary"
-            >btn2</ElButton
-          >
-        </div>
+      <div class="flex gap-2">
+        <ElButton
+          type="primary"
+          :class="{ 'is-active': viewMode === 'grid' }"
+          @click="toggleView('grid')"
+          >Grid</ElButton
+        >
+        <ElButton
+          type="primary"
+          :class="{ 'is-active': viewMode === 'table' }"
+          @click="toggleView('table')"
+          >Table</ElButton
+        >
       </div>
     </nav>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+    <!-- 网格视图 -->
+    <div v-if="viewMode === 'grid'" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <el-card
-        style="max-width: 480px"
         v-for="(item, k) in currentList"
         :key="k"
         :class="{ 'card-selected': selectedCards.includes(k) }"
         class="card-container"
       >
         <div v-if="isMultiSelect" class="checkbox-wrapper">
-          <el-checkbox
-            :model-value="selectedCards.includes(k)"
-            @change="() => toggleCardSelection(k)"
-          />
+          <el-checkbox :model-value="selectedCards.includes(k)" />
         </div>
         <template #header>
           <div class="card-header">
@@ -123,6 +145,66 @@ const toggleCardSelection = (index: number) => {
         </p>
         <template #footer>Footer content</template>
       </el-card>
+    </div>
+
+    <!-- 表格视图 -->
+    <div v-else class="table-view">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span v-if="tableSelection.length > 0" class="text-sm text-gray-600">
+            已选择 {{ tableSelection.length }} 个项目
+          </span>
+          <ElButton @click="toggleMultiSelect">
+            {{ isMultiSelect ? '取消选择' : '选择多个项目' }}
+          </ElButton>
+        </div>
+        <ElButton type="primary" @click="openDialog">新建</ElButton>
+      </div>
+
+      <el-table
+        :data="currentList"
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+        border
+      >
+        <el-table-column type="selection" width="55" />
+        <el-table-column prop="name" label="名称" width="180" />
+        <el-table-column label="内容">
+          <template #default="{ row }">
+            <div class="flex flex-col gap-1">
+              <span v-for="(item, index) in row.items" :key="index">{{ item }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" fixed="right">
+          <template #default="{ row, $index }">
+            <ElButton type="primary" link @click="handleEdit(row)"> 编辑 </ElButton>
+            <ElButton type="danger" link @click="handleDelete($index)"> 删除 </ElButton>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 添加/编辑对话框 -->
+      <el-dialog
+        v-model="dialogVisible"
+        :title="formData.name ? '编辑项目' : '新建项目'"
+        width="500px"
+      >
+        <el-form :model="formData" label-width="80px">
+          <el-form-item label="名称">
+            <el-input v-model="formData.name" placeholder="请输入名称" />
+          </el-form-item>
+          <el-form-item label="描述">
+            <el-input v-model="formData.description" type="textarea" placeholder="请输入描述" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="closeDialog">取消</el-button>
+            <el-button type="primary" @click="handleSubmit">确定</el-button>
+          </div>
+        </template>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -185,5 +267,39 @@ const toggleCardSelection = (index: number) => {
     padding: 4px;
     border-radius: 4px;
   }
+}
+
+.view-switch {
+  .el-button {
+    &.is-active {
+      background-color: var(--el-color-primary);
+      color: white;
+    }
+  }
+}
+
+.table-view {
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+  :deep(.el-table) {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+}
+
+.el-button {
+  &.is-active {
+    background-color: var(--el-color-primary-dark-2);
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>
