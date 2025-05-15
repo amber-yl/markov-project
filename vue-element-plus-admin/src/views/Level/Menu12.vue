@@ -68,12 +68,7 @@ const toggleCardSelection = (index: number) => {
     <nav class="flex justify-between items-center">
       <div>
         <p>Models</p>
-        <BaseButton>
-          <template #icon>
-            <div>aa</div>
-          </template>
-          button
-        </BaseButton>
+        <BaseButton :type="'primary'"> CreateNewSimulation </BaseButton>
       </div>
       <div>
         <ElInput />
