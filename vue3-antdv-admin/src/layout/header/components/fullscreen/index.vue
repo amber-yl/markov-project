@@ -1,8 +1,9 @@
 <template>
   <Tooltip :title="getTitle" placement="bottom" :mouse-enter-delay="0.5">
     <span @click="toggle">
-      <FullscreenOutlined v-if="!isFullscreen" />
-      <FullscreenExitOutlined v-else />
+      <!-- <FullscreenOutlined v-if="!isFullscreen" />
+      <FullscreenExitOutlined v-else /> -->
+      {{ isFullscreen ? '退出全屏' : '全屏' }}
     </span>
   </Tooltip>
 </template>
@@ -10,7 +11,7 @@
   import { computed, unref } from 'vue';
   import { useFullscreen } from '@vueuse/core';
 
-  import { FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/icons-vue';
+  // import { FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/icons-vue';
   import { Tooltip } from 'ant-design-vue';
   import { useI18n } from '@/hooks/useI18n';
   const { t } = useI18n();

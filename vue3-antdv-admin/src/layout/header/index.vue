@@ -7,7 +7,7 @@
             class="menu-fold cursor-pointer"
             @click="() => emit('update:collapsed', !collapsed)"
           >
-            <component :is="collapsed ? MenuUnfoldOutlined : MenuFoldOutlined" />
+            <component :is="collapsed ? 'MenuUnfoldOutlined' : 'MenuFoldOutlined'" />
           </span>
           <LayoutBreadcrumb />
         </Space>
@@ -49,12 +49,12 @@
 <script lang="tsx" setup>
   import { computed, type CSSProperties } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import {
-    QuestionCircleOutlined,
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-    PoweroffOutlined,
-  } from '@ant-design/icons-vue';
+  // import {
+  //   QuestionCircleOutlined,
+  //   MenuFoldOutlined,
+  //   MenuUnfoldOutlined,
+  //   PoweroffOutlined,
+  // } from '@ant-design/icons-vue';
   import {
     Layout,
     message,
@@ -103,7 +103,7 @@
   const doLogout = () => {
     Modal.confirm({
       title: '您确定要退出登录吗？',
-      icon: <QuestionCircleOutlined />,
+      icon: <span>QuestionCircleOutlined</span>,
       centered: true,
       onOk: async () => {
         await userStore.logout();

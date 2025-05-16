@@ -112,13 +112,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           // target: 'https://nest-admin.buqiyuan.top',
           target: 'http://127.0.0.1:7001',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-        },
-        '^/upload': {
-          // target: 'https://nest-admin.buqiyuan.top/upload',
-          target: 'http://127.0.0.1:7001/upload',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(new RegExp(`^/upload`), ''),
+          rewrite: (path: string) => path.replace(/^\/api/, ''),
         },
       },
       // 提前转换和缓存文件以进行预热。可以在服务器启动时提高初始页面加载速度，并防止转换瀑布。
@@ -145,21 +139,21 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       minify: 'esbuild',
       cssTarget: 'chrome89',
       chunkSizeWarningLimit: 2000,
-      rollupOptions: {
-        output: {
-          // minifyInternalExports: false,
-        },
-        onwarn(warning, rollupWarn) {
-          // ignore circular dependency warning
-          if (
-            warning.code === 'CYCLIC_CROSS_CHUNK_REEXPORT' &&
-            warning.exporter?.includes('src/api/')
-          ) {
-            return;
-          }
-          rollupWarn(warning);
-        },
-      },
+      // rollupOptions: {
+      //   output: {
+      //     // minifyInternalExports: false,
+      //   },
+      //   onwarn(warning, rollupWarn) {
+      //     // ignore circular dependency warning
+      //     if (
+      //       warning.code === 'CYCLIC_CROSS_CHUNK_REEXPORT' &&
+      //       warning.exporter?.includes('src/api/')
+      //     ) {
+      //       return;
+      //     }
+      //     rollupWarn(warning);
+      //   },
+      // },
     },
   };
 };

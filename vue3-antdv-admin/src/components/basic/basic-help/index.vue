@@ -1,6 +1,6 @@
 <script lang="tsx">
   import { defineComponent, computed, unref } from 'vue';
-  import { InfoCircleOutlined } from '@ant-design/icons-vue';
+  // import { InfoCircleOutlined } from '@ant-design/icons-vue';
   import { Tooltip } from 'ant-design-vue';
   import type { CSSProperties, PropType } from 'vue';
   import { isString, isArray } from '@/utils/is';
@@ -79,7 +79,7 @@
             overlayStyle={unref(getOverlayStyle)}
             placement={props.placement as 'right'}
           >
-            <span class="basic-help">{getSlot(slots) || <InfoCircleOutlined />}</span>
+            <span class="basic-help">{getSlot(slots) || <span>InfoCircleOutlined</span>}</span>
           </Tooltip>
         );
       };

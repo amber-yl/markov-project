@@ -23,7 +23,7 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue';
-  import { EnterOutlined, BookOutlined } from '@ant-design/icons-vue';
+  // import { EnterOutlined, BookOutlined } from '@ant-design/icons-vue';
   import type { RouteRecordRaw } from 'vue-router';
   import { TitleI18n } from '@/components/basic/title-i18n';
 

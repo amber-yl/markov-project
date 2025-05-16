@@ -1,10 +1,11 @@
 <template>
-  <DownOutlined class="collapse-icon" />
+  <!-- <DownOutlined class="collapse-icon" /> -->
+  <div>箭头</div>
 </template>
 
 <script lang="ts" setup>
   import { computed } from 'vue';
-  import { DownOutlined } from '@ant-design/icons-vue';
+  // import { DownOutlined } from '@ant-design/icons-vue';
 
   const props = defineProps({
     expand: { type: Boolean },

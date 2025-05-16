@@ -1,6 +1,8 @@
 <template>
   <Tooltip :title="$t('common.searchText')" placement="bottom" :mouse-enter-delay="0.5">
-    <slot><SearchOutlined @click="visible = true" /></slot>
+    <slot>
+      <span @click="visible = true">搜索</span>
+    </slot>
     <!-- <DraggableModal v-model:open="visible" title="搜索菜单" :keyboard="false" @cancel="handleClose">
       <a-input
         ref="inputRef"
@@ -33,7 +35,7 @@
   import { ref, shallowRef, computed, watch, nextTick } from 'vue';
   import { useRouter } from 'vue-router';
   import { useDebounceFn, onKeyStroke } from '@vueuse/core';
-  import { SearchOutlined } from '@ant-design/icons-vue';
+  // import { SearchOutlined } from '@ant-design/icons-vue';
   import { Tooltip } from 'ant-design-vue';
   import type { RouteRecordRaw } from 'vue-router';
   import { useUserStore } from '@/store/modules/user';

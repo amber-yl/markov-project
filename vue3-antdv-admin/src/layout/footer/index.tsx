@@ -1,6 +1,6 @@
 import { defineComponent } from 'vue';
 
-import { GithubOutlined, CopyrightOutlined } from '@ant-design/icons-vue';
+// import { GithubOutlined, CopyrightOutlined } from '@ant-design/icons-vue';
 import { Layout } from 'ant-design-vue';
 import styles from './index.module.less';
 
@@ -18,15 +18,14 @@ export default defineComponent({
               在线预览
             </a>
             <a href="https://github.com/buqiyuan/vue3-antdv-admin" target="_blank">
-              <GithubOutlined />
+              {/* <GithubOutlined /> */}
+              GithubOutlined
             </a>
             <a href="https://buqiyuan.github.io/vue3-antdv-admin-docs/" target="_blank">
               在线文档
             </a>
           </div>
-          <div class={styles.copyright}>
-            Copyright <CopyrightOutlined /> 2022 vue3-antdv-admin
-          </div>
+          <div class={styles.copyright}>Copyright GithubOutlined 2022 vue3-antdv-admin</div>
         </a-layout-footer>
       </>
     );

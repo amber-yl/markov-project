@@ -69,7 +69,7 @@
 
 <script lang="ts" setup>
   import { ref, computed, type StyleValue } from 'vue';
-  import { SettingOutlined } from '@ant-design/icons-vue';
+  // import { SettingOutlined } from '@ant-design/icons-vue';
   import { storeToRefs } from 'pinia';
   import { Drawer, Descriptions, Tag, Tooltip } from 'ant-design-vue';
   import { layouts, themeColors, themeStyle, uiSettings } from './constant';
