@@ -69,10 +69,6 @@
     "xlsx": "~0.18.5"
   },
   "devDependencies": {
-    "@admin-pkg/components": "workspace:*",
-    "@admin-pkg/vite-plugin-http2-proxy": "workspace:*",
-    "@admin-pkg/vite-plugin-msw": "workspace:*",
-    "@admin-pkg/vite-plugin-tinymce-resource": "workspace:*",
     "@commitlint/cli": "~19.5.0",
     "@commitlint/config-conventional": "~19.5.0",
     "@faker-js/faker": "^9.0.3",
