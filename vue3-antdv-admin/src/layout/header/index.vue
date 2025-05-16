@@ -19,9 +19,9 @@
     <div class="header-right">
       <Space :size="20">
         <Search />
-        <Tooltip :title="$t('layout.header.tooltipLock')" placement="bottom">
+        <!-- <Tooltip :title="$t('layout.header.tooltipLock')" placement="bottom">
           <LockOutlined @click="lockscreenStore.setLock(true)" />
-        </Tooltip>
+        </Tooltip> -->
         <FullScreen />
         <LocalePicker />
         <Dropdown placement="bottomRight">
@@ -54,7 +54,6 @@
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     PoweroffOutlined,
-    LockOutlined,
   } from '@ant-design/icons-vue';
   import {
     Layout,
@@ -64,14 +63,13 @@
     Menu,
     Space,
     Avatar,
-    Tooltip,
     type MenuTheme,
   } from 'ant-design-vue';
   import { Search, FullScreen, ProjectSetting, LayoutBreadcrumb } from './components/';
   import { LocalePicker } from '@/components/basic/locale-picker';
   import { useUserStore } from '@/store/modules/user';
   import { useKeepAliveStore } from '@/store/modules/keepAlive';
-  import { useLockscreenStore } from '@/store/modules/lockscreen';
+  // import { useLockscreenStore } from '@/store/modules/lockscreen';
   import { LOGIN_NAME } from '@/router/constant';
   import { useLayoutSettingStore } from '@/store/modules/layoutSetting';
 
@@ -86,7 +84,7 @@
   const emit = defineEmits(['update:collapsed']);
   const userStore = useUserStore();
   const layoutSettingStore = useLayoutSettingStore();
-  const lockscreenStore = useLockscreenStore();
+  // const lockscreenStore = useLockscreenStore();
   const keepAliveStore = useKeepAliveStore();
 
   const router = useRouter();

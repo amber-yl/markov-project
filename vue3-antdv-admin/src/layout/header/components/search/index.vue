@@ -1,7 +1,7 @@
 <template>
   <Tooltip :title="$t('common.searchText')" placement="bottom" :mouse-enter-delay="0.5">
     <slot><SearchOutlined @click="visible = true" /></slot>
-    <DraggableModal v-model:open="visible" title="搜索菜单" :keyboard="false" @cancel="handleClose">
+    <!-- <DraggableModal v-model:open="visible" title="搜索菜单" :keyboard="false" @cancel="handleClose">
       <a-input
         ref="inputRef"
         v-model:value="keyword"
@@ -25,7 +25,7 @@
       <template #footer>
         <search-footer />
       </template>
-    </DraggableModal>
+    </DraggableModal> -->
   </Tooltip>
 </template>
 
@@ -34,12 +34,10 @@
   import { useRouter } from 'vue-router';
   import { useDebounceFn, onKeyStroke } from '@vueuse/core';
   import { SearchOutlined } from '@ant-design/icons-vue';
-  import { Empty, Tooltip } from 'ant-design-vue';
-  import SearchResult from './components/SearchResult.vue';
-  import SearchFooter from './components/SearchFooter.vue';
+  import { Tooltip } from 'ant-design-vue';
   import type { RouteRecordRaw } from 'vue-router';
   import { useUserStore } from '@/store/modules/user';
-  import { DraggableModal } from '@/components/core/draggable-modal';
+  // import { DraggableModal } from '@/components/core/draggable-modal';
   import { transformI18n } from '@/hooks/useI18n';
 
   const userStore = useUserStore();

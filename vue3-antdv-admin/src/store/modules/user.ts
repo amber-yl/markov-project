@@ -46,10 +46,11 @@ export const useUserStore = defineStore(
       token.value = _token;
     };
     /** 登录 */
-    const login = async (params: API.LoginDto) => {
+    const login = async (params?: API.LoginDto) => {
       try {
         // const data = await Api.auth.authLogin(params);
         // setToken(data.token);
+        console.log(params, '| userStore -> params');
         setToken('_token');
         await afterLogin();
         // lockscreenStore.setLock(false);
@@ -64,7 +65,6 @@ export const useUserStore = defineStore(
         // const { accountProfile } = Api.account;
         // const wsStore = useWsStore();
         // const userInfoData = await accountProfile();
-
         // userInfo.value = userInfoData;
         await fetchPermsAndMenus();
         // sseStore.initServerMsgListener();
