@@ -22,6 +22,15 @@ const routes: Array<RouteRecordRaw> = [
         },
         component: () => import('@/views/dashboard/welcome/index.vue'),
       },
+      {
+        path: 'welcome1',
+        name: `${moduleName}-welcome1`,
+        meta: {
+          title: t('routes.dashboard.workbench'),
+          icon: 'ant-design:home-filled',
+        },
+        component: () => import('@/views/error/comp-not-found.vue'),
+      },
     ],
   },
 ];

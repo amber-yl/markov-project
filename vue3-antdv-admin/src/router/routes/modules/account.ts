@@ -6,17 +6,35 @@ const moduleName = 'account';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/account',
-    redirect: '/account/settings',
+    name: moduleName,
+    // redirect: '/login',
     meta: {
-      title: '个人中心',
-      hideInMenu: true,
+      title: t('routes.dashboard.dashboard'),
+      icon: 'ant-design:dashboard-outlined',
     },
+    component: () => import('@/views/login/index.vue'),
     children: [
       {
-        path: 'settings',
-        name: `${moduleName}-settings`,
-        component: () => import('@/views/account/settings.vue'),
-        meta: { title: t('routes.account.settings'), hideInMenu: true },
+        path: '/account1',
+        name: `${moduleName}-1`,
+        // redirect: '/login',
+        meta: {
+          title: t('routes.dashboard.dashboard'),
+          icon: 'ant-design:dashboard-outlined',
+        },
+        component: () => import('@/views/login/index.vue'),
+        children: [],
+      },
+      {
+        path: '/account2',
+        name: `${moduleName}-2`,
+        // redirect: '/login',
+        meta: {
+          title: t('routes.dashboard.dashboard'),
+          icon: 'ant-design:dashboard-outlined',
+        },
+        component: () => import('@/views/login/index.vue'),
+        children: [],
       },
     ],
   },

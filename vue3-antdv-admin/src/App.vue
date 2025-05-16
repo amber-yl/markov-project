@@ -3,10 +3,10 @@
     <router-view #="{ Component }">
       <component :is="Component" />
     </router-view>
-    <LockScreen />
+    <!-- <LockScreen /> -->
   </ProConfigProvider>
 </template>
 
 <script setup lang="ts">
-  import { LockScreen } from '@/components/basic/lockscreen';
+  // import { LockScreen } from '@/components/basic/lockscreen';
 </script>

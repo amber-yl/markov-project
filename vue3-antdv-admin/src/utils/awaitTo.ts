@@ -16,7 +16,6 @@ export function to<T, U = Error>(
         const parsedError = Object.assign({}, err, errorExt);
         return [parsedError, undefined];
       }
-
       return [err, undefined];
     });
 }

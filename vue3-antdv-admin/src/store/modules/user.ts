@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { useLockscreenStore } from './lockscreen';
-import { useSSEStore } from './sse';
+// import { useLockscreenStore } from './lockscreen';
+// import { useSSEStore } from './sse';
 import type { RouteRecordRaw } from 'vue-router';
 import { store } from '@/store';
 import Api from '@/api/';
@@ -11,8 +11,8 @@ import { generateDynamicRoutes } from '@/router/helper/routeHelper';
 export const useUserStore = defineStore(
   'user',
   () => {
-    const sseStore = useSSEStore();
-    const lockscreenStore = useLockscreenStore();
+    // const sseStore = useSSEStore();
+    // const lockscreenStore = useLockscreenStore();
     const token = ref<string>();
     const perms = ref<string[]>([]);
     const menus = ref<RouteRecordRaw[]>([]);
@@ -48,11 +48,12 @@ export const useUserStore = defineStore(
     /** 登录 */
     const login = async (params: API.LoginDto) => {
       try {
-        const data = await Api.auth.authLogin(params);
-        setToken(data.token);
+        // const data = await Api.auth.authLogin(params);
+        // setToken(data.token);
+        setToken('_token');
         await afterLogin();
-        lockscreenStore.setLock(false);
-        lockscreenStore.saveLoginPwd(params.password);
+        // lockscreenStore.setLock(false);
+        // lockscreenStore.saveLoginPwd(params.password);
       } catch (error) {
         return Promise.reject(error);
       }
@@ -60,13 +61,13 @@ export const useUserStore = defineStore(
     /** 登录成功之后, 获取用户信息以及生成权限路由 */
     const afterLogin = async () => {
       try {
-        const { accountProfile } = Api.account;
+        // const { accountProfile } = Api.account;
         // const wsStore = useWsStore();
-        const userInfoData = await accountProfile();
+        // const userInfoData = await accountProfile();
 
-        userInfo.value = userInfoData;
+        // userInfo.value = userInfoData;
         await fetchPermsAndMenus();
-        sseStore.initServerMsgListener();
+        // sseStore.initServerMsgListener();
       } catch (error) {
         return Promise.reject(error);
         // return logout();
@@ -74,17 +75,19 @@ export const useUserStore = defineStore(
     };
     /** 获取权限及菜单 */
     const fetchPermsAndMenus = async () => {
-      const { accountPermissions, accountMenu } = Api.account;
+      // const { accountPermissions, accountMenu } = Api.account;
       // const wsStore = useWsStore();
-      const [menusData, permsData] = await Promise.all([accountMenu(), accountPermissions()]);
-      perms.value = permsData;
-      const result = generateDynamicRoutes(menusData as unknown as RouteRecordRaw[]);
+      // const [menusData, permsData] = await Promise.all([accountMenu(), accountPermissions()]);
+      // perms.value = permsData;
+      // const result = generateDynamicRoutes(menusData as unknown as RouteRecordRaw[]);
+      const result = generateDynamicRoutes([]);
       menus.value = sortMenus(result);
+      console.log(menus.value, '| menus.value');
     };
     /** 登出 */
     const logout = async () => {
       await Api.account.accountLogout();
-      sseStore.closeEventSource();
+      // sseStore.closeEventSource();
       clearLoginStatus();
     };
 

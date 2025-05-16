@@ -23,6 +23,7 @@ export const REDIRECT_ROUTE: RouteRecordRaw = {
         hideInMenu: true,
       },
       beforeEnter: (to) => {
+        console.log(to, '|  to');
         const { params, query } = to;
         const { path, redirectType = 'path' } = params;
 

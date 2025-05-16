@@ -136,6 +136,9 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         // 可以通过运行 npx vite --debug transform 并检查日志来找到频繁使用的文件
         clientFiles: ['./index.html', './src/{components,api}/*'],
       },
+      hmr: {
+        overlay: false,
+      },
     },
     optimizeDeps: {
       include: ['lodash-es', 'ant-design-vue/es/locale/zh_CN', 'ant-design-vue/es/locale/en_US'],

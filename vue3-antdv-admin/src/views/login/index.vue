@@ -54,7 +54,6 @@
   import { message, Modal } from 'ant-design-vue';
   import { Icon } from '@/components/basic/icon';
   import { useUserStore } from '@/store/modules/user';
-  import Api from '@/api/';
   import { to } from '@/utils/awaitTo';
 
   const route = useRoute();
@@ -70,26 +69,24 @@
     captchaId: '',
   });
 
-  const updateCaptcha = async () => {
-    const data = await Api.captcha.captchaCaptchaByImg({ width: 100, height: 50 });
-    captcha.value = data.img;
-    loginFormModel.value.captchaId = data.id;
-  };
-  updateCaptcha();
+  // const updateCaptcha = async () => {
+  //   const data = await Api.captcha.captchaCaptchaByImg({ width: 100, height: 50 });
+  //   console.log(data, '| data');
+  //   captcha.value = data.img;
+  //   loginFormModel.value.captchaId = data.id;
+  // };
+  // updateCaptcha();
 
   const handleSubmit = async () => {
     const { username, password, verifyCode } = loginFormModel.value;
     if (username.trim() == '' || password.trim() == '') {
       return message.warning('用户名或密码不能为空！');
     }
-    if (!verifyCode) {
-      return message.warning('请输入验证码！');
-    }
+    // if (!verifyCode) {
+    //   return message.warning('请输入验证码！');
+    // }
     message.loading('登录中...', 0);
     loading.value = true;
-    console.log(loginFormModel.value);
-    // params.password = md5(password)
-
     const [err] = await to(userStore.login(loginFormModel.value));
     if (err) {
       Modal.error({

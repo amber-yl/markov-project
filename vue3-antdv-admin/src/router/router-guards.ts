@@ -19,7 +19,6 @@ export function createRouterGuards(router: Router, whiteNameList: WhiteNameList)
       NProgress.start(); // start progress bar
     }
     const userStore = useUserStore();
-
     if (userStore.token) {
       if (to.name === LOGIN_NAME) {
         next({ path: defaultRoutePath });
@@ -49,6 +48,7 @@ export function createRouterGuards(router: Router, whiteNameList: WhiteNameList)
       }
     } else {
       // not login
+      // console.log(to.name, '| whiteNameList');
       if (whiteNameList.some((n) => n === to.name)) {
         // 在免登录名单，直接进入
         next();
