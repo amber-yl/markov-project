@@ -11,9 +11,7 @@ const prefixCls = getPrefixCls('submenu')
 
 const { renderMenuTitle } = useRenderMenuTitle()
 
-export const useRenderMenuItem = (menuMode) =>
-// allRouters: AppRouteRecordRaw[] = [],
-{
+export const useRenderMenuItem = (menuMode) => {
   const renderMenuItem = (routers: AppRouteRecordRaw[], parentPath = '/') => {
     return routers
       .filter((v) => !v.meta?.hidden)
@@ -28,9 +26,7 @@ export const useRenderMenuItem = (menuMode) =>
           !meta?.alwaysShow
         ) {
           return (
-            <ElMenuItem
-              index={onlyOneChild ? pathResolve(fullPath, onlyOneChild.path) : fullPath}
-            >
+            <ElMenuItem index={onlyOneChild ? pathResolve(fullPath, onlyOneChild.path) : fullPath}>
               {{
                 default: () => renderMenuTitle(onlyOneChild ? onlyOneChild?.meta : meta)
               }}
