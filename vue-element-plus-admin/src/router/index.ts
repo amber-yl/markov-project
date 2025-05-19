@@ -12,7 +12,7 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
   {
     path: '/',
     component: Layout,
-    redirect: '/level/menu1/menu1-2',
+    redirect: '/ai-inference/configuration-evaluation/llm-modals',
     name: 'Root',
     meta: {
       hidden: true
@@ -46,22 +46,22 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
     }
   },
   {
-    path: '/personal',
+    path: '/card',
     component: Layout,
-    redirect: '/personal/personal-center',
-    name: 'Personal',
+    redirect: '/card/card-details',
+    name: 'Card',
     meta: {
-      title: t('router.personal'),
+      title: t('newRouter.Card'),
       hidden: true,
       canTo: true
     },
     children: [
       {
-        path: 'personal-center',
-        component: () => import('@/views/Personal/PersonalCenter/PersonalCenter.vue'),
-        name: 'PersonalCenter',
+        path: 'card-details',
+        component: () => import('@/views/CardDetails/CardDetails.vue'),
+        name: 'CardDetails',
         meta: {
-          title: t('router.personalCenter'),
+          title: t('newRouter.CardDetails'),
           hidden: true,
           canTo: true
         }
@@ -83,60 +83,51 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
 // 动态路由
 export const asyncRouterMap: AppRouteRecordRaw[] = [
   {
-    path: '/',
+    path: '/ai-inference',
     component: Layout,
-    redirect: '/level1/menu1/menu1-2',
-    name: 'Root',
+    redirect: '/ai-inference/configuration-evaluation/llm-modals', // 修改重定向路径指向 menu1-2
+    name: 'AIInference',
     meta: {
-      hidden: true
-    }
-  },
-  {
-    path: '/level',
-    component: Layout,
-    redirect: '/level/menu1/menu1-2', // 修改重定向路径指向 menu1-2
-    name: 'Level',
-    meta: {
-      title: t('router.level'),
+      title: t('newMenu.AIInference'),
       icon: 'vi-carbon:skill-level-advanced'
     },
     children: [
       {
-        path: 'menu1',
-        name: 'Menu1',
+        path: 'configuration-evaluation',
+        name: 'InferenceConfigurationEvaluation',
         component: getParentLayout(),
-        redirect: '/level/menu1/menu1-2', // 修改重定向路径指向 menu1-2
+        redirect: '/ai-inference/configuration-evaluation/llm-modals', // 修改重定向路径指向 menu1-2
         meta: {
-          title: t('router.menu1'),
+          title: t('newMenu.InferenceConfigurationEvaluation'),
           alwaysShow: true
         },
         children: [
           {
-            path: 'menu1-2',
-            name: 'Menu12',
-            component: () => import('@/views/Level/Menu12.vue'),
+            path: 'llm-modals',
+            name: 'InferenceCELLMModals',
+            component: () => import('@/views/AIInference/InferenceCELLMModals.vue'),
             meta: {
-              title: t('router.menu12')
+              title: t('newMenu.InferenceCELLMModals')
             }
           }
         ]
       },
       {
-        path: 'menu2',
-        name: 'Menu2',
+        path: 'optimal-configuration-search',
+        name: 'InferenceOptimalConfigurationSearch',
         component: getParentLayout(),
-        redirect: '/level/menu2/menu2-1', // 修改重定向路径指向 menu1-2
+        redirect: '/ai-inference/optimal-configuration-search/llm-modals', // 修改重定向路径指向 menu1-2
         meta: {
-          title: t('router.analysis'),
+          title: t('newMenu.InferenceOptimalConfigurationSearch'),
           alwaysShow: true
         },
         children: [
           {
-            path: 'menu2-1',
-            name: 'Menu21',
-            component: () => import('@/views/Level/Menu2.vue'),
+            path: 'llm-modals',
+            name: 'InferenceOCSLLMModals',
+            component: () => import('@/views/AIInference/InferenceOCSLLMModals.vue'),
             meta: {
-              title: t('router.menu12')
+              title: t('newMenu.InferenceOCSLLMModals')
             }
           }
         ]
@@ -144,55 +135,99 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     ]
   },
   {
-    path: '/level1',
+    path: '/ai-training',
     component: Layout,
-    redirect: '/level1/menu11/menu11-2', // 修改重定向路径指向 menu1-2
-    name: 'Level1',
+    redirect: '/ai-training/configuration-evaluation/llm-modals', // 修改重定向路径指向 menu1-2
+    name: 'AITraining',
     meta: {
-      title: t('router.level'),
+      title: t('newMenu.AITraining'),
       icon: 'vi-carbon:skill-level-advanced'
     },
     children: [
       {
-        path: 'menu11',
-        name: 'Menu11',
+        path: 'configuration-evaluation',
+        name: 'TrainingConfigurationEvaluation',
         component: getParentLayout(),
-        redirect: '/level1/menu11/menu11-2', // 修改重定向路径指向 menu1-2
+        redirect: '/ai-training/configuration-evaluation/llm-modals', // 修改重定向路径指向 menu1-2
         meta: {
-          title: t('router.menu1'),
+          title: t('newMenu.TrainingConfigurationEvaluation'),
           alwaysShow: true
         },
         children: [
           {
-            path: 'menu11-2',
-            name: 'Menu112',
-            component: () => import('@/views/Level/Menu12.vue'),
+            path: 'llm-modals',
+            name: 'TrainingCELLMModals',
+            component: () => import('@/views/AITraining/TrainingCELLMModals.vue'),
             meta: {
-              title: t('router.menu12')
+              title: t('newMenu.TrainingCELLMModals')
+            }
+          },
+          {
+            path: 'm-modals',
+            name: 'TrainingCEMultiModal',
+            component: () => import('@/views/AITraining/TrainingCEMultiModal.vue'),
+            meta: {
+              title: t('newMenu.TrainingCEMultiModal')
+            }
+          }
+        ]
+      },
+      {
+        path: 'optimal-configuration-search',
+        name: 'TrainingOptimalConfigurationSearch',
+        component: getParentLayout(),
+        redirect: '/ai-training/optimal-configuration-search/llm-modals', // 修改重定向路径指向 menu1-2
+        meta: {
+          title: t('newMenu.TrainingOptimalConfigurationSearch'),
+          alwaysShow: true
+        },
+        children: [
+          {
+            path: 'llm-modals',
+            name: 'TrainingOCSLLMModals',
+            component: () => import('@/views/AITraining/TrainingOCSLLMModals.vue'),
+            meta: {
+              title: t('newMenu.TrainingOCSLLMModals')
+            }
+          },
+          {
+            path: 'm-modals',
+            name: 'TrainingOCSMultiModal',
+            component: () => import('@/views/AITraining/TrainingOCSMultiModal.vue'),
+            meta: {
+              title: t('newMenu.TrainingOCSMultiModal')
             }
           }
         ]
       }
-      // {
-      //   path: 'menu22',
-      //   name: 'Menu22',
-      //   component: getParentLayout(),
-      //   redirect: '/level1/menu22/menu22-1', // 修改重定向路径指向 menu1-2
-      //   meta: {
-      //     title: t('router.analysis'),
-      //     alwaysShow: true
-      //   },
-      //   children: [
-      //     {
-      //       path: 'menu22-1',
-      //       name: 'Menu221',
-      //       component: () => import('@/views/Level/Menu12.vue'),
-      //       meta: {
-      //         title: t('router.menu12')
-      //       }
-      //     }
-      //   ]
-      // }
+    ]
+  },
+  {
+    path: '/configs',
+    component: Layout,
+    redirect: '/configs/inference-configs', // 修改重定向路径指向 menu1-2
+    name: 'Configs',
+    meta: {
+      title: t('newMenu.Configs'),
+      icon: 'vi-carbon:skill-level-advanced'
+    },
+    children: [
+      {
+        path: 'inference-configs',
+        name: 'InferenceConfigs',
+        component: () => import('@/views/Configs/InferenceConfigs.vue'),
+        meta: {
+          title: t('newMenu.InferenceConfigs')
+        }
+      },
+      {
+        path: 'training-configs',
+        name: 'TrainingConfigs',
+        component: () => import('@/views/Configs/TrainingConfigs.vue'),
+        meta: {
+          title: t('newMenu.TrainingConfigs')
+        }
+      }
     ]
   }
 ]

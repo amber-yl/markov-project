@@ -41,6 +41,7 @@ export const useRenderLayout = () => {
       <>
         <div
           class={[
+            'custom-menu-style',
             'absolute top-0 left-0 h-full layout-border__right',
             { '!fixed z-3000': mobile.value }
           ]}
@@ -235,7 +236,6 @@ export const useRenderLayout = () => {
       <>
         <div class="flex items-center bg-[var(--top-header-bg-color)] relative layout-border__bottom">
           {logo.value ? <Logo class="custom-hover !pr-15px"></Logo> : undefined}
-
           <ToolHeader class="flex-1"></ToolHeader>
         </div>
         <div class="absolute top-[var(--logo-height)] left-0 w-[calc(100%-2px)] h-[calc(100%-var(--logo-height))] flex">

@@ -8,6 +8,7 @@ export const useDesign = () => {
    * @returns 返回空间名-类名
    */
   const getPrefixCls = (scope: string) => {
+    // console.log(lessVariables, '| namespace')
     return `${lessVariables.namespace}-${scope}`
   }
 

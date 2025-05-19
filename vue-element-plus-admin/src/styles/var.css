@@ -9,10 +9,11 @@
 
   --left-menu-min-width: 64px;
 
-  --left-menu-bg-color: #001529;
+  --left-menu-bg-color: #108aa2;
 
   --left-menu-bg-light-color: #0f2438;
 
+  /* --left-menu-bg-active-color: '#ff0000'; */
   --left-menu-bg-active-color: var(--el-color-primary);
 
   --left-menu-text-color: #bfcbd9;
@@ -29,7 +30,7 @@
   /* logo end */
 
   /* header start */
-  --top-header-bg-color: '#fff';
+  --top-header-bg-color: #fff;
 
   --top-header-text-color: 'inherit';
 
@@ -57,6 +58,8 @@
   --app-footer-height: 50px;
 
   --transition-time-02: 0.2s;
+
+  --el-menu-hover-bg-color: #409eff;
 }
 
 .dark {

@@ -76,7 +76,7 @@ export default defineComponent({
         return <ElScrollbar>{renderMenu()}</ElScrollbar>
       }
     }
-
+    // backgroundColor="var(--left-menu-bg-color)"
     const renderMenu = () => {
       return (
         <ElMenu
@@ -273,6 +273,25 @@ export default defineComponent({
   &::-webkit-scrollbar-thumb {
     background-color: rgb(144 147 153 / 30%);
     border-radius: 4px;
+  }
+}
+</style>
+
+<style lang="less">
+// @prefix-cls: ~'@{adminNamespace}-menu-popper';
+// @submenu-prefix-cls: ~'@{adminNamespace}-submenu-popper';
+.markov-popper-item {
+  .el-sub-menu__title {
+    &:hover {
+      background-color: var(--left-menu-text-active-color) !important;
+      color: var(--left-menu-text-color) !important;
+    }
+  }
+  .el-menu-item {
+    &:hover {
+      background-color: var(--left-menu-text-active-color) !important;
+      color: var(--left-menu-text-color) !important;
+    }
   }
 }
 </style>

@@ -54,7 +54,6 @@ export const usePermissionStore = defineStore('permission', {
         //   routerMap = cloneDeep(asyncRouterMap)
         // }
         routerMap = cloneDeep(asyncRouterMap)
-        console.log(routerMap, '| routerMap')
         // 动态路由，404一定要放到最后面
         this.addRouters = routerMap.concat([
           {

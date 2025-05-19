@@ -52,16 +52,6 @@ export default {
     // 列设置
     setting: 'Setting'
   },
-  lock: {
-    lockScreen: 'Lock screen',
-    lock: 'Lock',
-    lockPassword: 'Lock screen password',
-    unlock: 'Click to unlock',
-    backToLogin: 'Back to login',
-    entrySystem: 'Entry the system',
-    placeholder: 'Please enter the lock screen password',
-    message: 'Lock screen password error'
-  },
   error: {
     noPermission: `Sorry, you don't have permission to access this page.`,
     pageError: 'Sorry, the page you visited does not exist.',
@@ -123,75 +113,6 @@ export default {
     code: 'Verification code',
     codePlaceholder: 'Please input verification code',
     getCode: 'Get code'
-  },
-  router: {
-    login: 'Login',
-    level: 'Multi level menu',
-    menu: 'Menu',
-    menu1: 'Menu1',
-    menu11: 'Menu1-1',
-    menu111: 'Menu1-1-1',
-    menu12: 'Menu1-2',
-    menu2: 'Menu2',
-    dashboard: 'Dashboard',
-    analysis: 'Analysis',
-    workplace: 'Workplace',
-    guide: 'Guide',
-    component: 'Component',
-    icon: 'Icon',
-    echart: 'Echart',
-    countTo: 'Count to',
-    watermark: 'Watermark',
-    qrcode: 'Qrcode',
-    highlight: 'Highlight',
-    infotip: 'Infotip',
-    form: 'Form',
-    defaultForm: 'All examples',
-    search: 'Search',
-    table: 'Table',
-    defaultTable: 'Basic example',
-    editor: 'Editor',
-    richText: 'Rich text',
-    jsonEditor: 'JSON Editor',
-    codeEditor: 'Code Editor',
-    dialog: 'Dialog',
-    imageViewer: 'Image viewer',
-    descriptions: 'Descriptions',
-    example: 'Example',
-    exampleDialog: 'Example dialog',
-    examplePage: 'Example page',
-    exampleAdd: 'Example page - add',
-    exampleEdit: 'Example page - edit',
-    exampleDetail: 'Example page - detail',
-    errorPage: 'Error page',
-    authorization: 'Authorization',
-    user: 'User management',
-    role: 'Role management',
-    document: 'Document',
-    inputPassword: 'InputPassword',
-    sticky: 'Sticky',
-    treeTable: 'Tree table',
-    PicturePreview: 'Table Image Preview',
-    department: 'Department management',
-    menuManagement: 'Menu management',
-    // 权限测试页面
-    permission: 'Permission test page',
-    function: 'Function',
-    multipleTabs: 'Multiple tabs',
-    details: 'Details',
-    iconPicker: 'Icon picker',
-    request: 'Request',
-    waterfall: 'Waterfall',
-    imageCropping: 'Image cropping',
-    videoPlayer: 'Video player',
-    // 表格视频预览
-    tableVideoPreview: 'Table video preview',
-    cardTable: 'Card table',
-    personalCenter: 'Personal center',
-    personal: 'Personal',
-    avatars: 'Avatars',
-    iAgree: 'I agree',
-    tree: 'Tree'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'
@@ -549,6 +470,89 @@ export default {
     disable: 'Disable',
     superiorDepartment: 'Superior department'
   },
+  role: {
+    roleName: 'Role name',
+    role: 'Role',
+    // 菜单分配
+    menu: 'Menu allocation'
+  },
+  inputPasswordDemo: {
+    title: 'InputPassword',
+    inputPasswordDes: 'Secondary packaging of Input components based on ElementPlus'
+  },
+  avatarsDemo: {
+    title:
+      'Avatar component for avatar list, secondary packaging based on element plus Avatar component'
+  },
+  router: {
+    login: 'Login',
+    level: 'Multi level menu',
+    menu: 'Menu',
+    menu1: 'Menu1',
+    menu11: 'Menu1-1',
+    menu111: 'Menu1-1-1',
+    menu12: 'Menu1-2',
+    menu2: 'Menu2',
+    dashboard: 'Dashboard',
+    analysis: 'Analysis',
+    workplace: 'Workplace',
+    guide: 'Guide',
+    component: 'Component',
+    icon: 'Icon',
+    echart: 'Echart',
+    countTo: 'Count to',
+    watermark: 'Watermark',
+    qrcode: 'Qrcode',
+    highlight: 'Highlight',
+    infotip: 'Infotip',
+    form: 'Form',
+    defaultForm: 'All examples',
+    search: 'Search',
+    table: 'Table',
+    defaultTable: 'Basic example',
+    editor: 'Editor',
+    richText: 'Rich text',
+    jsonEditor: 'JSON Editor',
+    codeEditor: 'Code Editor',
+    dialog: 'Dialog',
+    imageViewer: 'Image viewer',
+    descriptions: 'Descriptions',
+    example: 'Example',
+    exampleDialog: 'Example dialog',
+    examplePage: 'Example page',
+    exampleAdd: 'Example page - add',
+    exampleEdit: 'Example page - edit',
+    exampleDetail: 'Example page - detail',
+    errorPage: 'Error page',
+    authorization: 'Authorization',
+    user: 'User management',
+    role: 'Role management',
+    document: 'Document',
+    inputPassword: 'InputPassword',
+    sticky: 'Sticky',
+    treeTable: 'Tree table',
+    PicturePreview: 'Table Image Preview',
+    department: 'Department management',
+    menuManagement: 'Menu management',
+    // 权限测试页面
+    permission: 'Permission test page',
+    function: 'Function',
+    multipleTabs: 'Multiple tabs',
+    details: 'Details',
+    iconPicker: 'Icon picker',
+    request: 'Request',
+    waterfall: 'Waterfall',
+    imageCropping: 'Image cropping',
+    videoPlayer: 'Video player',
+    // 表格视频预览
+    tableVideoPreview: 'Table video preview',
+    cardTable: 'Card table',
+    personalCenter: 'Personal center',
+    personal: 'Personal',
+    avatars: 'Avatars',
+    iAgree: 'I agree',
+    tree: 'Tree'
+  },
   menu: {
     menuName: 'Menu name',
     icon: 'Icon',
@@ -567,18 +571,25 @@ export default {
     canTo: 'Can to',
     name: 'Name'
   },
-  role: {
-    roleName: 'Role name',
-    role: 'Role',
-    // 菜单分配
-    menu: 'Menu allocation'
+  newRouter: {
+    Card: 'Card',
+    CardDetails: 'Card Details'
   },
-  inputPasswordDemo: {
-    title: 'InputPassword',
-    inputPasswordDes: 'Secondary packaging of Input components based on ElementPlus'
-  },
-  avatarsDemo: {
-    title:
-      'Avatar component for avatar list, secondary packaging based on element plus Avatar component'
+  newMenu: {
+    AIInference: 'AI-Inference',
+    InferenceConfigurationEvaluation: 'Inference-Configuration-Evaluation',
+    InferenceCELLMModals: 'Inference-CE-LLM-Modals',
+    InferenceOptimalConfigurationSearch: 'Inference-Optimal-Configuration-Search',
+    InferenceOCSLLMModals: 'Inference-OCS-LLM-Modals',
+    AITraining: 'AI Training',
+    TrainingConfigurationEvaluation: 'Training-Configuration-Evaluation',
+    TrainingCELLMModals: 'Training-CE-LLM-Modals',
+    TrainingCEMultiModal: 'Training-CE-Multi-Modal',
+    TrainingOptimalConfigurationSearch: 'Training-Optimal-Configuration-Search',
+    TrainingOCSLLMModals: 'Training-OCS-LLM-Modals',
+    TrainingOCSMultiModal: 'Training-OCS-Multi-Modal',
+    Configs: 'Configs',
+    INFConfigs: 'Inference-Configs',
+    TranConfigs: 'Training-Configs'
   }
 }
