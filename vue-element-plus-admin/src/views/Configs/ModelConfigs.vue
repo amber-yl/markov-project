@@ -1,7 +1,7 @@
 <template>
   <div>
-    <!-- TrainingConfigs -->
-    {{ t('newMenu.TrainingConfigs') }}
+    <!-- ModelConfigs -->
+    {{ t('newMenu.ModelConfigs') }}
   </div>
 </template>
 

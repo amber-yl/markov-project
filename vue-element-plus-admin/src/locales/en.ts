@@ -1,4 +1,26 @@
 export default {
+  newRouter: {
+    Card: 'Card',
+    CardDetails: 'Card Details'
+  },
+  newMenu: {
+    AIInference: 'AI-Inference',
+    InferenceConfigurationEvaluation: 'Inference-Configuration-Evaluation',
+    InferenceCELLMModals: 'Inference-CE-LLM-Modals',
+    InferenceOptimalConfigurationSearch:
+      'Inference-Optimal-Configuration-Search',
+    InferenceOCSLLMModals: 'Inference-OCS-LLM-Modals',
+    AITraining: 'AI Training',
+    TrainingConfigurationEvaluation: 'Training-Configuration-Evaluation',
+    TrainingCELLMModals: 'Training-CE-LLM-Modals',
+    TrainingCEMultiModal: 'Training-CE-Multi-Modal',
+    TrainingOptimalConfigurationSearch: 'Training-Optimal-Configuration-Search',
+    TrainingOCSLLMModals: 'Training-OCS-LLM-Modals',
+    TrainingOCSMultiModal: 'Training-OCS-Multi-Modal',
+    Configs: 'Configs',
+    SystemConfigs: 'System-Configs',
+    ModelConfigs: 'Model-Configs'
+  },
   common: {
     inputText: 'Please input',
     selectText: 'Please select',
@@ -417,11 +439,13 @@ export default {
   imageViewerDemo: {
     open: 'Open',
     imageViewer: 'Image viewer',
-    imageViewerDes: 'Secondary packaging of ImageViewer components based on ElementPlus'
+    imageViewerDes:
+      'Secondary packaging of ImageViewer components based on ElementPlus'
   },
   descriptionsDemo: {
     descriptions: 'Descriptions',
-    descriptionsDes: 'Secondary packaging of Descriptions components based on ElementPlus',
+    descriptionsDes:
+      'Secondary packaging of Descriptions components based on ElementPlus',
     username: 'Username',
     nickName: 'NickName',
     phone: 'Phone',
@@ -478,7 +502,8 @@ export default {
   },
   inputPasswordDemo: {
     title: 'InputPassword',
-    inputPasswordDes: 'Secondary packaging of Input components based on ElementPlus'
+    inputPasswordDes:
+      'Secondary packaging of Input components based on ElementPlus'
   },
   avatarsDemo: {
     title:
@@ -570,26 +595,5 @@ export default {
     activeMenu: 'Active menu',
     canTo: 'Can to',
     name: 'Name'
-  },
-  newRouter: {
-    Card: 'Card',
-    CardDetails: 'Card Details'
-  },
-  newMenu: {
-    AIInference: 'AI-Inference',
-    InferenceConfigurationEvaluation: 'Inference-Configuration-Evaluation',
-    InferenceCELLMModals: 'Inference-CE-LLM-Modals',
-    InferenceOptimalConfigurationSearch: 'Inference-Optimal-Configuration-Search',
-    InferenceOCSLLMModals: 'Inference-OCS-LLM-Modals',
-    AITraining: 'AI Training',
-    TrainingConfigurationEvaluation: 'Training-Configuration-Evaluation',
-    TrainingCELLMModals: 'Training-CE-LLM-Modals',
-    TrainingCEMultiModal: 'Training-CE-Multi-Modal',
-    TrainingOptimalConfigurationSearch: 'Training-Optimal-Configuration-Search',
-    TrainingOCSLLMModals: 'Training-OCS-LLM-Modals',
-    TrainingOCSMultiModal: 'Training-OCS-Multi-Modal',
-    Configs: 'Configs',
-    INFConfigs: 'Inference-Configs',
-    TranConfigs: 'Training-Configs'
   }
 }

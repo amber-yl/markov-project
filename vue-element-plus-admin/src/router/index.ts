@@ -213,19 +213,19 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     },
     children: [
       {
-        path: 'inference-configs',
-        name: 'InferenceConfigs',
-        component: () => import('@/views/Configs/InferenceConfigs.vue'),
+        path: 'system-configs',
+        name: 'SystemConfigs',
+        component: () => import('@/views/Configs/SystemConfigs.vue'),
         meta: {
-          title: t('newMenu.InferenceConfigs')
+          title: t('newMenu.SystemConfigs')
         }
       },
       {
-        path: 'training-configs',
-        name: 'TrainingConfigs',
-        component: () => import('@/views/Configs/TrainingConfigs.vue'),
+        path: 'model-configs',
+        name: 'ModelConfigs',
+        component: () => import('@/views/Configs/ModelConfigs.vue'),
         meta: {
-          title: t('newMenu.TrainingConfigs')
+          title: t('newMenu.ModelConfigs')
         }
       }
     ]

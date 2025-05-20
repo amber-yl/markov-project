@@ -2,10 +2,10 @@
 import { ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useDesign } from '@/hooks/web/useDesign'
-import LockDialog from './components/LockDialog.vue'
-import { ref, computed } from 'vue'
-import LockPage from './components/LockPage.vue'
-import { useLockStore } from '@/store/modules/lock'
+// import LockDialog from './components/LockDialog.vue'
+// import { ref, computed } from 'vue'
+// import LockPage from './components/LockPage.vue'
+// import { useLockStore } from '@/store/modules/lock'
 import { useUserStore } from '@/store/modules/user'
 import { useRouter } from 'vue-router'
 
@@ -13,9 +13,9 @@ const { push } = useRouter()
 
 const userStore = useUserStore()
 
-const lockStore = useLockStore()
+// const lockStore = useLockStore()
 
-const getIsLock = computed(() => lockStore.getLockInfo?.isLock ?? false)
+// const getIsLock = computed(() => lockStore.getLockInfo?.isLock ?? false)
 
 const { getPrefixCls } = useDesign()
 
@@ -27,16 +27,16 @@ const loginOut = () => {
   userStore.logoutConfirm()
 }
 
-const dialogVisible = ref<boolean>(false)
+// const dialogVisible = ref<boolean>(false)
 
 // 锁定屏幕
-const lockScreen = () => {
-  dialogVisible.value = true
-}
+// const lockScreen = () => {
+//   dialogVisible.value = true
+// }
 
-const toDocument = () => {
-  window.open('https://element-plus-admin-doc.cn/')
-}
+// const toDocument = () => {
+//   window.open('https://element-plus-admin-doc.cn/')
+// }
 
 const toPage = (path: string) => {
   push(path)
@@ -46,14 +46,11 @@ const toPage = (path: string) => {
 <template>
   <ElDropdown class="custom-hover" :class="prefixCls" trigger="click">
     <div class="flex items-center">
-      <img
-        src="@/assets/imgs/avatar.jpg"
-        alt=""
-        class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
-      />
+      <img src="@/assets/imgs/avatar.jpg" alt="" class="w-[calc(var(--logo-height)-25px)] rounded-[50%]" />
       <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">{{
-        userStore.getUserInfo?.username
-      }}</span>
+        userStore.getUserInfo?.username || 'admin'
+        }}
+      </span>
     </div>
     <template #dropdown>
       <ElDropdownMenu>
@@ -62,12 +59,12 @@ const toPage = (path: string) => {
             {{ t('router.personalCenter') }}
           </div>
         </ElDropdownItem>
-        <ElDropdownItem>
+        <!-- <ElDropdownItem>
           <div @click="toDocument">{{ t('common.document') }}</div>
-        </ElDropdownItem>
-        <ElDropdownItem divided>
+        </ElDropdownItem> -->
+        <!-- <ElDropdownItem divided>
           <div @click="lockScreen">{{ t('lock.lockScreen') }}</div>
-        </ElDropdownItem>
+        </ElDropdownItem> -->
         <ElDropdownItem>
           <div @click="loginOut">{{ t('common.loginOut') }}</div>
         </ElDropdownItem>
@@ -75,12 +72,12 @@ const toPage = (path: string) => {
     </template>
   </ElDropdown>
 
-  <LockDialog v-if="dialogVisible" v-model="dialogVisible" />
-  <teleport to="body">
+  <!-- <LockDialog v-if="dialogVisible" v-model="dialogVisible" /> -->
+  <!-- <teleport to="body">
     <transition name="fade-bottom" mode="out-in">
       <LockPage v-if="getIsLock" />
     </transition>
-  </teleport>
+  </teleport> -->
 </template>
 
 <style scoped lang="less">

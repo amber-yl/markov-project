@@ -1,4 +1,25 @@
 export default {
+  newRouter: {
+    Card: '卡片',
+    CardDetails: '卡片详情页'
+  },
+  newMenu: {
+    AIInference: 'AI-推理',
+    InferenceConfigurationEvaluation: '推理评估配置',
+    InferenceCELLMModals: '推理评估配置-LLM-模型',
+    InferenceOptimalConfigurationSearch: '推理最优搜索配置',
+    InferenceOCSLLMModals: '推理最优搜索配置-LLM-模型',
+    AITraining: 'AI-训练',
+    TrainingConfigurationEvaluation: '训练评估配置',
+    TrainingCELLMModals: '训练评估配置-LLM-模型',
+    TrainingCEMultiModal: '训练评估配置-多模型',
+    TrainingOptimalConfigurationSearch: '训练最优搜索配置',
+    TrainingOCSLLMModals: '训练最优搜索配置-LLM-模型',
+    TrainingOCSMultiModal: '训练最优搜索配置-多模型',
+    Configs: '配置',
+    SystemConfigs: '系统配置',
+    ModelConfigs: '模型配置'
+  },
   common: {
     inputText: '请输入',
     selectText: '请选择',
@@ -558,26 +579,5 @@ export default {
     activeMenu: '高亮菜单',
     canTo: '是否可跳转',
     name: '组件名称'
-  },
-  newRouter: {
-    Card: '卡片',
-    CardDetails: '卡片详情页'
-  },
-  newMenu: {
-    AIInference: 'AI-推理',
-    InferenceConfigurationEvaluation: '推理评估配置',
-    InferenceCELLMModals: '推理评估配置-LLM-模型',
-    InferenceOptimalConfigurationSearch: '推理最优搜索配置',
-    InferenceOCSLLMModals: '推理最优搜索配置-LLM-模型',
-    AITraining: 'AI-训练',
-    TrainingConfigurationEvaluation: '训练评估配置',
-    TrainingCELLMModals: '训练评估配置-LLM-模型',
-    TrainingCEMultiModal: '训练评估配置-多模型',
-    TrainingOptimalConfigurationSearch: '训练最优搜索配置',
-    TrainingOCSLLMModals: '训练最优搜索配置-LLM-模型',
-    TrainingOCSMultiModal: '训练最优搜索配置-多模型',
-    Configs: '配置',
-    InferenceConfigs: '推理配置',
-    TrainingConfigs: '训练配置'
   }
 }

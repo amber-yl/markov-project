@@ -112,70 +112,43 @@ const inputClear = () => {
 <template>
   <div :class="prefixCls" class="flex justify-center items-center box">
     <ElInput disabled v-model="modelValue" clearable />
-    <ElPopover
-      placement="bottom"
-      trigger="click"
-      :width="450"
+    <ElPopover placement="bottom" trigger="click" :width="450"
       popper-style="box-shadow: rgb(14 18 22 / 35%) 0px 10px 38px -10px, rgb(14 18 22 / 20%) 0px 10px 20px -15px; height: 380px;"
-      @show="popoverShow"
-    >
+      @show="popoverShow">
       <template #reference>
         <div :style="iconWrapStyle">
           <Icon v-if="modelValue" :icon="modelValue" />
         </div>
       </template>
       <ElScrollbar class="h-[calc(100%-50px)]!">
-        <ElInput
-          v-model="search"
-          class="mb-20px"
-          clearable
-          placeholder="搜索图标"
-          @clear="inputClear"
-        />
+        <ElInput v-model="search" class="mb-20px" clearable placeholder="搜索图标" @clear="inputClear" />
         <ElTabs tab-position="left" v-model="iconName" @tab-change="tabChange">
           <ElTabPane v-for="item in icons" :key="item.name" :label="item.name" :name="item.prefix">
             <div class="flex flex-wrap box-border">
-              <div
-                v-for="icon in filterIcons(filterItemIcons(item.icons))"
-                :key="icon"
-                :style="{
-                  width: iconSize,
-                  height: iconSize,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  border: `1px solid ${
-                    icon === modelValue ? 'var(--el-color-primary)' : 'var(--el-border-color)'
+              <div v-for="icon in filterIcons(filterItemIcons(item.icons))" :key="icon" :style="{
+                width: iconSize,
+                height: iconSize,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                border: `1px solid ${icon === modelValue ? 'var(--el-color-primary)' : 'var(--el-border-color)'
                   }`,
-                  boxSizing: 'border-box',
-                  margin: '2px',
-                  transition: 'all 0.3s'
-                }"
-                class="hover:border-color-[var(--el-color-primary)]!"
-                @click="iconSelect(icon)"
-              >
-                <Icon
-                  :icon="icon"
-                  :color="icon === modelValue ? 'var(--el-color-primary)' : 'inherit'"
-                />
+                boxSizing: 'border-box',
+                margin: '2px',
+                transition: 'all 0.3s'
+              }" class="hover:border-color-[var(--el-color-primary)]!" @click="iconSelect(icon)">
+                <Icon :icon="icon" :color="icon === modelValue ? 'var(--el-color-primary)' : 'inherit'" />
               </div>
             </div>
           </ElTabPane>
         </ElTabs>
       </ElScrollbar>
       <div
-        class="h-50px absolute bottom-0 left-0 flex items-center pl-[var(--el-popover-padding)] pr-[var(--el-popover-padding)]"
-      >
-        <ElPagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :pager-count="5"
-          small
-          :page-sizes="[100, 200, 300, 400]"
-          layout="total, prev, pager, next, jumper"
-          :total="filterItemIcons(icons[currentIconNameIndex].icons).length"
-        />
+        class="h-50px absolute bottom-0 left-0 flex items-center pl-[var(--el-popover-padding)] pr-[var(--el-popover-padding)]">
+        <ElPagination v-model:current-page="currentPage" v-model:page-size="pageSize" :pager-count="5" small
+          :page-sizes="[100, 200, 300, 400]" layout="total, prev, pager, next, jumper"
+          :total="filterItemIcons(icons[currentIconNameIndex].icons).length" />
       </div>
     </ElPopover>
   </div>
