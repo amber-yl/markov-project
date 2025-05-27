@@ -1,9 +1,76 @@
 import type { App } from 'vue'
 
 // 需要全局引入一些组件，如ElScrollbar，不然一些下拉项样式有问题
-import { ElLoading, ElScrollbar } from 'element-plus'
+import {
+  ElLoading,
+  ElScrollbar,
+  ElCard,
+  ElSelect,
+  ElRow,
+  ElCol,
+  ElSkeleton,
+  ElOption,
+  ElDialog,
+  ElButton,
+  ElTable,
+  ElTableColumn,
+  ElPagination,
+  ElDrawer,
+  ElCheckTag,
+  ElPopover,
+  ElTooltip,
+  ElCheckbox,
+  ElCheckboxGroup,
+  ElSteps,
+  ElStep,
+  ElTag,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElInputNumber,
+  ElSwitch,
+  ElAlert,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElDivider,
+  ElCollapse,
+  ElCollapseItem
+} from 'element-plus'
 
-const plugins = [ElLoading]
+const plugins = [
+  ElLoading,
+  ElCard,
+  ElSelect,
+  ElRow,
+  ElCol,
+  ElSkeleton,
+  ElOption,
+  ElDialog,
+  ElButton,
+  ElTable,
+  ElTableColumn,
+  ElPagination,
+  ElDrawer,
+  ElCheckTag,
+  ElPopover,
+  ElTooltip,
+  ElCheckbox,
+  ElCheckboxGroup,
+  ElSteps,
+  ElStep,
+  ElTag,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElInputNumber,
+  ElSwitch,
+  ElAlert,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElDivider,
+  ElCollapse,
+  ElCollapseItem
+]
 
 const components = [ElScrollbar]
 

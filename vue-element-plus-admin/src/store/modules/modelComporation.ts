@@ -1,0 +1,96 @@
+import { defineStore } from 'pinia'
+import { store } from '../index'
+interface Task {
+  hidden: number,
+  feedforward: number,
+  seq_size: null,
+  model_names: string
+}
+interface CollapseListType {
+  collapseName: number,
+  headerName: string,
+  iconName: string
+}
+
+interface ModelComporationState {
+  comporationTasks: Task[]
+  collapseList: CollapseListType[]
+}
+
+function transformData(comporationTasks: Task[]) {
+  const keys = Object.keys(comporationTasks[0]).filter(key => key !== 'model_names')
+  return keys.map((key) => {
+    return {
+      params: key,
+      llm: comporationTasks.find(item => item.model_names === 'llm')[key],
+      moe: comporationTasks.find(item => item.model_names === 'moe')[key]
+    }
+  })
+}
+
+export const useModelComporationStore = defineStore('modelComporation', {
+  state: (): ModelComporationState => {
+    return {
+      comporationTasks: [] as Task[],
+      collapseList: [
+        {
+          collapseName: 1,
+          headerName: "Model Parameters",
+          iconName: 'vi-ant-design:bars-outlined'
+        }, {
+          collapseName: 2,
+          headerName: "Hardware Parameters",
+          iconName: 'vi-ant-design:bars-outlined'
+        }, {
+          collapseName: 3,
+          headerName: "PD-Split Parameters",
+          iconName: 'vi-ant-design:bars-outlined'
+        }, {
+          collapseName: 4,
+          headerName: "PD-Split results",
+          iconName: 'vi-ant-design:solution-outlined'
+        }, {
+          collapseName: 5,
+          headerName: "PD-Split Charts",
+          iconName: 'vi-ant-design:pie-chart-outlined'
+        }
+      ]
+    }
+  },
+  getters: {
+    getCurrentCollapseName: (state: ModelComporationState) => {
+      return state.collapseList
+    },
+    getComporationTasks: (state: ModelComporationState) => {
+      console.log(transformData(state.comporationTasks), "|  transformData(state.comporationTasks)");
+
+      return transformData(state.comporationTasks)
+    }
+  },
+  actions: {
+    async fetchTasks() {
+      // 实现获取任务列表的逻辑
+      // const res = await fetch(' res = await fetch('URL_ADDRESS:3000/tasks')
+      const tableData = [
+        {
+          hidden: 4096,
+          feedforward: 14333,
+          seq_size: null,
+          model_names: 'llm'
+        },
+        {
+          hidden: 222,
+          feedforward: 333,
+          seq_size: null,
+          model_names: 'moe'
+        }
+      ]
+      this.comporationTasks = tableData as Task[]
+    }
+  },
+  persist: true
+})
+
+export const useuseModelComporationStoreStoreWithOut = () => {
+  return useModelComporationStore(store)
+}

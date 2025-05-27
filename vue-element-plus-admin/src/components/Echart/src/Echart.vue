@@ -108,6 +108,11 @@ onActivated(() => {
     echartRef.resize()
   }
 })
+
+defineExpose({
+  echartRef,
+  resizeHandler
+})
 </script>
 
 <template>

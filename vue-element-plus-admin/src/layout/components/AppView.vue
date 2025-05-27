@@ -33,5 +33,5 @@ const getCaches = computed((): string[] => {
       </template>
     </router-view>
   </section>
-  <Footer v-if="footer" />
+  <!-- <Footer v-if="footer" /> -->
 </template>
