@@ -64,6 +64,8 @@
   --transition-time-02: 0.2s;
 
   --el-menu-hover-bg-color: #409eff;
+
+  --el-dialog-height: 200px;
 }
 
 .dark {

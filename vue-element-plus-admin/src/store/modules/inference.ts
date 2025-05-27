@@ -16,7 +16,14 @@ export const useInferenceEvalStore = defineStore('inferenceEval', {
       selectedTasks: [] as Task[]
     }
   },
-  getters: {},
+  getters: {
+    getTaskStatusList(state: InferenceEvalInfoState) {
+      return [...new Set(state.allTasks.map((task) => task.status))]
+    },
+    getModelNameList(state: InferenceEvalInfoState) {
+      return [...new Set(state.allTasks.map((task) => task.model))]
+    }
+  },
   actions: {
     async fetchTasks() {
       // 实现获取任务列表的逻辑
@@ -94,7 +101,7 @@ export const useInferenceEvalStore = defineStore('inferenceEval', {
     async createTask(task: Task) {
       // 实现创建任务的逻辑
     },
-    async deleteTask(task: Task) {},
+    async deleteTask(task: Task) { },
     setSelectedTasks(tasks: Task[]) {
       this.selectedTasks = tasks
     }
