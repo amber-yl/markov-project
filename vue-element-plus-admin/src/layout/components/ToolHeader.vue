@@ -7,6 +7,7 @@ import { UserInfo } from '@/components/UserInfo'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
+import { Screenfull } from '@/components/Screenfull'
 
 const { getPrefixCls, variables } = useDesign()
 
@@ -52,6 +53,9 @@ export default defineComponent({
           </div>
         ) : undefined}
         <div class="h-full flex items-center">
+          {screenfull.value ? (
+            <Screenfull class="custom-hover" color="var(--top-header-text-color)"></Screenfull>
+          ) : undefined}
           {size.value ? (
             <SizeDropdown class="custom-hover" color="var(--top-header-text-color)"></SizeDropdown>
           ) : undefined}
