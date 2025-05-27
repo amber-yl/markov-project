@@ -8,7 +8,7 @@
         </div>
       </header>
       <main>
-        <el-table :data="filterTableData" stripe style="width: 100%">
+        <el-table :data="filterTableData" stripe style="width: 100%" border>
           <template v-for="(col, k) in columnList" :key="k">
             <el-table-column v-bind="col" v-if="col.isShow" align="center">
               <template #header>
