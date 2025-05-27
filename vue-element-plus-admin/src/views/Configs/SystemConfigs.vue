@@ -52,7 +52,7 @@
                 </section>
               </template>
               <template #default v-if="col.prop === 'operations'">
-                <el-button type="primary" size="small">克隆</el-button>
+                <el-button type="primary" size="small" @click="isShowModal = !isShowModal">克隆</el-button>
                 <el-tooltip placement="top" content="预设配置禁止编辑">
                   <el-button type="primary" size="small" disabled>编辑</el-button>
                 </el-tooltip>
