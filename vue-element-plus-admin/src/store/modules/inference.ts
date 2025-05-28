@@ -126,20 +126,6 @@ export const useInferenceEvalStore = defineStore('inferenceEval', {
   persist: true
 })
 
-// export const useInferenceOptimalStore = defineStore('inferenceOptimal', {
-//   state: (): InferenceEvalInfoState => {
-//     return {
-//       inferenceEvalInfo: {}
-//     }
-//   },
-//   getters: {},
-//   actions: {},
-//   persist: true
-// })
-
 export const useInferenceEvalStoreWithOut = () => {
   return useInferenceEvalStore(store)
 }
-// export const useInferenceOptimalStoreWithOut = () => {
-//   return useInferenceOptimalStore(store)
-// }

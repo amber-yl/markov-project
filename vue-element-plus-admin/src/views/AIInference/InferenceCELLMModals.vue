@@ -5,7 +5,7 @@
     </section>
     <section v-else>
       <TopToolbar v-model="viewMode" :models="models" :modeName="modeName" @create="createNewSimulation"
-        @change="handleModelChange" />
+        @change="handleModelChange" @scopeChange="handleScopeChange" />
       <el-card
         class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2">
         <header class="flex justify-between mb-2">
@@ -101,9 +101,22 @@ const handleModelChange = (model: string) => {
 
 const modeName = ref('Inference')
 const centerDialogVisible = ref(false)
+const currentScope = ref('个人')
+
 const displayViewModeList = computed(() => {
-  return inferenceEvalStore.$state.allTasks
+  const allTasks = inferenceEvalStore.$state.allTasks
+  // if (currentScope.value === '个人') {
+  //   return allTasks.filter(task => task.creator === 'current_user')
+  // }
+  return allTasks
 })
+
+// console.log(displayViewModeList.value, "| displayViewModeList");
+
+watch(currentScope, (newValue) => {
+  console.log(newValue, "| newValue");
+}, { immediate: true })
+
 const isSelectionMode = ref(false)
 const createNewSimulation = () => {
   centerDialogVisible.value = true
@@ -121,7 +134,7 @@ const handleSubmit = async (formData, taskName: string) => {
   // await fetchData()
 }
 
-const selectCards = ref<number[]>([]) // 添加响应式数组存储选中的任务
+const selectCards = ref<number[]>([])
 
 const handleSelect = (task: Task | Task[], checked?: boolean) => {
   if (Array.isArray(task)) {
@@ -137,7 +150,9 @@ const handleSelect = (task: Task | Task[], checked?: boolean) => {
     }
   }
 }
+
 const { currentList, ...pagination } = usePagination(displayViewModeList.value)
+
 const handleDetail = (task) => {
   router.push({
     path: '/card/card-details',
@@ -183,20 +198,24 @@ const filterData = computed(() => {
   })
   return filtered.length ? filtered : []
 })
+
 const onSearchInput = (val) => {
   title.value = val
   isShow.value = true
 }
+
 const onSearchFocus = (val) => {
   if (title.value && filterData.value.length > 0) {
     isShow.value = true
   }
 }
+
 const onSearchBlur = (val) => {
   hideTimer.value = window.setTimeout(() => {
     isShow.value = false
   }, 200)
 }
+
 watch(title, () => {
   if (!title.value || filterData.value.length === 0) {
     isShow.value = false
@@ -204,12 +223,25 @@ watch(title, () => {
     isShow.value = true
   }
 })
+
 onBeforeMount(() => {
   hideTimer.value && clearTimeout(hideTimer.value)
 })
+
 const changeModelName = (item) => {
   title.value = item
   isShow.value = Boolean(item && filterData.value.length > 0)
+}
+
+const handleScopeChange = (scope: string) => {
+  currentScope.value = scope
+  console.log(`Switched to scope: ${scope}`)
+
+  isSelectionMode.value = false
+  selectCards.value = []
+
+  // 可以触发数据重新获取或过滤
+  // await inferenceEvalStore.fetchTasks({ scope })
 }
 </script>
 

@@ -8,10 +8,6 @@
         <el-step :title="t('AIInference.deployment')" />
         <el-step :title="t('AIInference.confirmation')" />
       </el-steps>
-      <!-- Always show CustomForm with different configurations -->
-      <!-- <CustomForm v-model="formData[active]" :sections="currentStepSections"
-        v-model:show-advanced-config="showAdvancedConfig" :show-toggle="active === 0" @field-change="onFieldChange"
-        @section-toggle="onSectionToggle" @validation-change="onValidationChange" /> -->
       <section v-if="active === 0">
         <el-form ref="formRef" :model="formData[active]" label-width="140px" label-position="left">
           <!-- 渲染表单区块 -->
@@ -460,11 +456,11 @@
       <div class="flex justify-center mt-4 space-x-4">
         <el-button @click="handlePrevious" :disabled="active === 0">{{
           t('common.prevLabel')
-          }}</el-button>
+        }}</el-button>
         <!-- :disabled="!canProceed" -->
         <el-button type="primary" @click="handleNext" :loading="isSubmitting"> {{
           active === 3 ? t('common.ok') : t('common.nextLabel')
-        }}</el-button>
+          }}</el-button>
         <el-button @click="handleCancelModelChange" type="info">
           取消模型选择
         </el-button>
@@ -476,7 +472,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed, nextTick, watch, defineComponent, h } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
-import CustomForm from './CustomForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElSelect, ElInputNumber, ElSwitch, ElOption } from 'element-plus'

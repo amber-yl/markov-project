@@ -1,7 +1,8 @@
 <template>
   <div class="markov-cards-container grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
-    <el-card v-for="item in displayViewModeList" :key="item.id" class="select-card relative" style="max-width: 480px"
-      @mouseenter="handleMouseEnter(item.id)" @mouseleave="handleMouseLeave" @click="emit('detail', item)">
+    <el-card v-for="item in props.displayViewModeList" :key="item.id" class="select-card relative"
+      style="max-width: 480px" @mouseenter="handleMouseEnter(item.id)" @mouseleave="handleMouseLeave"
+      @click="emit('detail', item)">
       <div v-if="props.isSelectionMode" class="checkbox-wrapper absolute top-2 right-2 z-10">
         <el-checkbox v-model="selectedItems[item.id]" class="!w-4 !h-4 border-2 border-blue-500 rounded" @click.stop
           @change="() => handleSelect(item, selectedItems[item.id])" />
