@@ -58,10 +58,14 @@
             </section>
           </section>
         </header>
-        <CardView v-if="viewMode === 'Grid'" :displayViewModeList="currentList" :loading="loading"
-          :isSelectionMode="isSelectionMode" @select="handleSelect" @detail="handleDetail" />
-        <table-view v-else :loading="loading" :displayViewModeList="currentList" :isSelectionMode="isSelectionMode"
-          @select="handleSelect" @detail="handleDetail" />
+        <el-skeleton v-if="viewMode === 'Grid'" :rows="5" :loading="loading" animated>
+          <CardView :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
+            @detail="handleDetail" />
+        </el-skeleton>
+        <el-skeletpn v-else :rows="5" :loading="loading" animated>
+          <table-view :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
+            @detail="handleDetail" />
+        </el-skeletpn>
         <footer class="flex justify-end mt-4">
           <el-pagination v-model:current-page="pagination.currentPage.value"
             v-model:page-size="pagination.pageSize.value" :page-sizes="[5, 10, 15, 20]" :size="'small'"
@@ -76,7 +80,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onBeforeMount } from 'vue'
 import { useInferenceEvalStore } from '@/store/modules/inference'
-import { useInferenceData } from './hooks/useInferenceData'
 import TopToolbar from './components/TopToolbar.vue'
 import CardView from './components/CardView.vue'
 import TableView from './components/TableView.vue'
@@ -87,8 +90,7 @@ import { Task } from '@/store/types'
 
 const router = useRouter()
 const inferenceEvalStore = useInferenceEvalStore()
-const { loading, fetchData } = useInferenceData()
-
+const loading = ref(true)
 const viewMode = ref('Grid')
 const models = ref([{ model: 'Grid' }, { model: 'Table' }])
 const handleModelChange = (model: string) => {
@@ -155,6 +157,7 @@ const handleDetail = (task) => {
 onMounted(async () => {
   // await fetchData()
   await inferenceEvalStore.fetchTasks()
+  loading.value = false
 })
 
 const jump2Comparison = () => {
