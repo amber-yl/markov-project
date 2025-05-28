@@ -1,11 +1,17 @@
 import { defineStore } from 'pinia'
+import type { Task, PaginationConfig } from '../types'
 import { store } from '../index'
-import { Task } from '../types'
 
 interface InferenceEvalInfoState {
   allTasks: Task[]
   personalTasks: Task[]
   selectedTasks: Task[]
+  loading: boolean
+  pagination: PaginationConfig
+  filters: {
+    status?: string[]
+    model?: string
+  }
 }
 
 export const useInferenceEvalStore = defineStore('inferenceEval', {
@@ -13,7 +19,18 @@ export const useInferenceEvalStore = defineStore('inferenceEval', {
     return {
       allTasks: [] as Task[],
       personalTasks: [] as Task[],
-      selectedTasks: [] as Task[]
+      selectedTasks: [] as Task[],
+      loading: true,
+      pagination: {
+        currentPage: 0,
+        pageSize: 0,
+        total: 0,
+        pageSizes: []
+      },
+      filters: {
+        status: [],
+        model: ''
+      }
     }
   },
   getters: {

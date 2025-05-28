@@ -1,29 +1,32 @@
 import { defineStore } from 'pinia'
 import { store } from '../index'
+import { comparisonApi } from '@/api/common'
+import type { ModelComparison, CollapseItem } from '../types'
+
 interface Task {
   hidden: number,
   feedforward: number,
   seq_size: null,
   model_names: string
 }
-interface CollapseListType {
-  collapseName: number,
-  headerName: string,
-  iconName: string
-}
 
 interface ModelComporationState {
   comporationTasks: Task[]
-  collapseList: CollapseListType[]
+  collapseList: CollapseItem[]
 }
 
 function transformData(comporationTasks: Task[]) {
+  if (comporationTasks.length === 0) return []
+
   const keys = Object.keys(comporationTasks[0]).filter(key => key !== 'model_names')
   return keys.map((key) => {
+    const llmTask = comporationTasks.find(item => item.model_names === 'llm')
+    const moeTask = comporationTasks.find(item => item.model_names === 'moe')
+
     return {
       params: key,
-      llm: comporationTasks.find(item => item.model_names === 'llm')[key],
-      moe: comporationTasks.find(item => item.model_names === 'moe')[key]
+      llm: llmTask ? llmTask[key] : null,
+      moe: moeTask ? moeTask[key] : null
     }
   })
 }

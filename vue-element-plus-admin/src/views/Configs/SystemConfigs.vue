@@ -28,7 +28,7 @@
                     /> -->
                       <header class="custom-checkbox">
                         <el-checkbox v-model="filterCheckedAll[col.prop]"
-                          @change="handleCheckAllChange($event, col.prop)">
+                          @change="(val: boolean) => handleCheckAllChange(val, col.prop)">
                           全选
                         </el-checkbox>
                       </header>
@@ -73,7 +73,7 @@
     </section>
   </el-card>
   <section>
-    <el-drawer v-model="drawer2" :direction="direction" size="40%">
+    <el-drawer v-model="drawer2" :direction="direction" size="45%">
       <template #header>
         <el-divider content-position="left">
           <div class="flex items-center text-red-400">
@@ -83,25 +83,51 @@
         </el-divider>
       </template>
       <template #default>
-        <!-- <div class="grid grid-flow-rows gap-2 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-          <el-check-tag class="w-full text-center" v-for="(item, k) in showUncheckedTableHeaderlist"
-            @change="onChange(item)" :key="k">{{ item.label }}</el-check-tag>
-        </div> -->
-        <el-transfer v-model="rightValue" style="text-align: left; display: inline-block" filterable
-          :titles="['Source', 'Target']" :format="{
-            noChecked: '${total}',
-            hasChecked: '${checked}/${total}',
-          }" :data="data" @change="handleChange" @right-check-change="handleRightChange">
-          <template #default="{ option }">
-            <span>{{ option.key }} - {{ option.label }}</span>
-          </template>
-          <template #left-empty>
-            <el-empty :image-size="60" description="No data" />
-          </template>
-          <template #right-empty>
-            <el-empty :image-size="60" description="No data" />
-          </template>
-        </el-transfer>
+        <div class="transfer-container">
+          <!-- 统计信息 -->
+          <div class="transfer-stats mb-4 p-3 bg-gray-50 rounded">
+            <div class="flex justify-between text-sm text-gray-600">
+              <span>可管理列数: {{ transferData.length }}</span>
+              <span>已显示: {{ transferRightValue.length }} | 已隐藏: {{ transferData.length - transferRightValue.length
+              }}</span>
+            </div>
+          </div>
+
+          <el-transfer v-model="transferRightValue" style="text-align: left; display: inline-block" filterable
+            :titles="['隐藏的列', '显示的列']" :format="{
+              noChecked: '${total}',
+              hasChecked: '${checked}/${total}',
+            }" :data="transferData" @change="handleTransferChange" :props="{
+              key: 'key',
+              label: 'label',
+              disabled: 'disabled'
+            }" class="custom-transfer">
+            <template #default="{ option }">
+              <span class="transfer-item">{{ option.label }}</span>
+            </template>
+            <template #left-empty>
+              <el-empty :image-size="60" description="所有列都已显示">
+                <el-button type="primary" size="small" @click="hideAllColumns">
+                  隐藏一些列
+                </el-button>
+              </el-empty>
+            </template>
+            <template #right-empty>
+              <el-empty :image-size="60" description="暂无显示列">
+                <el-button type="primary" size="small" @click="showAllColumns">
+                  显示一些列
+                </el-button>
+              </el-empty>
+            </template>
+          </el-transfer>
+
+          <!-- 快捷操作按钮 -->
+          <div class="transfer-actions mt-4 flex gap-2 justify-center">
+            <el-button size="small" type="success" @click="showAllColumns">显示所有</el-button>
+            <el-button size="small" type="warning" @click="hideAllColumns">隐藏所有</el-button>
+            <el-button size="small" type="info" @click="resetColumns">重置默认</el-button>
+          </div>
+        </div>
       </template>
     </el-drawer>
   </section>
@@ -195,7 +221,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, unref, reactive, defineComponent, h } from 'vue'
+import { ref, computed, unref, reactive, defineComponent, h, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElTransfer, ElEmpty } from 'element-plus'
 import type { DrawerProps } from 'element-plus'
@@ -342,7 +368,7 @@ const changeOptionsData = (value: string) => {
   }
 }
 
-const isShowModal = ref<boolean>(true)
+const isShowModal = ref<boolean>(false)
 
 const columnList = ref<
   {
@@ -414,6 +440,70 @@ const generateData = (): DataItem[] => {
   return data
 }
 
+// Transfer相关数据和方法
+const transferData = computed(() => {
+  return columnList.value
+    .filter(col => col.prop !== 'operations')
+    .map(col => ({
+      key: col.prop,
+      label: col.label,
+      disabled: false
+    }))
+})
+
+const transferRightValue = ref<string[]>(
+  columnList.value
+    .filter(col => col.isShow && col.prop !== 'operations')
+    .map(col => col.prop)
+)
+
+const handleTransferChange = (targetKeys: string[]) => {
+  transferRightValue.value = targetKeys
+
+  // 更新列的显示状态
+  columnList.value.forEach(col => {
+    if (col.prop !== 'operations') {
+      col.isShow = targetKeys.includes(col.prop)
+    }
+  })
+}
+
+// 快捷操作方法
+const showAllColumns = () => {
+  const allProps = columnList.value
+    .filter(col => col.prop !== 'operations')
+    .map(col => col.prop)
+  handleTransferChange(allProps)
+}
+
+const hideAllColumns = () => {
+  handleTransferChange([])
+}
+
+const resetColumns = () => {
+  // 重置到初始状态
+  const defaultVisibleColumns = ['date', 'name', 'address']
+  handleTransferChange(defaultVisibleColumns)
+}
+
+// 监听列配置变化，同步更新transferRightValue
+watch(columnList, (newColumns) => {
+  transferRightValue.value = newColumns
+    .filter(col => col.isShow && col.prop !== 'operations')
+    .map(col => col.prop)
+}, { deep: true })
+
+// 初始化transfer右侧值
+const initTransferRightValue = () => {
+  transferRightValue.value = columnList.value
+    .filter(col => col.isShow && col.prop !== 'operations')
+    .map(col => col.prop)
+}
+
+// 组件挂载时初始化
+initTransferRightValue()
+
+// 保持原有的数据和方法以兼容现有逻辑
 const data = ref(generateData())
 const rightValue = ref([])
 const handleChange = (
@@ -819,5 +909,64 @@ const FormFieldRenderer = defineComponent({
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 120px;
+}
+
+/* Transfer组件优化样式 */
+.transfer-container {
+  padding: 20px;
+}
+
+.transfer-stats {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+}
+
+.custom-transfer {
+  :deep(.el-transfer-panel) {
+    border-radius: 8px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  :deep(.el-transfer-panel__header) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    font-weight: 500;
+  }
+
+  :deep(.el-transfer-panel__filter .el-input__wrapper) {
+    border-radius: 6px;
+  }
+
+  :deep(.el-transfer-panel__list.is-filterable) {
+    border-radius: 0 0 8px 8px;
+  }
+
+  :deep(.el-checkbox__label) {
+    font-size: 14px;
+  }
+}
+
+.transfer-item {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+  font-size: 14px;
+}
+
+.transfer-actions {
+  border-top: 1px solid #e9ecef;
+  padding-top: 16px;
+
+  .el-button {
+    border-radius: 20px;
+    font-weight: 500;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
 }
 </style>

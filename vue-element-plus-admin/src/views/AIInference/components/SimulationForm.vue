@@ -960,29 +960,11 @@ const visibleSections = computed(() => {
 const onAttentionTypeChange = (attnType: string) => {
   console.log('Attention type changed:', attnType)
   // 重置相关字段
-  // if (attnType !== 'mla') {
-  //   formData[active.value].qLoraRank = 0
-  //   formData[active.value].kvLoraRank = 0
-  //   formData[active.value].qHeadDim = 0
-  //   formData[active.value].vHeadDim = 0
-  //   formData[active.value].qkRopeHeadDim = 0
-  //   formData[active.value].qkRopeHeadDim2 = 0
-  // } else {
-  //   // 当选择 MLA 时，设置一些默认值
-  //   formData[active.value].qLoraRank = 512
-  //   formData[active.value].kvLoraRank = 512
-  //   formData[active.value].qHeadDim = 128
-  //   formData[active.value].vHeadDim = 128
-  //   formData[active.value].qkRopeHeadDim = 64
-  //   formData[active.value].qkRopeHeadDim2 = 64
-  // }
-  // emit('attentionTypeChange', attnType)
 }
 
 // GPU类型变化处理
 const onGpuTypeChange = (gpuType: string) => {
   console.log('GPU type changed:', gpuType)
-
   // 根据GPU类型设置推荐配置
   switch (gpuType) {
     case 'a100':
@@ -998,7 +980,6 @@ const onGpuTypeChange = (gpuType: string) => {
       formData[active.value].cpuCores = 16
       break
   }
-
   emit('gpuTypeChange', gpuType)
 }
 

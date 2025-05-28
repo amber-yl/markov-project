@@ -94,7 +94,6 @@ const loading = ref(true)
 const viewMode = ref('Grid')
 const models = ref([{ model: 'Grid' }, { model: 'Table' }])
 const handleModelChange = (model: string) => {
-  console.log(model, '| model')
   viewMode.value = model
   isSelectionMode.value = false
   selectCards.value = []
@@ -106,12 +105,6 @@ const displayViewModeList = computed(() => {
   return inferenceEvalStore.$state.allTasks
 })
 const isSelectionMode = ref(false)
-// 显示PersonTasks和AllTasks
-// const viewRole = ref('person')
-// const displayRoleList = computed(() => {
-//   return viewRole.value === 'person' ? ['person', 'company'] : ['person', 'company']
-// })
-
 const createNewSimulation = () => {
   centerDialogVisible.value = true
 }
