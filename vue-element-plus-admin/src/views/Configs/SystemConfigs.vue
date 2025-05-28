@@ -1,5 +1,7 @@
 <template>
-  <el-card class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]">
+  <el-card
+    class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]"
+  >
     <section class="p-6">
       <header class="h-10 relative mb-4">
         <el-button type="primary" @click="isShowModal = !isShowModal">Create New File</el-button>
@@ -12,12 +14,24 @@
           <template v-for="(col, k) in columnList" :key="k">
             <el-table-column v-bind="col" v-if="col.isShow" align="center">
               <template #header>
-                <section v-if="col.prop !== 'operations'" class="flex items-center justify-center gap-1">
+                <section
+                  v-if="col.prop !== 'operations'"
+                  class="flex items-center justify-center gap-1"
+                >
                   <span>{{ col.label }}</span>
-                  <el-popover placement="bottom" :width="200" trigger="click" popper-class="filter-popover"
-                    ref="popoverRef">
+                  <el-popover
+                    placement="bottom"
+                    :width="200"
+                    trigger="click"
+                    popper-class="filter-popover"
+                    ref="popoverRef"
+                  >
                     <template #reference>
-                      <Icon :icon="'vi-ant-design:filter-outlined'" class="cursor-pointer" @click.stop />
+                      <Icon
+                        :icon="'vi-ant-design:filter-outlined'"
+                        class="cursor-pointer"
+                        @click.stop
+                      />
                     </template>
                     <div class="filter-content">
                       <!-- <el-input
@@ -27,32 +41,52 @@
                       @input="handleFilter(col.prop)"
                     /> -->
                       <header class="custom-checkbox">
-                        <el-checkbox v-model="filterCheckedAll[col.prop]"
-                          @change="(val: boolean) => handleCheckAllChange(val, col.prop)">
+                        <el-checkbox
+                          v-model="filterCheckedAll[col.prop]"
+                          @change="(val: boolean) => handleCheckAllChange(val, col.prop)"
+                        >
                           全选
                         </el-checkbox>
                       </header>
                       <div class="custom-checkbox-group">
-                        <el-checkbox-group v-model="filterChecked[col.prop]"
-                          @change="handleCheckedChange($event, col.prop)" v-for="item in getColumnValues(col.prop)"
-                          :key="item" class="mt-1">
+                        <el-checkbox-group
+                          v-model="filterChecked[col.prop]"
+                          @change="handleCheckedChange($event, col.prop)"
+                          v-for="item in getColumnValues(col.prop)"
+                          :key="item"
+                          class="mt-1"
+                        >
                           <el-checkbox :label="item">{{ item }}</el-checkbox>
                         </el-checkbox-group>
                       </div>
                       <footer class="flex justify-end mt-2">
-                        <el-button type="primary" size="small" @click="handleFilterConfirm">确认</el-button>
+                        <el-button type="primary" size="small" @click="handleFilterConfirm"
+                          >确认</el-button
+                        >
                       </footer>
                     </div>
                   </el-popover>
                 </section>
                 <section v-else>
-                  <el-select v-model="value1" clearable style="width: 300px" @change="changeOptionsData(value1)">
-                    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+                  <el-select
+                    v-model="value1"
+                    clearable
+                    style="width: 300px"
+                    @change="changeOptionsData(value1)"
+                  >
+                    <el-option
+                      v-for="item in options"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    />
                   </el-select>
                 </section>
               </template>
               <template #default v-if="col.prop === 'operations'">
-                <el-button type="primary" size="small" @click="isShowModal = !isShowModal">克隆</el-button>
+                <el-button type="primary" size="small" @click="isShowModal = !isShowModal"
+                  >克隆</el-button
+                >
                 <el-tooltip placement="top" content="预设配置禁止编辑">
                   <el-button type="primary" size="small" disabled>编辑</el-button>
                 </el-tooltip>
@@ -64,10 +98,16 @@
           </template>
         </el-table>
         <div class="flex justify-end mt-10">
-          <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
-            :page-sizes="[5, 10, 20, 30, 40]" :small="true" :total="total"
-            layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
-            @current-change="handleCurrentChange" />
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[5, 10, 20, 30, 40]"
+            :small="true"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
         </div>
       </main>
     </section>
@@ -88,20 +128,31 @@
           <div class="transfer-stats mb-4 p-3 bg-gray-50 rounded">
             <div class="flex justify-between text-sm text-gray-600">
               <span>可管理列数: {{ transferData.length }}</span>
-              <span>已显示: {{ transferRightValue.length }} | 已隐藏: {{ transferData.length - transferRightValue.length
-              }}</span>
+              <span
+                >已显示: {{ transferRightValue.length }} | 已隐藏:
+                {{ transferData.length - transferRightValue.length }}</span
+              >
             </div>
           </div>
 
-          <el-transfer v-model="transferRightValue" style="text-align: left; display: inline-block" filterable
-            :titles="['隐藏的列', '显示的列']" :format="{
+          <el-transfer
+            v-model="transferRightValue"
+            style="text-align: left; display: inline-block"
+            filterable
+            :titles="['隐藏的列', '显示的列']"
+            :format="{
               noChecked: '${total}',
-              hasChecked: '${checked}/${total}',
-            }" :data="transferData" @change="handleTransferChange" :props="{
+              hasChecked: '${checked}/${total}'
+            }"
+            :data="transferData"
+            @change="handleTransferChange"
+            :props="{
               key: 'key',
               label: 'label',
               disabled: 'disabled'
-            }" class="custom-transfer">
+            }"
+            class="custom-transfer"
+          >
             <template #default="{ option }">
               <span class="transfer-item">{{ option.label }}</span>
             </template>
@@ -132,8 +183,14 @@
     </el-drawer>
   </section>
   <section>
-    <Dialog v-model="isShowModal" title="Configuration Editor" align-center style="overflow: auto;"
-      :maxHeight="screenHeight" @close="showEditDialog = false">
+    <Dialog
+      v-model="isShowModal"
+      title="Configuration Editor"
+      align-center
+      style="overflow: auto"
+      :maxHeight="screenHeight"
+      @close="showEditDialog = false"
+    >
       <section>
         <el-form ref="formRef" :model="formData[0]" label-width="150px" label-position="left">
           <div v-for="section in visibleSingleSections" :key="section.key" class="form-section">
@@ -145,19 +202,29 @@
             </el-divider>
             <el-row :gutter="20">
               <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
-                <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                  :label-position="'left'" v-for="(field, index) in section.fields">
+                <el-form-item
+                  :key="field.field"
+                  :prop="field.field"
+                  :rules="getFieldRules(field)"
+                  :label-position="'left'"
+                  v-for="(field, index) in section.fields"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" />
+                  <FormFieldRenderer
+                    :field="field"
+                    :value="formData[0][field.field]"
+                    @update="(value) => handleFieldUpdate(field.field, value)"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -174,37 +241,57 @@
             <el-row :gutter="20">
               <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
                 <section v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)">
-                  <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                    :label-position="'left'">
+                  <el-form-item
+                    :key="field.field"
+                    :prop="field.field"
+                    :rules="getFieldRules(field)"
+                    :label-position="'left'"
+                  >
                     <template #label>
                       <div class="flex items-center">
                         <el-tooltip effect="dark" :content="field.label" placement="top">
-                          <Icon :icon="'vi-ant-design:question-circle-filled'"
-                            style="margin-right: 8px; flex-shrink: 0;" />
+                          <Icon
+                            :icon="'vi-ant-design:question-circle-filled'"
+                            style="margin-right: 8px; flex-shrink: 0"
+                          />
                         </el-tooltip>
                         <span class="label-text">{{ field.label }}</span>
                       </div>
                     </template>
-                    <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                      @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                    <FormFieldRenderer
+                      :field="field"
+                      :value="formData[0][field.field]"
+                      @update="(value) => handleFieldUpdate(field.field, value)"
+                      style="width: 300px"
+                    />
                   </el-form-item>
                 </section>
               </el-col>
               <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
                 <section v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)">
-                  <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                    :label-position="'left'">
+                  <el-form-item
+                    :key="field.field"
+                    :prop="field.field"
+                    :rules="getFieldRules(field)"
+                    :label-position="'left'"
+                  >
                     <template #label>
                       <div class="flex items-center">
                         <el-tooltip effect="dark" :content="field.label" placement="top">
-                          <Icon :icon="'vi-ant-design:question-circle-filled'"
-                            style="margin-right: 8px; flex-shrink: 0;" />
+                          <Icon
+                            :icon="'vi-ant-design:question-circle-filled'"
+                            style="margin-right: 8px; flex-shrink: 0"
+                          />
                         </el-tooltip>
                         <span class="label-text">{{ field.label }}</span>
                       </div>
                     </template>
-                    <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                      @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                    <FormFieldRenderer
+                      :field="field"
+                      :value="formData[0][field.field]"
+                      @update="(value) => handleFieldUpdate(field.field, value)"
+                      style="width: 300px"
+                    />
                   </el-form-item>
                 </section>
               </el-col>
@@ -213,21 +300,45 @@
         </el-form>
       </section>
       <template #footer>
-        <el-button type="primary" @click="() => { console.log('submit') }">Save</el-button>
+        <el-button
+          type="primary"
+          @click="
+            () => {
+              console.log('submit')
+            }
+          "
+          >Save</el-button
+        >
       </template>
     </Dialog>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, unref, reactive, defineComponent, h, watch, onMounted, onBeforeUnmount } from 'vue'
+import {
+  ref,
+  computed,
+  unref,
+  reactive,
+  defineComponent,
+  h,
+  watch,
+  onMounted,
+  onBeforeUnmount
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElTransfer, ElEmpty } from 'element-plus'
 import type { DrawerProps } from 'element-plus'
-import { ElSelect, ElInputNumber, ElSwitch, ElOption, ElInput, ElRadio, ElRadioGroup } from 'element-plus'
-import type {
-  TransferKey,
+import {
+  ElSelect,
+  ElInputNumber,
+  ElSwitch,
+  ElOption,
+  ElInput,
+  ElRadio,
+  ElRadioGroup
 } from 'element-plus'
+import type { TransferKey } from 'element-plus'
 import { Dialog } from '@/components/Dialog'
 
 const { t } = useI18n()
@@ -307,28 +418,6 @@ const handleCheckedChange = (value: string[], prop: string) => {
   const allValues = getColumnValues(prop)
   filterCheckedAll.value[prop] = value.length === allValues.length
 }
-
-// 处理筛选输入
-const handleFilter = (prop: string) => {
-  // 这里可以实现筛选逻辑
-  if (!filterValues.value[prop]) {
-    filterChecked.value[prop] = []
-    filterCheckedAll.value[prop] = false
-    return
-  }
-
-  // 获取该列所有可能的值
-  const allValues = getColumnValues(prop)
-
-  // 根据输入值过滤匹配的选项
-  const matchedValues = allValues.filter((value) =>
-    String(value).toLowerCase().includes(filterValues.value[prop].toLowerCase())
-  )
-
-  // 更新复选框选中状态
-  filterChecked.value[prop] = matchedValues
-  filterCheckedAll.value[prop] = matchedValues.length === allValues.length
-}
 // 修改 filterTableData 的计算属性
 const filterTableData = computed(() => {
   let filtered = tableData.filter((data) => {
@@ -354,16 +443,19 @@ const filterTableData = computed(() => {
   return filtered.slice(startIndex, startIndex + pageSize.value)
 })
 
-const options = [... new Set(tableData.map(item => item['date']))].map(item => ({ value: item, label: item }))
+const options = [...new Set(tableData.map((item) => item['date']))].map((item) => ({
+  value: item,
+  label: item
+}))
 const changeOptionsData = (value: string) => {
   if (!value) {
     filterChecked.value = {
-      'date': [... new Set(tableData.map(item => item['date']))]
+      date: [...new Set(tableData.map((item) => item['date']))]
     }
   } else {
     let arrValue = [value]
     filterChecked.value = {
-      'date': arrValue
+      date: arrValue
     }
   }
 }
@@ -407,10 +499,6 @@ const onChange = (uncheckeditem: {
   })
 }
 
-const showUncheckedTableHeaderlist = computed(() => {
-  return columnList.value.filter((item) => !item.isShow)
-})
-
 const popoverRef = ref()
 // 添加处理筛选确认的方法
 const handleFilterConfirm = () => {
@@ -421,7 +509,6 @@ const handleFilterConfirm = () => {
 }
 const value1 = ref('Select Date')
 
-
 interface DataItem {
   key: string
   label: string
@@ -429,13 +516,15 @@ interface DataItem {
 }
 const generateData = (): DataItem[] => {
   const data: DataItem[] = []
-  columnList.value.filter(item => !item.isShow).forEach((filed, idx) => {
-    data.push({
-      key: filed.label,
-      label: filed.label,
-      disabled: filed.isShow,
+  columnList.value
+    .filter((item) => !item.isShow)
+    .forEach((filed, idx) => {
+      data.push({
+        key: filed.label,
+        label: filed.label,
+        disabled: filed.isShow
+      })
     })
-  })
 
   return data
 }
@@ -443,8 +532,8 @@ const generateData = (): DataItem[] => {
 // Transfer相关数据和方法
 const transferData = computed(() => {
   return columnList.value
-    .filter(col => col.prop !== 'operations')
-    .map(col => ({
+    .filter((col) => col.prop !== 'operations')
+    .map((col) => ({
       key: col.prop,
       label: col.label,
       disabled: false
@@ -452,16 +541,14 @@ const transferData = computed(() => {
 })
 
 const transferRightValue = ref<string[]>(
-  columnList.value
-    .filter(col => col.isShow && col.prop !== 'operations')
-    .map(col => col.prop)
+  columnList.value.filter((col) => col.isShow && col.prop !== 'operations').map((col) => col.prop)
 )
 
 const handleTransferChange = (targetKeys: string[]) => {
   transferRightValue.value = targetKeys
 
   // 更新列的显示状态
-  columnList.value.forEach(col => {
+  columnList.value.forEach((col) => {
     if (col.prop !== 'operations') {
       col.isShow = targetKeys.includes(col.prop)
     }
@@ -471,8 +558,8 @@ const handleTransferChange = (targetKeys: string[]) => {
 // 快捷操作方法
 const showAllColumns = () => {
   const allProps = columnList.value
-    .filter(col => col.prop !== 'operations')
-    .map(col => col.prop)
+    .filter((col) => col.prop !== 'operations')
+    .map((col) => col.prop)
   handleTransferChange(allProps)
 }
 
@@ -487,17 +574,21 @@ const resetColumns = () => {
 }
 
 // 监听列配置变化，同步更新transferRightValue
-watch(columnList, (newColumns) => {
-  transferRightValue.value = newColumns
-    .filter(col => col.isShow && col.prop !== 'operations')
-    .map(col => col.prop)
-}, { deep: true })
+watch(
+  columnList,
+  (newColumns) => {
+    transferRightValue.value = newColumns
+      .filter((col) => col.isShow && col.prop !== 'operations')
+      .map((col) => col.prop)
+  },
+  { deep: true }
+)
 
 // 初始化transfer右侧值
 const initTransferRightValue = () => {
   transferRightValue.value = columnList.value
-    .filter(col => col.isShow && col.prop !== 'operations')
-    .map(col => col.prop)
+    .filter((col) => col.isShow && col.prop !== 'operations')
+    .map((col) => col.prop)
 }
 
 // 组件挂载时初始化
@@ -507,11 +598,11 @@ initTransferRightValue()
 const data = ref(generateData())
 const rightValue = ref([])
 const handleChange = (
-  value: TransferKey[],
+  value: TransferKey[]
   // direction: TransferDirection,
   // movedKeys: TransferKey[]
 ) => {
-  columnList.value.filter(item => {
+  columnList.value.filter((item) => {
     if (value.includes(item.label)) {
       item.isShow = !item.isShow
     }
@@ -519,7 +610,7 @@ const handleChange = (
 }
 
 const handleRightChange = (value: TransferKey[]) => {
-  columnList.value.filter(item => {
+  columnList.value.filter((item) => {
     if (value.includes(item.label)) {
       item.isShow = !item.isShow
     }
@@ -549,19 +640,23 @@ const formData = reactive([
     embeddingOutputShare: false,
     embeddingSize: 0,
     hybridMoeBlocksNum: 0,
-    mtpModuleNum: 0,
+    mtpModuleNum: 0
   }
 ])
 const visibleSingleSections = computed(() => {
-  return currentStepSections.value.filter((item) => item.isSingleCol).filter(section => {
-    return section.visible ? section.visible() : true
-  })
+  return currentStepSections.value
+    .filter((item) => item.isSingleCol)
+    .filter((section) => {
+      return section.visible ? section.visible() : true
+    })
 })
 
 const visibleMultiSections = computed(() => {
-  return currentStepSections.value.filter((item) => !item.isSingleCol).filter(section => {
-    return section.visible ? section.visible() : true
-  })
+  return currentStepSections.value
+    .filter((item) => !item.isSingleCol)
+    .filter((section) => {
+      return section.visible ? section.visible() : true
+    })
 })
 
 const allFormSections: any[] = [
@@ -575,7 +670,7 @@ const allFormSections: any[] = [
         field: 'newName',
         label: 'New Name',
         component: 'Input',
-        componentProps: { placeholder: 'Select' },
+        componentProps: { placeholder: 'Select' }
       },
       {
         field: 'useType',
@@ -586,16 +681,14 @@ const allFormSections: any[] = [
           { label: 'llama_3_70b', value: 'llama_3_70b' },
           { label: 'llama_3_8b', value: 'llama_3_8b' },
           { label: 'gpt_4', value: 'gpt_4' }
-        ],
+        ]
       },
       {
         field: 'modelType',
         label: 'Model Type',
         component: 'Select',
         componentProps: { placeholder: 'Select' },
-        options: [
-          { label: 'gpt_1', value: 'gpt_1' }
-        ],
+        options: [{ label: 'gpt_1', value: 'gpt_1' }]
       }
     ]
   },
@@ -654,7 +747,7 @@ const allFormSections: any[] = [
         label: 'Vector(float16 TFLOPS)',
         component: 'InputNumber',
         componentProps: { controls: false, placeholder: '0' }
-      },
+      }
     ]
   },
   {
@@ -745,7 +838,7 @@ const handleFieldUpdate = (field: string, value: any) => {
   // 创建新的 modelValue
   const newModelValue = { ...formData }
 
-  console.log(newModelValue, 'newModelValue');
+  console.log(newModelValue, 'newModelValue')
 }
 
 // 字段验证规则
@@ -813,20 +906,25 @@ const FormFieldRenderer = defineComponent({
       const { field, value } = props
       switch (field.component) {
         case 'Select':
-          return h(ElSelect, {
-            modelValue: value || '',
-            'onUpdate:modelValue': handleUpdate,
-            clearable: true,
-            ...field.componentProps
-          }, {
-            default: () => field.options?.map(option =>
-              h(ElOption, {
-                key: option.value,
-                label: option.label,
-                value: option.value
-              })
-            )
-          })
+          return h(
+            ElSelect,
+            {
+              modelValue: value || '',
+              'onUpdate:modelValue': handleUpdate,
+              clearable: true,
+              ...field.componentProps
+            },
+            {
+              default: () =>
+                field.options?.map((option) =>
+                  h(ElOption, {
+                    key: option.value,
+                    label: option.label,
+                    value: option.value
+                  })
+                )
+            }
+          )
 
         case 'InputNumber':
           return h(ElInputNumber, {
@@ -846,24 +944,29 @@ const FormFieldRenderer = defineComponent({
           return h(ElInput, {
             modelValue: value || '',
             'onUpdate:modelValue': handleUpdate,
-            ...field.componentProps,
+            ...field.componentProps
           })
 
         case 'Radio':
-          return h(ElRadioGroup, {
-            modelValue: value || '',
-            'onUpdate:modelValue': handleUpdate,
-            clearable: true,
-            ...field.componentProps
-          }, {
-            default: () => field.options?.map(option =>
-              h(ElRadio, {
-                key: option.value,
-                label: option.label,
-                value: option.value
-              })
-            )
-          })
+          return h(
+            ElRadioGroup,
+            {
+              modelValue: value || '',
+              'onUpdate:modelValue': handleUpdate,
+              clearable: true,
+              ...field.componentProps
+            },
+            {
+              default: () =>
+                field.options?.map((option) =>
+                  h(ElRadio, {
+                    key: option.value,
+                    label: option.label,
+                    value: option.value
+                  })
+                )
+            }
+          )
         default:
           return null
       }
@@ -872,22 +975,22 @@ const FormFieldRenderer = defineComponent({
 })
 
 // 初始化屏幕高度
-const screenHeight = ref(window.innerHeight - 200);
+const screenHeight = ref(window.innerHeight - 200)
 
 // 处理窗口大小变化的函数
 const handleResize = () => {
-  screenHeight.value = window.innerHeight - 200;
-};
+  screenHeight.value = window.innerHeight - 200
+}
 
 // 组件挂载后添加事件监听
 onMounted(() => {
-  window.addEventListener('resize', handleResize);
-});
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载前移除事件监听，防止内存泄漏
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="less" scoped>

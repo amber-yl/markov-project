@@ -20,35 +20,49 @@ interface TableRow {
   col4compType: 'select' | 'input_number'
 }
 
-export interface Task {
-  id: number
-  name: string
-  model: string
-  hardware: string
-  deployment: string
-  status: 'pending' | 'running' | 'completed' | 'failed'
-  createTime: string
-  updateTime: string
-  creator: string
+enum Type {
+  npu = 'npu',
+  gpu = 'gpu'
 }
-
-export interface FormData {
-  name: string
-  model: string
-  hardware: string
-  deployment: string
-  // 其他表单字段
-}
-
 // 系统配置相关类型
 export interface SystemConfig {
-  id: number
-  name: string
-  type: string
-  value: any
-  description?: string
-  createTime: string
-  updateTime: string
+  id: string
+  timestamp: number
+  created_at: string
+  updated_at: string
+  name: string // 硬件名称
+  type: Type // 硬件类型
+  matrix: {
+    float16: {
+      tflops: number
+      calibration_coefficient: number
+    }
+  }
+  vector: {
+    float16: {
+      tflops: number
+      calibration_coefficient: number
+    }
+  }
+  men1: {
+    GiB: number
+    GiBps: number
+    cube_calibration_coefficient: number
+    vector_calibration_coefficient: number
+  }
+  men2: {
+    GiB: number
+    GiBps: number
+    cube_calibration_coefficient?: number
+    vector_calibration_coefficient?: number
+  }
+  processing_mode: string
+  netWorks: {
+    bandWidth: number
+    efficiency: number
+    size: number
+    latency: number
+  }[]
 }
 
 export interface ConfigFormData {

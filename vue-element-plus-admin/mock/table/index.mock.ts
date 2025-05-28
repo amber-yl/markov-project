@@ -59,7 +59,7 @@ for (let i = 0; i < count; i++) {
       timestamp: +Mock.Random.date('T'),
       created_at: '@datetime',
       updated_at: '@datetime',
-      name: '@cname',
+      name: '@name',
       type: Mock.Random.pick([Type.npu, Type.gpu]),
       matrix: {
         float16: {
@@ -180,6 +180,44 @@ export default [
         return {
           code: SUCCESS_CODE,
           message: '删除成功'
+        }
+      }
+    }
+  },
+  // 编辑接口
+  {
+    url: '/markov_sim/api/v1/system_config/update',
+    method: 'post',
+    response: ({ body }) => {
+      const {
+        id,
+        name,
+        type,
+        created_at,
+        updated_at,
+        matrix,
+        vector,
+        men1,
+        men2,
+        processing_mode,
+        netWorks
+      } = body
+      for (const example of List) {
+        if (example.id === id) {
+          example.name = name
+          example.type = type
+          example.created_at = created_at
+          example.updated_at = updated_at
+          example.matrix = matrix
+          example.vector = vector
+          example.men1 = men1
+          example.men2 = men2
+          example.processing_mode = processing_mode
+          example.netWorks = netWorks
+          return {
+            code: SUCCESS_CODE,
+            message: '编辑成功'
+          }
         }
       }
     }
