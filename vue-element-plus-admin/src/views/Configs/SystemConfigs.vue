@@ -132,21 +132,50 @@
     </el-drawer>
   </section>
   <section>
-    <el-dialog v-model="isShowModal" title="Configuration Editor" align-center style="overflow: auto;">
-      <el-card>
-        <div class="!h-[calc(100vh-var(--el-dialog-height))] overflow-auto custom-hidden-scroller">
-          <el-form ref="formRef" :model="formData[0]" label-width="150px" label-position="left">
-            <div v-for="section in visibleSingleSections" :key="section.key" class="form-section">
-              <el-divider content-position="left" class="section-title" :color="'red'">
-                <div class="flex items-center text-red-400 gap-2">
-                  <span>{{ section.title }}</span>
-                  <Icon v-if="section.required" :icon="'vi-ant-design:star-filled'" />
-                </div>
-              </el-divider>
-              <el-row :gutter="20">
-                <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+    <Dialog v-model="isShowModal" title="Configuration Editor" align-center style="overflow: auto;"
+      :maxHeight="screenHeight" @close="showEditDialog = false">
+      <section>
+        <el-form ref="formRef" :model="formData[0]" label-width="150px" label-position="left">
+          <div v-for="section in visibleSingleSections" :key="section.key" class="form-section">
+            <el-divider content-position="left" class="section-title" :color="'red'">
+              <div class="flex items-center text-red-400 gap-2">
+                <span>{{ section.title }}</span>
+                <Icon v-if="section.required" :icon="'vi-ant-design:star-filled'" />
+              </div>
+            </el-divider>
+            <el-row :gutter="20">
+              <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+                <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
+                  :label-position="'left'" v-for="(field, index) in section.fields">
+                  <template #label>
+                    <div class="flex items-center">
+                      <el-tooltip effect="dark" :content="field.label" placement="top">
+                        <Icon :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0;" />
+                      </el-tooltip>
+                      <span class="label-text">{{ field.label }}</span>
+                    </div>
+                  </template>
+                  <FormFieldRenderer :field="field" :value="formData[0][field.field]"
+                    @update="(value) => handleFieldUpdate(field.field, value)" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
+          <!-- 渲染表单区块 -->
+          <div v-for="section in visibleMultiSections" :key="section.key" class="form-section">
+            <el-divider content-position="left" class="section-title" :color="'red'">
+              <div class="flex items-center text-red-400 gap-2">
+                <span>{{ section.title }}</span>
+                <Icon v-if="section.required" :icon="'vi-ant-design:star-filled'" />
+              </div>
+            </el-divider>
+            <!-- 两列布局 -->
+            <el-row :gutter="20">
+              <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                <section v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)">
                   <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                    :label-position="'left'" v-for="(field, index) in section.fields">
+                    :label-position="'left'">
                     <template #label>
                       <div class="flex items-center">
                         <el-tooltip effect="dark" :content="field.label" placement="top">
@@ -157,71 +186,41 @@
                       </div>
                     </template>
                     <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                      @update="(value) => handleFieldUpdate(field.field, value)" />
+                      @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
                   </el-form-item>
-                </el-col>
-              </el-row>
-            </div>
-            <!-- 渲染表单区块 -->
-            <div v-for="section in visibleMultiSections" :key="section.key" class="form-section">
-              <el-divider content-position="left" class="section-title" :color="'red'">
-                <div class="flex items-center text-red-400 gap-2">
-                  <span>{{ section.title }}</span>
-                  <Icon v-if="section.required" :icon="'vi-ant-design:star-filled'" />
-                </div>
-              </el-divider>
-              <!-- 两列布局 -->
-              <el-row :gutter="20">
-                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-                  <section v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)">
-                    <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                      :label-position="'left'">
-                      <template #label>
-                        <div class="flex items-center">
-                          <el-tooltip effect="dark" :content="field.label" placement="top">
-                            <Icon :icon="'vi-ant-design:question-circle-filled'"
-                              style="margin-right: 8px; flex-shrink: 0;" />
-                          </el-tooltip>
-                          <span class="label-text">{{ field.label }}</span>
-                        </div>
-                      </template>
-                      <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                        @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
-                    </el-form-item>
-                  </section>
-                </el-col>
-                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-                  <section v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)">
-                    <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                      :label-position="'left'">
-                      <template #label>
-                        <div class="flex items-center">
-                          <el-tooltip effect="dark" :content="field.label" placement="top">
-                            <Icon :icon="'vi-ant-design:question-circle-filled'"
-                              style="margin-right: 8px; flex-shrink: 0;" />
-                          </el-tooltip>
-                          <span class="label-text">{{ field.label }}</span>
-                        </div>
-                      </template>
-                      <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                        @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
-                    </el-form-item>
-                  </section>
-                </el-col>
-              </el-row>
-            </div>
-          </el-form>
-        </div>
-        <footer class="h-10 flex justify-start mt-4">
-          <el-button type="primary" @click="() => { console.log('submit') }">Save</el-button>
-        </footer>
-      </el-card>
-    </el-dialog>
+                </section>
+              </el-col>
+              <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                <section v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)">
+                  <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
+                    :label-position="'left'">
+                    <template #label>
+                      <div class="flex items-center">
+                        <el-tooltip effect="dark" :content="field.label" placement="top">
+                          <Icon :icon="'vi-ant-design:question-circle-filled'"
+                            style="margin-right: 8px; flex-shrink: 0;" />
+                        </el-tooltip>
+                        <span class="label-text">{{ field.label }}</span>
+                      </div>
+                    </template>
+                    <FormFieldRenderer :field="field" :value="formData[0][field.field]"
+                      @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                  </el-form-item>
+                </section>
+              </el-col>
+            </el-row>
+          </div>
+        </el-form>
+      </section>
+      <template #footer>
+        <el-button type="primary" @click="() => { console.log('submit') }">Save</el-button>
+      </template>
+    </Dialog>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, unref, reactive, defineComponent, h, watch } from 'vue'
+import { ref, computed, unref, reactive, defineComponent, h, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElTransfer, ElEmpty } from 'element-plus'
 import type { DrawerProps } from 'element-plus'
@@ -229,9 +228,10 @@ import { ElSelect, ElInputNumber, ElSwitch, ElOption, ElInput, ElRadio, ElRadioG
 import type {
   TransferKey,
 } from 'element-plus'
+import { Dialog } from '@/components/Dialog'
 
 const { t } = useI18n()
-
+const showEditDialog = ref(false)
 
 const tableData = [
   {
@@ -870,6 +870,24 @@ const FormFieldRenderer = defineComponent({
     }
   }
 })
+
+// 初始化屏幕高度
+const screenHeight = ref(window.innerHeight - 200);
+
+// 处理窗口大小变化的函数
+const handleResize = () => {
+  screenHeight.value = window.innerHeight - 200;
+};
+
+// 组件挂载后添加事件监听
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
+
+// 组件卸载前移除事件监听，防止内存泄漏
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <style lang="less" scoped>
