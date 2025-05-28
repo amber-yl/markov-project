@@ -1,25 +1,3 @@
-interface User {
-  date: string
-  name: string
-  address: string
-}
-
-interface Card {
-  id: number
-  name: string
-  status: 'running' | 'completed' | 'failed'
-  createTime: string
-  description: string
-  items: string[]
-}
-
-interface TableRow {
-  col1name: string
-  col2compType: 'select' | 'input_number'
-  col3name: string
-  col4compType: 'select' | 'input_number'
-}
-
 enum Type {
   npu = 'npu',
   gpu = 'gpu'
@@ -27,7 +5,6 @@ enum Type {
 // 系统配置相关类型
 export interface SystemConfig {
   id: string
-  timestamp: number
   created_at: string
   updated_at: string
   name: string // 硬件名称
@@ -66,24 +43,41 @@ export interface SystemConfig {
 }
 
 export interface ConfigFormData {
-  newName: string
-  useType: string
-  modelType: string
-  defaultConfigurations: string
-  type: string
-  processingMode: string
-  Matrix16: number
-  Vector16: number
-  memory1GIB: number
-  memory1GBps: number
-  memory2GIB: number
-  memory2GBps: number
-  bandWidth1: number
-  bandWidth2: number
-  'size1(GB)': number
-  'size2(GB)': number
-  latency1: number
-  latency2: number
+  created_at: string
+  updated_at: string
+  name: string // 硬件名称
+  type: Type // 硬件类型
+  matrix: {
+    float16: {
+      tflops: number
+      calibration_coefficient: number
+    }
+  }
+  vector: {
+    float16: {
+      tflops: number
+      calibration_coefficient: number
+    }
+  }
+  men1: {
+    GiB: number
+    GiBps: number
+    cube_calibration_coefficient: number
+    vector_calibration_coefficient: number
+  }
+  men2: {
+    GiB: number
+    GiBps: number
+    cube_calibration_coefficient?: number
+    vector_calibration_coefficient?: number
+  }
+  processing_mode: string
+  netWorks: {
+    bandWidth: number
+    efficiency: number
+    size: number
+    latency: number
+  }[]
 }
 
 // 表格过滤相关类型
@@ -97,6 +91,7 @@ export interface TableColumn {
   isShow: boolean
   fixed?: string
   minWidth?: string
+  width?: string
 }
 
 // 模型对比相关类型

@@ -10,12 +10,12 @@ import {
 import type { SystemConfig, TableColumn, TableFilter, PaginationConfig } from '@/store/types'
 
 interface SystemConfigState {
-  configs: any[]
+  configs: SystemConfig[]
   loading: boolean
   pagination: PaginationConfig
   filters: TableFilter
   columns: TableColumn[]
-  selectedConfigs: number[]
+  selectedConfigs: string[]
 }
 
 export const useSystemConfigStore = defineStore('systemConfig', {
@@ -30,14 +30,29 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
     filters: {},
     columns: [
-      { label: 'Operations', prop: 'operations', fixed: 'right', minWidth: '100', isShow: true }
+      { label: 'ID', prop: 'id', width: '120', isShow: true },
+      { label: '硬件名称', prop: 'name', minWidth: '150', isShow: true },
+      { label: '硬件类型', prop: 'type', width: '120', isShow: true },
+      { label: '创建时间', prop: 'created_at', width: '180', isShow: true },
+      { label: '更新时间', prop: 'updated_at', width: '180', isShow: false },
+      { label: '处理模式', prop: 'processing_mode', width: '120', isShow: false },
+      { label: '矩阵算力', prop: 'matrix.float16.tflops', width: '120', isShow: false },
+      { label: '向量算力', prop: 'vector.float16.tflops', width: '120', isShow: false },
+      { label: '内存1容量', prop: 'men1.GiB', width: '120', isShow: false },
+      { label: '内存1带宽', prop: 'men1.GiBps', width: '120', isShow: false },
+      { label: '内存2容量', prop: 'men2.GiB', width: '120', isShow: false },
+      { label: '操作', prop: 'operations', fixed: 'right', width: '200', isShow: true }
     ],
     selectedConfigs: []
   }),
 
   getters: {
     // 获取可见的列
-    visibleColumns: (state) => state.columns.filter((col) => col.isShow),
+    visibleColumns: (state) => state.columns.filter((col) => {
+      console.log(col, "| col");
+
+      return col.isShow
+    }),
 
     // 获取隐藏的列
     hiddenColumns: (state) => state.columns.filter((col) => !col.isShow),
@@ -68,23 +83,21 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     // 获取分页后的配置列表
     paginatedConfigs: (state) => {
       let filtered = [...state.configs]
-
       // 应用过滤器
-      Object.keys(state.filters).forEach((prop) => {
-        const filterValue = state.filters[prop]
-        if (Array.isArray(filterValue) && filterValue.length > 0) {
-          filtered = filtered.filter((config) =>
-            filterValue.includes(config[prop as keyof SystemConfig] as string)
-          )
-        } else if (typeof filterValue === 'string' && filterValue) {
-          filtered = filtered.filter((config) =>
-            String(config[prop as keyof SystemConfig])
-              .toLowerCase()
-              .includes(filterValue.toLowerCase())
-          )
-        }
-      })
-
+      // Object.keys(state.filters).forEach((prop) => {
+      //   const filterValue = state.filters[prop]
+      //   if (Array.isArray(filterValue) && filterValue.length > 0) {
+      //     filtered = filtered.filter((config) =>
+      //       filterValue.includes(config[prop as keyof SystemConfig] as string)
+      //     )
+      //   } else if (typeof filterValue === 'string' && filterValue) {
+      //     filtered = filtered.filter((config) =>
+      //       String(config[prop as keyof SystemConfig])
+      //         .toLowerCase()
+      //         .includes(filterValue.toLowerCase())
+      //     )
+      //   }
+      // })
       const startIndex = (state.pagination.currentPage - 1) * state.pagination.pageSize
       const endIndex = startIndex + state.pagination.pageSize
       return filtered.slice(startIndex, endIndex)
@@ -102,11 +115,14 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     async fetchConfigs() {
       this.loading = true
       try {
-        // 模拟数据，实际应该调用API
         const { data } = await markov_sim_get_sys_list()
-        const { list, total } = data
-        this.configs = list
-        this.pagination.total = total
+        const { list } = data
+        // 确保所有配置都有id字段
+        this.configs = list.map((item: any) => ({
+          ...item,
+          id: item.id || String(Date.now() + Math.random())
+        }))
+        this.pagination.total = this.configs.length
       } catch (error) {
         console.error('Failed to fetch configs:', error)
       } finally {
@@ -132,7 +148,6 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     async deleteConfig(id: string) {
       this.loading = true
       try {
-        // await configApi.deleteConfig(id)
         await markov_sim_post_sys_delete({ ids: id })
       } catch (error) {
         console.error('Failed to delete config:', error)
@@ -157,7 +172,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
 
     // 更新配置
-    async updateConfig(id: number, data: SystemConfig) {
+    async updateConfig(id: string, data: SystemConfig) {
       this.loading = true
       try {
         // 通过id查找配置
@@ -179,17 +194,17 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
 
     // 克隆配置实现
-    async cloneConfig(id: number, newName: string) {
+    async cloneConfig(id: string, newName: string) {
       this.loading = true
       try {
         const originalConfig = this.configs.find((config) => config.id === id)
         if (originalConfig) {
           const clonedConfig: SystemConfig = {
             ...originalConfig,
-            id: Date.now(),
+            id: String(Date.now()),
             name: newName,
-            createTime: new Date().toISOString(),
-            updateTime: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }
           this.configs.unshift(clonedConfig)
           this.pagination.total++
@@ -269,7 +284,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
 
     // 设置选中的配置
-    setSelectedConfigs(ids: number[]) {
+    setSelectedConfigs(ids: string[]) {
       this.selectedConfigs = ids
     },
 

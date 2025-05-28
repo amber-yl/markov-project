@@ -1,120 +1,134 @@
 <template>
   <el-card class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]">
-    <header class="flex justify-between items-center mb-4">
-      <section class="flex gap-2">
-        <el-button type="primary" @click="handleCreate">
-          <template #icon>
-            <Icon :icon="'vi-ep:plus'" />
-          </template>
-          创建新配置
-        </el-button>
-        <el-button type="danger" :disabled="selectedConfigs.length === 0" @click="handleBatchDelete">
-          <template #icon>
-            <Icon :icon="'vi-ep:delete'" />
-          </template>
-          批量删除 ({{ selectedConfigs.length }})
-        </el-button>
-      </section>
-      <section class="flex gap-2 items-center">
-        <el-input v-model="searchKeyword" placeholder="搜索配置名称..." style="width: 200px" clearable @input="handleSearch">
-          <template #prefix>
-            <Icon :icon="'vi-ep:search'" />
-          </template>
-        </el-input>
-        <el-button @click="toggleColumnManager">
-          <template #icon>
-            <Icon :icon="'vi-ep:grid'" />
-          </template>
-          列管理
-        </el-button>
-      </section>
-    </header>
-    <main>
-      <el-table v-loading="loading" :data="paginatedConfigs" stripe border style="width: 100%"
-        @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" />
-        <!-- 动态列 -->
-        <template v-for="col in visibleColumns" :key="col.prop">
-          <el-table-column v-if="col.isShow && col.prop !== 'operations'" :prop="col.prop" :label="col.label"
-            :width="col.width" :min-width="col.minWidth" :fixed="col.fixed" align="center" show-overflow-tooltip>
-            <template #header>
-              <div class="flex items-center justify-center gap-1">
-                <span>{{ col.label }}</span>
-                <el-popover placement="bottom" :width="250" trigger="click" popper-class="filter-popover">
-                  <template #reference>
-                    <Icon :icon="'vi-ant-design:filter-outlined'"
-                      class="cursor-pointer text-blue-500 hover:text-blue-700" @click.stop />
-                  </template>
-                  <div class="filter-content">
-                    <header class="mb-2">
-                      <el-checkbox :model-value="isAllSelected(col.prop)" :indeterminate="isIndeterminate(col.prop)"
-                        @change="(val: boolean) => handleSelectAll(col.prop, val)">
-                        全选
-                      </el-checkbox>
-                    </header>
-                    <div class="max-h-48 overflow-y-auto">
-                      <el-checkbox-group :model-value="getSelectedFilters(col.prop)"
-                        @change="(values: string[]) => handleFilterChange(col.prop, values)">
-                        <div v-for="item in getColumnValues(col.prop)" :key="item" class="mb-1">
-                          <el-checkbox :label="item" :value="item">
-                            {{ item }}
-                          </el-checkbox>
-                        </div>
-                      </el-checkbox-group>
+    <section class="p-6">
+      <!-- 顶部工具栏 -->
+      <header class="flex justify-between items-center mb-4">
+        <section class="flex gap-2">
+          <el-button type="primary" @click="handleCreate">
+            <template #icon>
+              <Icon :icon="'vi-ep:plus'" />
+            </template>
+            创建新配置
+          </el-button>
+          <el-button type="danger" :disabled="selectedConfigs.length === 0" @click="handleBatchDelete">
+            <template #icon>
+              <Icon :icon="'vi-ep:delete'" />
+            </template>
+            批量删除 ({{ selectedConfigs.length }})
+          </el-button>
+        </section>
+
+        <section class="flex gap-2 items-center">
+          <!-- 搜索框 -->
+          <el-input v-model="searchKeyword" placeholder="搜索配置名称..." style="width: 200px" clearable
+            @input="handleSearch">
+            <template #prefix>
+              <Icon :icon="'vi-ep:search'" />
+            </template>
+          </el-input>
+
+          <!-- 列管理 -->
+          <el-button @click="toggleColumnManager">
+            <template #icon>
+              <Icon :icon="'vi-ep:grid'" />
+            </template>
+            列管理
+          </el-button>
+        </section>
+      </header>
+
+      <!-- 表格 -->
+      <main>
+        <el-table v-loading="loading" :data="paginatedConfigs" stripe border style="width: 100%"
+          @selection-change="handleSelectionChange">
+          <!-- 选择列 -->
+          <el-table-column type="selection" width="55" />
+
+          <!-- 动态列 -->
+          <template v-for="col in visibleColumns" :key="col.prop">
+            <el-table-column v-if="col.isShow && col.prop !== 'operations'" :prop="col.prop" :label="col.label"
+              :width="col.width" :min-width="col.minWidth" :fixed="col.fixed" align="center" show-overflow-tooltip>
+              <template #header>
+                <div class="flex items-center justify-center gap-1">
+                  <span>{{ col.label }}</span>
+                  <el-popover placement="bottom" :width="250" trigger="click" popper-class="filter-popover">
+                    <template #reference>
+                      <Icon :icon="'vi-ant-design:filter-outlined'"
+                        class="cursor-pointer text-blue-500 hover:text-blue-700" @click.stop />
+                    </template>
+                    <div class="filter-content">
+                      <header class="mb-2">
+                        <el-checkbox :model-value="isAllSelected(col.prop)" :indeterminate="isIndeterminate(col.prop)"
+                          @change="(val: boolean) => handleSelectAll(col.prop, val)">
+                          全选
+                        </el-checkbox>
+                      </header>
+                      <div class="max-h-48 overflow-y-auto">
+                        <el-checkbox-group :model-value="getSelectedFilters(col.prop)"
+                          @change="(values: string[]) => handleFilterChange(col.prop, values)">
+                          <div v-for="item in getColumnValues(col.prop)" :key="item" class="mb-1">
+                            <el-checkbox :label="item" :value="item">
+                              {{ item }}
+                            </el-checkbox>
+                          </div>
+                        </el-checkbox-group>
+                      </div>
+                      <footer class="flex justify-end mt-3 pt-2 border-t">
+                        <el-button size="small" @click="clearFilter(col.prop)">
+                          清除
+                        </el-button>
+                        <el-button type="primary" size="small" @click="applyFilter">
+                          确认
+                        </el-button>
+                      </footer>
                     </div>
-                    <footer class="flex justify-end mt-3 pt-2 border-t">
-                      <el-button size="small" @click="clearFilter(col.prop)">
-                        清除
-                      </el-button>
-                      <el-button type="primary" size="small" @click="applyFilter">
-                        确认
-                      </el-button>
-                    </footer>
-                  </div>
-                </el-popover>
+                  </el-popover>
+                </div>
+              </template>
+
+              <!-- 自定义单元格内容 -->
+              <template #default="{ row }">
+                <span v-if="col.prop.includes('.')">
+                  {{ getNestedValue(row, col.prop) }}
+                </span>
+                <span v-else>
+                  {{ row[col.prop] }}
+                </span>
+              </template>
+            </el-table-column>
+          </template>
+
+          <!-- 操作列 -->
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <div class="flex gap-1">
+                <el-button type="primary" size="small" @click="handleClone(row)">
+                  克隆
+                </el-button>
+                <el-button type="warning" size="small" @click="handleEdit(row)">
+                  编辑
+                </el-button>
+                <el-popconfirm title="确定要删除这个配置吗？" @confirm="handleDelete(row.id)">
+                  <template #reference>
+                    <el-button type="danger" size="small">
+                      删除
+                    </el-button>
+                  </template>
+                </el-popconfirm>
               </div>
             </template>
-
-            <!-- 自定义单元格内容 -->
-            <template #default="{ row }">
-              <span v-if="col.prop.includes('.')">
-                {{ getNestedValue(row, col.prop) }}
-              </span>
-              <span v-else>
-                {{ row[col.prop] }}
-              </span>
-            </template>
           </el-table-column>
-        </template>
-        <!-- 操作列 -->
-        <el-table-column label="操作" width="200" fixed="right" align="center">
-          <template #default="{ row }">
-            <div class="flex gap-1">
-              <el-button type="primary" size="small" @click="handleClone(row)">
-                克隆
-              </el-button>
-              <el-button type="warning" size="small" @click="handleEdit(row)">
-                编辑
-              </el-button>
-              <el-popconfirm title="确定要删除这个配置吗？" @confirm="handleDelete(row.id)">
-                <template #reference>
-                  <el-button type="danger" size="small">
-                    删除
-                  </el-button>
-                </template>
-              </el-popconfirm>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </main>
-    <footer>
-      <div class="flex justify-end mt-4">
-        <el-pagination v-model:current-page="pagination.currentPage" v-model:page-size="pagination.pageSize"
-          :page-sizes="pagination.pageSizes" :total="pagination.total" layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
-    </footer>
+        </el-table>
+
+        <!-- 分页器 -->
+        <div class="flex justify-end mt-4">
+          <el-pagination v-model:current-page="pagination.currentPage" v-model:page-size="pagination.pageSize"
+            :page-sizes="pagination.pageSizes" :total="pagination.total"
+            layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
+            @current-change="handleCurrentChange" />
+        </div>
+      </main>
+    </section>
   </el-card>
   <!-- 列管理抽屉 -->
   <el-drawer v-model="columnDrawerVisible" title="列管理" direction="rtl" size="45%">
@@ -130,17 +144,15 @@
         </div>
       </div>
 
-      <el-transfer v-model="transferRightValue" filterable :titles="['隐藏的列', '显示的列']" :data="transferData || []"
+      <el-transfer v-model="transferRightValue" filterable :titles="['隐藏的列', '显示的列']" :data="transferData"
         @change="handleTransferChange" :props="{
           key: 'key',
           label: 'label',
           disabled: 'disabled'
         }" class="custom-transfer">
-        <!-- <template #default="{ option }">
-          <span class="transfer-item">
-            {{ option.label }}
-          </span>
-        </template> -->
+        <template #default="{ option }">
+          <span class="transfer-item">{{ option.label }}</span>
+        </template>
       </el-transfer>
 
       <!-- 快捷操作按钮 -->
@@ -157,7 +169,7 @@
       </div>
     </div>
   </el-drawer>
-
+  <!-- 配置编辑对话框 -->
   <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose">
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
       <el-row :gutter="20">
@@ -175,6 +187,7 @@
           </el-form-item>
         </el-col>
       </el-row>
+
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="处理模式" prop="processing_mode">
@@ -187,11 +200,40 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="矩阵算力(TFLOPS)" prop="matrix.float16.tflops">
-            <el-input-number v-model="m" :min="1" :max="10000" controls-position="right" />
+            <el-input-number v-model="formData.matrix?.float16?.tflops" :min="1" :max="10000"
+              controls-position="right" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="向量算力(TFLOPS)" prop="vector.float16.tflops">
+            <el-input-number v-model="formData.vector?.float16?.tflops" :min="1" :max="1000"
+              controls-position="right" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="内存1容量(GiB)" prop="men1.GiB">
+            <el-input-number v-model="formData.men1?.GiB" :min="1" :max="1000" controls-position="right" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="内存1带宽(GiBps)" prop="men1.GiBps">
+            <el-input-number v-model="formData.men1?.GiBps" :min="1" :max="10000" controls-position="right" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="内存2容量(GiB)" prop="men2.GiB">
+            <el-input-number v-model="formData.men2?.GiB" :min="1" :max="10000" controls-position="right" />
           </el-form-item>
         </el-col>
       </el-row>
     </el-form>
+
     <template #footer>
       <el-button @click="handleDialogClose">取消</el-button>
       <el-button type="primary" :loading="submitLoading" @click="handleSubmit">
@@ -203,12 +245,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { ElMessage, ElMessageBox, ElPopconfirm } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSystemConfigStore } from '@/store/modules/systemConfigs'
 import { Dialog } from '@/components/Dialog'
 import type { SystemConfig } from '@/store/types'
-
-const m = ref(0)
 
 // 枚举导入
 enum Type {
@@ -230,6 +270,7 @@ const transferRightValue = computed({
   get: () => systemConfigStore.getRightValue(),
   set: (value) => systemConfigStore.handleTransferChange(value)
 })
+
 // 页面状态
 const columnDrawerVisible = ref(false)
 const dialogVisible = ref(false)
@@ -316,13 +357,10 @@ const handleSelectionChange = (selection: SystemConfig[]) => {
 
 // 列管理
 const toggleColumnManager = () => {
-  console.log('Transfer data:', transferData.value)
-  console.log('Right value:', transferRightValue.value)
   columnDrawerVisible.value = true
 }
 
 const handleTransferChange = (targetKeys: string[]) => {
-  console.log('Transfer change:', targetKeys)
   systemConfigStore.handleTransferChange(targetKeys)
 }
 
@@ -595,7 +633,9 @@ const handleDialogClose = () => {
 
 // 生命周期
 onMounted(async () => {
-  await systemConfigStore.fetchConfigs()
+  console.log("------");
+
+  // await systemConfigStore.fetchConfigs()
 })
 
 // 监听搜索关键词
@@ -606,7 +646,7 @@ watch(searchKeyword, (newValue, oldValue) => {
 })
 </script>
 
-<style lang="less" scoped>
+<!-- <style lang="less" scoped>
 .filter-content {
   .el-checkbox-group {
     .el-checkbox {
@@ -666,4 +706,4 @@ watch(searchKeyword, (newValue, oldValue) => {
     }
   }
 }
-</style>
+</style> -->

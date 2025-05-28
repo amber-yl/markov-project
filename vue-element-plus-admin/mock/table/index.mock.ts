@@ -12,7 +12,6 @@ enum Type {
 
 interface ListProps {
   id?: string
-  timestamp?: number
   created_at: string
   updated_at: string
   name: string // 硬件名称
@@ -56,7 +55,6 @@ for (let i = 0; i < count; i++) {
   List.push(
     Mock.mock({
       id: toAnyString(),
-      timestamp: +Mock.Random.date('T'),
       created_at: '@datetime',
       updated_at: '@datetime',
       name: '@name',
@@ -102,16 +100,16 @@ export default [
     url: '/markov_sim/api/v1/system_config/list',
     method: 'get',
     timeout,
-    response: ({ query }) => {
-      const { page = 1, limit = 10 } = query
-      const pageList = List.filter(
-        (_, index) => index < limit * page && index >= limit * (page - 1)
-      )
+    response: () => {
+      // const { page = 1, limit = 10 } = query
+      // const pageList = List.filter(
+      //   (_, index) => index < limit * page && index >= limit * (page - 1)
+      // )
       return {
         code: SUCCESS_CODE,
         data: {
           total: List.length,
-          list: pageList
+          list: List
         }
       }
     }
