@@ -10,7 +10,7 @@
         class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2">
         <header class="flex justify-between mb-2">
           <section class="custom-left-box">
-            <el-button v-if="isSelectionMode" @click="jump2Comparison" type="primary">
+            <el-button v-if="isSelectionMode" @click="jump2Comparison" type="primary" :disabled="isDisabled">
               <template #icon>
                 <Icon :icon="'vi-ep:info-filled'" />
               </template>
@@ -60,7 +60,7 @@
         </header>
         <el-skeleton v-if="viewMode === 'Grid'" :rows="5" :loading="loading" animated>
           <CardView :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
-            @detail="handleDetail" />
+            @detail="handleDetail" :isDisabled="isDisabled" />
         </el-skeleton>
         <el-skeletpn v-else :rows="5" :loading="loading" animated>
           <table-view :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
@@ -86,7 +86,7 @@ import TableView from './components/TableView.vue'
 import SimulationForm from './components/SimulationForm.vue'
 import { useRouter } from 'vue-router'
 import { usePagination } from '@/composables/usePagination'
-import { Task } from '@/store/types'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const inferenceEvalStore = useInferenceEvalStore()
@@ -102,6 +102,8 @@ const handleModelChange = (model: string) => {
 const modeName = ref('Inference')
 const centerDialogVisible = ref(false)
 const currentScope = ref('个人')
+
+const isDisabled = ref(false)
 
 const displayViewModeList = computed(() => {
   const allTasks = inferenceEvalStore.$state.allTasks
@@ -136,20 +138,30 @@ const handleSubmit = async (formData, taskName: string) => {
 
 const selectCards = ref<number[]>([])
 
-const handleSelect = (task: Task | Task[], checked?: boolean) => {
+const handleSelect = (task, checked?: boolean) => {
   if (Array.isArray(task)) {
     selectCards.value = task.map((item) => item.id)
   } else {
     if (checked) {
-      selectCards.value.push((task as Task).id)
+      selectCards.value.push((task).id)
     } else {
-      const index = selectCards.value.findIndex((id) => id === (task as Task).id)
+      const index = selectCards.value.findIndex((id) => id === task.id)
       if (index !== -1) {
         selectCards.value.splice(index, 1)
       }
     }
   }
 }
+
+watch(selectCards, (newValue) => {
+  console.log(newValue, "| newValue");
+  if (newValue.length >= 3) {
+    isDisabled.value = true
+    ElMessage.info('对比模型不能超过3条')
+  } else {
+    isDisabled.value = false
+  }
+}, { immediate: true, deep: true })
 
 const { currentList, ...pagination } = usePagination(displayViewModeList.value)
 
