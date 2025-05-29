@@ -10,6 +10,7 @@ export enum ProcessingMode {
 
 // 系统配置相关类型
 export interface SystemConfig {
+  id: string
   created_at: string
   updated_at: string
   name: string // 硬件名称

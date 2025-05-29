@@ -24,14 +24,14 @@ export const markov_sim_post_sys_create = (params: SystemConfig) => {
 
 export const markov_sim_post_sys_delete = (params: { ids: string }) => {
   return request.post({
-    url: `/markov_sim/api/v1/system_config/create`,
-    params
+    url: `/markov_sim/api/v1/system_config/delete`,
+    data: params
   })
 }
 
 export const markov_sim_post_sys_update = (params: SystemConfig) => {
   return request.post({
     url: `/markov_sim/api/v1/system_config/update`,
-    params
+    data: params
   })
 }

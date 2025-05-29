@@ -154,6 +154,7 @@ export default [
     method: 'post',
     response: ({ body }) => {
       const ids = body.ids
+      console.log(ids, "| ids");
       if (!ids) {
         return {
           code: 500,

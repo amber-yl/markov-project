@@ -40,7 +40,8 @@
             <template #header>
               <div class="flex items-center justify-center gap-1">
                 <span>{{ col.label }}</span>
-                <el-popover placement="bottom" :width="250" trigger="click" popper-class="filter-popover">
+                <el-popover v-if="!col.prop.includes('.')" placement="bottom" :width="250" trigger="click"
+                  popper-class="filter-popover">
                   <template #reference>
                     <Icon :icon="'vi-ant-design:filter-outlined'"
                       class="cursor-pointer text-blue-500 hover:text-blue-700" @click.stop />
@@ -74,8 +75,6 @@
                 </el-popover>
               </div>
             </template>
-
-            <!-- 自定义单元格内容 -->
             <template #default="{ row }">
               <span v-if="col.prop.includes('.')">
                 {{ getNestedValue(row, col.prop) }}
@@ -289,6 +288,7 @@ const selectedConfigs = ref<SystemConfig[]>([])
 const formRef = ref()
 const isEditMode = ref(false)
 const isCloneMode = ref(false)
+const currentEditId = ref<string | null>(null)
 
 const formData = ref<Partial<SystemConfig>>({
   name: '',
@@ -459,8 +459,7 @@ const handleCreate = () => {
   dialogVisible.value = true
 }
 
-const handleEdit = async (row: SystemConfig) => {
-  console.log("handleEdit");
+const handleEdit = async (row) => {
   try {
     const detail = await systemConfigStore.getConfigDetail(row.id)
     formData.value = {
@@ -473,6 +472,7 @@ const handleEdit = async (row: SystemConfig) => {
       processing_mode: detail.processing_mode,
       netWorks: detail.netWorks || []
     }
+    currentEditId.value = row.id
     isEditMode.value = true
     isCloneMode.value = false
     dialogVisible.value = true
@@ -482,7 +482,7 @@ const handleEdit = async (row: SystemConfig) => {
 }
 
 const handleClone = async (row: SystemConfig) => {
-  console.log("handleClone");
+  console.log(row, "| handleClone");
   try {
     const detail = await systemConfigStore.getConfigDetail(row.id)
     formData.value = {
@@ -546,15 +546,13 @@ const handleBatchDelete = async () => {
 }
 
 const handleSubmit = async () => {
-  console.log("handleSubmit");
-
   if (!formRef.value) return
   try {
     await formRef.value.validate()
     submitLoading.value = true
     // 构建完整的SystemConfig对象
     const now = new Date().toISOString()
-    const submitData: SystemConfig = {
+    const submitData: Omit<SystemConfig, 'id'> = {
       name: formData.value.name || '',
       type: formData.value.type || Type.gpu,
       created_at: isEditMode.value ? (formData.value.created_at || now) : now,
@@ -578,12 +576,11 @@ const handleSubmit = async () => {
       processing_mode: formData.value.processing_mode || 'fp32',
       netWorks: formData.value.netWorks || []
     }
-
-    if (isEditMode.value) {
-      // await systemConfigStore.updateConfig(currentEditId, submitData)
+    console.log(isEditMode.value, "| isEditMode.value");
+    if (isEditMode.value && currentEditId.value) {
+      await systemConfigStore.updateConfig(currentEditId.value, submitData)
       ElMessage.success('更新成功')
     } else {
-      console.log(submitData, "| submitData");
       await systemConfigStore.createConfig(submitData)
       ElMessage.success('创建成功')
     }
