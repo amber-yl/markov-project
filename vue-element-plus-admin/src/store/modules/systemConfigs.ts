@@ -30,17 +30,19 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
     filters: {},
     columns: [
-      { label: 'ID', prop: 'id', width: '120', isShow: true },
       { label: '硬件名称', prop: 'name', minWidth: '150', isShow: true },
       { label: '硬件类型', prop: 'type', width: '120', isShow: true },
       { label: '创建时间', prop: 'created_at', width: '180', isShow: true },
-      { label: '更新时间', prop: 'updated_at', width: '180', isShow: false },
-      { label: '处理模式', prop: 'processing_mode', width: '120', isShow: false },
-      { label: '矩阵算力', prop: 'matrix.float16.tflops', width: '120', isShow: false },
-      { label: '向量算力', prop: 'vector.float16.tflops', width: '120', isShow: false },
-      { label: '内存1容量', prop: 'men1.GiB', width: '120', isShow: false },
-      { label: '内存1带宽', prop: 'men1.GiBps', width: '120', isShow: false },
-      { label: '内存2容量', prop: 'men2.GiB', width: '120', isShow: false },
+      { label: '更新时间', prop: 'updated_at', width: '180', isShow: true },
+      { label: '性能模式', prop: 'processing_mode', width: '120', isShow: true },
+      { label: 'Cube算力', prop: 'matrix.float16.tflops', width: '120', isShow: true },
+      { label: 'Vector算力', prop: 'vector.float16.tflops', width: '120', isShow: true },
+      { label: '显存容量', prop: 'men1.GiB', width: '120', isShow: false },
+      { label: '显存带宽', prop: 'men1.GiBps', width: '120', isShow: false },
+      { label: 'Cube算力利用率', prop: 'men1.cubeCalibrationCoefficient', width: '120', isShow: false },
+      { label: 'Vector算力利用率', prop: 'men1.vectorCalibrationCoefficient', width: '120', isShow: false },
+      { label: 'GPU内存容量', prop: 'men2.GiB', width: '120', isShow: false },
+      { label: 'GPU内存带宽', prop: 'men2.GiBps', width: '120', isShow: false },
       { label: '操作', prop: 'operations', fixed: 'right', width: '200', isShow: true }
     ],
     selectedConfigs: []
@@ -119,8 +121,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
         const { list } = data
         // 确保所有配置都有id字段
         this.configs = list.map((item: any) => ({
-          ...item,
-          id: item.id || String(Date.now() + Math.random())
+          ...item
         }))
         this.pagination.total = this.configs.length
       } catch (error) {

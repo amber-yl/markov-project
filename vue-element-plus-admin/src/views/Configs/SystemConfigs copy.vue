@@ -36,7 +36,6 @@
           </el-button>
         </section>
       </header>
-
       <!-- 表格 -->
       <main>
         <el-table v-loading="loading" :data="paginatedConfigs" stripe border style="width: 100%"
@@ -258,10 +257,8 @@ enum Type {
 
 // Store
 const systemConfigStore = useSystemConfigStore()
-
 // 响应式数据
 const loading = computed(() => systemConfigStore.loading)
-const configs = computed(() => systemConfigStore.configs)
 const paginatedConfigs = computed(() => systemConfigStore.paginatedConfigs)
 const pagination = computed(() => systemConfigStore.pagination)
 const visibleColumns = computed(() => systemConfigStore.visibleColumns)

@@ -10,6 +10,11 @@ enum Type {
   gpu = 'gpu'
 }
 
+enum ProcessingMode {
+  roofline = 'roofline',
+  noOverlap = 'no_overlap'
+}
+
 interface ListProps {
   id?: string
   created_at: string
@@ -40,7 +45,7 @@ interface ListProps {
     cube_calibration_coefficient?: number
     vector_calibration_coefficient?: number
   }
-  processing_mode: string
+  processing_mode: ProcessingMode
   netWorks: {
     bandWidth: number
     efficiency: number
@@ -81,7 +86,7 @@ for (let i = 0; i < count; i++) {
         GiB: '@float(100, 1000)',
         GiBps: '@float(1, 100, 2, 2)'
       },
-      processing_mode: '@pick(["fp32", "fp16", "roofline"])',
+      processing_mode: Mock.Random.pick([ProcessingMode.noOverlap, ProcessingMode.roofline]),
       netWorks: [
         {
           bandWidth: '@integer(100, 1000)',
