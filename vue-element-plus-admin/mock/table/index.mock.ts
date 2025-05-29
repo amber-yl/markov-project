@@ -125,30 +125,11 @@ export default [
     method: 'post',
     timeout,
     response: ({ body }) => {
-      const {
-        name,
-        type,
-        created_at,
-        updated_at,
-        matrix,
-        vector,
-        men1,
-        men2,
-        processing_mode,
-        netWorks
-      } = body
-      List.push({
-        name,
-        type,
-        created_at,
-        updated_at,
-        matrix,
-        vector,
-        men1,
-        men2,
-        processing_mode,
-        netWorks
-      })
+      List.push(body)
+      return {
+        code: SUCCESS_CODE,
+        message: '添加成功'
+      }
     }
   },
   // 详情接口

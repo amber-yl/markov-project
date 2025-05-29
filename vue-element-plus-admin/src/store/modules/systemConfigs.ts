@@ -51,8 +51,6 @@ export const useSystemConfigStore = defineStore('systemConfig', {
   getters: {
     // 获取可见的列
     visibleColumns: (state) => state.columns.filter((col) => {
-      console.log(col, "| col");
-
       return col.isShow
     }),
 
@@ -135,8 +133,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     async createConfig(data: SystemConfig) {
       this.loading = true
       try {
-        const res = await markov_sim_post_sys_create(data)
-        console.log(res, '| 创建配置')
+        await markov_sim_post_sys_create(data)
       } catch (error) {
         console.error('Failed to create config:', error)
         throw error
@@ -163,6 +160,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       this.loading = true
       try {
         const res = await markov_sim_get_sys_detail_by_id(id)
+        console.log(res.data);
         return res.data
       } catch (error) {
         console.error('Failed to fetch config detail:', error)

@@ -1,10 +1,15 @@
-enum Type {
+export enum Type {
   npu = 'npu',
   gpu = 'gpu'
 }
+// 枚举导入
+export enum ProcessingMode {
+  roofline = 'roofline',
+  noOverlap = 'no_overlap'
+}
+
 // 系统配置相关类型
 export interface SystemConfig {
-  id: string
   created_at: string
   updated_at: string
   name: string // 硬件名称

@@ -31,7 +31,7 @@
     </header>
     <main>
       <el-table v-loading="loading" :data="paginatedConfigs" stripe border style="width: 100%"
-        @selection-change="handleSelectionChange">
+        @selection-change="handleSelectionChange" :height="tableHeight">
         <el-table-column type="selection" width="55" />
         <!-- 动态列 -->
         <template v-for="col in visibleColumns" :key="col.prop">
@@ -140,6 +140,12 @@
             {{ option.label }}
           </span>
         </template>
+        <template #left-empty>
+          <el-empty :image-size="60" description="所有列都已显示"></el-empty>
+        </template>
+        <template #right-empty>
+          <el-empty :image-size="60" description="暂无显示列"></el-empty>
+        </template>
       </el-transfer>
 
       <!-- 快捷操作按钮 -->
@@ -158,6 +164,7 @@
   </el-drawer>
 
   <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose">
+    {{ formData }}
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
       <el-row :gutter="20">
         <el-col :span="12">
@@ -167,26 +174,74 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="硬件类型" prop="type">
-            <el-select v-model="formData.type" placeholder="请选择硬件类型">
-              <el-option label="GPU" value="gpu" />
-              <el-option label="NPU" value="npu" />
-            </el-select>
+            <el-radio-group v-model="formData.type">
+              <el-radio :value="type" v-for="type in Object.values(Type)">{{ type }}</el-radio>
+            </el-radio-group>
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="处理模式" prop="processing_mode">
-            <el-select v-model="formData.processing_mode" placeholder="请选择处理模式">
-              <el-option label="FP32" value="fp32" />
-              <el-option label="FP16" value="fp16" />
-              <el-option label="Roofline" value="roofline" />
-            </el-select>
+          <el-form-item label="Cube算力" prop="matrix.float16.tflops">
+            <el-input-number v-model="formData.matrix.float16.tflops" controls-position="right" :controls="false"
+              style="width: 100%;" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="矩阵算力(TFLOPS)" prop="matrix.float16.tflops">
-            <el-input-number v-model="m" :min="1" :max="10000" controls-position="right" />
+          <el-form-item label="Vector算力" prop="vector.float16.tflops">
+            <el-input-number v-model="formData.vector.float16.tflops" controls-position="right" :controls="false"
+              style="width: 100%;" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="显存容量" prop="men1.GiB">
+            <el-input-number v-model="formData.men1.GiB" controls-position="right" :controls="false"
+              style="width: 100%;" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="显存带宽" prop="men1.GiBps">
+            <el-input-number v-model="formData.men1.GiBps" controls-position="right" :controls="false"
+              style="width: 100%;" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="Cube算力利用率" prop="men1.cube_calibration_coefficient">
+            <el-input-number v-model="formData.men1.cube_calibration_coefficient" controls-position="right"
+              :controls="false" style="width: 100%;" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="Vector算力利用率" prop="men1.vector_calibration_coefficient">
+            <el-input-number v-model="formData.men1.vector_calibration_coefficient" controls-position="right"
+              :controls="false" style="width: 100%;" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="GPU内存容量" prop="men2.GiB">
+            <el-input-number v-model="formData.men2.GiB" controls-position="right" :controls="false"
+              style="width: 100%;" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="GPU内存带宽" prop="men2.GiBps">
+            <el-input-number v-model="formData.men2.GiBps" controls-position="right" :controls="false"
+              style="width: 100%;" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="性能模式" prop="processing_mode">
+            <el-radio-group v-model="formData.processing_mode">
+              <el-radio :value="mode" v-for="mode in Object.values(ProcessingMode)">{{ mode }}</el-radio>
+            </el-radio-group>
           </el-form-item>
         </el-col>
       </el-row>
@@ -201,25 +256,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onBeforeMount } from 'vue'
 import { useSystemConfigStore } from '@/store/modules/systemConfigs'
 import { Dialog } from '@/components/Dialog'
 import type { SystemConfig } from '@/store/types'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Type, ProcessingMode } from '@/store/types/index.d'
 
-const m = ref(0)
-
-// 枚举导入
-enum Type {
-  npu = 'npu',
-  gpu = 'gpu'
-}
-
+// Table表格的高度
+const TABLE_HEIGHT = window.innerHeight - 260
 // Store
 const systemConfigStore = useSystemConfigStore()
 
 // 响应式数据
 const loading = computed(() => systemConfigStore.loading)
-const configs = computed(() => systemConfigStore.configs)
 const paginatedConfigs = computed(() => systemConfigStore.paginatedConfigs)
 const pagination = computed(() => systemConfigStore.pagination)
 const visibleColumns = computed(() => systemConfigStore.visibleColumns)
@@ -239,14 +289,10 @@ const selectedConfigs = ref<SystemConfig[]>([])
 const formRef = ref()
 const isEditMode = ref(false)
 const isCloneMode = ref(false)
-const currentEditId = ref<string | null>(null)
 
-// 基于mock数据的表单结构
 const formData = ref<Partial<SystemConfig>>({
   name: '',
   type: Type.gpu,
-  created_at: '',
-  updated_at: '',
   matrix: {
     float16: {
       tflops: 100,
@@ -269,8 +315,7 @@ const formData = ref<Partial<SystemConfig>>({
     GiB: 32,
     GiBps: 300
   },
-  processing_mode: 'fp32',
-  netWorks: []
+  processing_mode: ProcessingMode.roofline
 })
 
 const formRules = {
@@ -279,6 +324,9 @@ const formRules = {
     { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
   ],
   type: [
+    { required: true, message: '请选择硬件类型', trigger: 'change' }
+  ],
+  processing_mode: [
     { required: true, message: '请选择硬件类型', trigger: 'change' }
   ]
 }
@@ -336,7 +384,7 @@ const hideAllColumns = () => {
 }
 
 const resetColumns = () => {
-  const defaultVisible = ['id', 'name', 'type', 'created_at', 'updated_at', 'matrix.float16.tflops']
+  const defaultVisible = ['name', 'type', 'created_at', 'updated_at', 'matrix.float16.tflops']
   handleTransferChange(defaultVisible)
 }
 
@@ -405,13 +453,14 @@ const getNestedValue = (obj: any, path: string) => {
 
 // CRUD操作
 const handleCreate = () => {
-  resetForm()
+  // resetForm()
   isEditMode.value = false
   isCloneMode.value = false
   dialogVisible.value = true
 }
 
 const handleEdit = async (row: SystemConfig) => {
+  console.log("handleEdit");
   try {
     const detail = await systemConfigStore.getConfigDetail(row.id)
     formData.value = {
@@ -424,7 +473,6 @@ const handleEdit = async (row: SystemConfig) => {
       processing_mode: detail.processing_mode,
       netWorks: detail.netWorks || []
     }
-    currentEditId.value = row.id
     isEditMode.value = true
     isCloneMode.value = false
     dialogVisible.value = true
@@ -434,6 +482,7 @@ const handleEdit = async (row: SystemConfig) => {
 }
 
 const handleClone = async (row: SystemConfig) => {
+  console.log("handleClone");
   try {
     const detail = await systemConfigStore.getConfigDetail(row.id)
     formData.value = {
@@ -497,16 +546,15 @@ const handleBatchDelete = async () => {
 }
 
 const handleSubmit = async () => {
-  if (!formRef.value) return
+  console.log("handleSubmit");
 
+  if (!formRef.value) return
   try {
     await formRef.value.validate()
     submitLoading.value = true
-
     // 构建完整的SystemConfig对象
     const now = new Date().toISOString()
     const submitData: SystemConfig = {
-      id: currentEditId.value || String(Date.now()),
       name: formData.value.name || '',
       type: formData.value.type || Type.gpu,
       created_at: isEditMode.value ? (formData.value.created_at || now) : now,
@@ -531,14 +579,14 @@ const handleSubmit = async () => {
       netWorks: formData.value.netWorks || []
     }
 
-    if (isEditMode.value && currentEditId.value) {
-      await systemConfigStore.updateConfig(currentEditId.value, submitData)
+    if (isEditMode.value) {
+      // await systemConfigStore.updateConfig(currentEditId, submitData)
       ElMessage.success('更新成功')
     } else {
+      console.log(submitData, "| submitData");
       await systemConfigStore.createConfig(submitData)
       ElMessage.success('创建成功')
     }
-
     dialogVisible.value = false
     await systemConfigStore.fetchConfigs()
   } catch (error) {
@@ -550,6 +598,7 @@ const handleSubmit = async () => {
 }
 
 const resetForm = () => {
+  console.log("resetForm");
   formData.value = {
     name: '',
     type: Type.gpu,
@@ -580,7 +629,6 @@ const resetForm = () => {
     processing_mode: 'fp32',
     netWorks: []
   }
-  currentEditId.value = null
   nextTick(() => {
     formRef.value?.clearValidate()
   })
@@ -590,10 +638,20 @@ const handleDialogClose = () => {
   dialogVisible.value = false
   resetForm()
 }
+// 封装动态监听表格高度的方法
+const tableHeight = ref(TABLE_HEIGHT)
+const handleResize = () => {
+  tableHeight.value = TABLE_HEIGHT
+}
 
 // 生命周期
 onMounted(async () => {
+  window.addEventListener('resize', handleResize)
   await systemConfigStore.fetchConfigs()
+})
+
+onBeforeMount(() => {
+  window.removeEventListener('resize', handleResize)
 })
 
 // 监听搜索关键词

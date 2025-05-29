@@ -18,7 +18,7 @@ export const markov_sim_get_sys_detail_by_id = (id: string) => {
 export const markov_sim_post_sys_create = (params: SystemConfig) => {
   return request.post({
     url: `/markov_sim/api/v1/system_config/create`,
-    params
+    data: params
   })
 }
 
