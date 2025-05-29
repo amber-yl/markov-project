@@ -129,18 +129,17 @@
           </span>
         </div>
       </div>
-
-      <el-transfer v-model="transferRightValue" filterable :titles="['隐藏的列', '显示的列']" :data="transferData || []"
+      <el-transfer v-model="transferRightValue" filterable :titles="['隐藏的列', '显示的列']" :data="transferData"
         @change="handleTransferChange" :props="{
           key: 'key',
           label: 'label',
           disabled: 'disabled'
         }" class="custom-transfer">
-        <!-- <template #default="{ option }">
+        <template #default="{ option }">
           <span class="transfer-item">
             {{ option.label }}
           </span>
-        </template> -->
+        </template>
       </el-transfer>
 
       <!-- 快捷操作按钮 -->
@@ -203,7 +202,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { ElMessage, ElMessageBox, ElPopconfirm } from 'element-plus'
 import { useSystemConfigStore } from '@/store/modules/systemConfigs'
 import { Dialog } from '@/components/Dialog'
 import type { SystemConfig } from '@/store/types'
@@ -338,7 +336,7 @@ const hideAllColumns = () => {
 }
 
 const resetColumns = () => {
-  const defaultVisible = ['id', 'name', 'type', 'created_at']
+  const defaultVisible = ['id', 'name', 'type', 'created_at', 'updated_at', 'matrix.float16.tflops']
   handleTransferChange(defaultVisible)
 }
 

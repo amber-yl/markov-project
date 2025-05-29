@@ -298,7 +298,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     }
   },
 
-  persist: true
+  // persist: true
 })
 
 export const useSystemConfigStoreWithOut = () => {

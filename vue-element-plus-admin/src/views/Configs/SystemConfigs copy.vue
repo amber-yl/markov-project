@@ -142,7 +142,7 @@
           </span>
         </div>
       </div>
-
+      {{ transferData }}
       <el-transfer v-model="transferRightValue" filterable :titles="['隐藏的列', '显示的列']" :data="transferData"
         @change="handleTransferChange" :props="{
           key: 'key',
@@ -244,7 +244,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElTransfer } from 'element-plus'
 import { useSystemConfigStore } from '@/store/modules/systemConfigs'
 import { Dialog } from '@/components/Dialog'
 import type { SystemConfig } from '@/store/types'
@@ -643,7 +643,7 @@ watch(searchKeyword, (newValue, oldValue) => {
 })
 </script>
 
-<!-- <style lang="less" scoped>
+<style lang="less" scoped>
 .filter-content {
   .el-checkbox-group {
     .el-checkbox {
@@ -703,4 +703,4 @@ watch(searchKeyword, (newValue, oldValue) => {
     }
   }
 }
-</style> -->
+</style>

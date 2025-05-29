@@ -34,7 +34,11 @@ import {
   ElDescriptionsItem,
   ElDivider,
   ElCollapse,
-  ElCollapseItem
+  ElCollapseItem,
+  ElTransfer,
+  ElPopconfirm,
+  ElMessage,
+  ElMessageBox
 } from 'element-plus'
 
 const plugins = [
@@ -69,7 +73,11 @@ const plugins = [
   ElDescriptionsItem,
   ElDivider,
   ElCollapse,
-  ElCollapseItem
+  ElCollapseItem,
+  ElTransfer,
+  ElPopconfirm,
+  ElMessage,
+  ElMessageBox
 ]
 
 const components = [ElScrollbar]
