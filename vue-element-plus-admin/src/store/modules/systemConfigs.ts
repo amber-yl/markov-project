@@ -31,21 +31,23 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     filters: {},
     columns: [
       { label: '硬件名称', prop: 'name', minWidth: '150', isShow: true },
-      { label: '硬件类型', prop: 'type', width: '120', isShow: true },
-      { label: '创建时间', prop: 'created_at', width: '120', isShow: true },
-      { label: '更新时间', prop: 'updated_at', width: '120', isShow: true },
-      { label: '性能模式', prop: 'processing_mode', width: '120', isShow: true },
-      { label: 'Cube-float16-理论算力', prop: 'matrix.float16.tflops', width: '180', isShow: true },
-      { label: 'Cube-float16-利用率', prop: 'matrix.float16.calibration_coefficient', width: '180', isShow: true },
-      { label: 'Vector-float16-理论算力', prop: 'vector.float16.tflops', width: '180', isShow: true },
-      { label: 'Vector-float16-利用率', prop: 'vector.float16.calibration_coefficient', width: '180', isShow: true },
-      { label: '显存容量', prop: 'men1.GiB', width: '120', isShow: false },
-      { label: '显存带宽', prop: 'men1.GiBps', width: '120', isShow: false },
-      { label: 'Cube算力利用率', prop: 'men1.cube_calibration_coefficient', width: '180', isShow: false },
-      { label: 'Vector算力利用率', prop: 'men1.vector_calibration_coefficient', width: '180', isShow: false },
-      { label: 'GPU内存容量', prop: 'men2.GiB', width: '120', isShow: false },
-      { label: 'GPU内存带宽', prop: 'men2.GiBps', width: '120', isShow: false },
-      { label: '操作', prop: 'operations', fixed: 'right', width: '200', isShow: true }
+      { label: '硬件类型', prop: 'type', minWidth: '120', isShow: true },
+      { label: '创建时间', prop: 'created_at', minWidth: '120', isShow: true },
+      { label: '更新时间', prop: 'updated_at', minWidth: '120', isShow: false },
+      { label: '性能模式', prop: 'processing_mode', minWidth: '120', isShow: true },
+      { label: 'Cube-float16-理论算力', prop: 'matrix.float16.tflops', minWidth: '180', isShow: true },
+      { label: 'Cube-float16-利用率', prop: 'matrix.float16.calibration_coefficient', minWidth: '180', isShow: false },
+      { label: 'Vector-float16-理论算力', prop: 'vector.float16.tflops', minWidth: '180', isShow: false },
+      { label: 'Vector-float16-利用率', prop: 'vector.float16.calibration_coefficient', minWidth: '180', isShow: false },
+      { label: '显存容量', prop: 'men1.GiB', minWidth: '120', isShow: false },
+      { label: '显存带宽', prop: 'men1.GiBps', minWidth: '120', isShow: false },
+      { label: 'Cube算力利用率', prop: 'men1.cube_calibration_coefficient', minWidth: '180', isShow: false },
+      { label: 'Vector算力利用率', prop: 'men1.vector_calibration_coefficient', minWidth: '180', isShow: false },
+      { label: 'GPU内存容量', prop: 'men2.GiB', minWidth: '120', isShow: false },
+      { label: 'GPU内存带宽', prop: 'men2.GiBps', minWidth: '120', isShow: false },
+      { label: '网络相关', prop: 'netWorks', minWidth: '120', isShow: false },
+      { label: '操作', prop: 'operations', fixed: 'right', minWidth: '200', isShow: true }
+
     ],
     selectedConfigs: []
   }),
@@ -124,6 +126,9 @@ export const useSystemConfigStore = defineStore('systemConfig', {
         this.configs = list.map((item: any) => ({
           ...item
         }))
+
+        console.log(this.configs, "| this.configs");
+
         this.pagination.total = this.configs.length
       } catch (error) {
         console.error('Failed to fetch configs:', error)

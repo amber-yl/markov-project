@@ -40,8 +40,8 @@
             <template #header>
               <div class="flex items-center justify-center gap-1">
                 <span>{{ col.label }}</span>
-                <el-popover v-if="!col.prop.includes('.')" placement="bottom" :width="250" trigger="click"
-                  popper-class="filter-popover" ref="popverRef">
+                <el-popover v-if="!col.prop.includes('.') && !col.prop.includes('netWorks')" placement="bottom"
+                  :width="250" trigger="click" popper-class="filter-popover" ref="popverRef">
                   <template #reference>
                     <Icon :icon="'vi-ant-design:filter-outlined'"
                       class="cursor-pointer text-blue-500 hover:text-blue-700" @click.stop />
@@ -80,7 +80,7 @@
                 {{ getNestedValue(row, col.prop) }}
               </span>
               <span v-else>
-                {{ row[col.prop] }}
+                {{ Array.isArray(row[col.prop]) ? row[col.prop][0] : row[col.prop] }}
               </span>
             </template>
           </el-table-column>
