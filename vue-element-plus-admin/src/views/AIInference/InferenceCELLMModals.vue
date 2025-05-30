@@ -37,8 +37,8 @@
                 </el-option>
                 <template #tag>
                   <!-- <el-tag v-for="(item) in showTags" :key="item.value" :color="item.value">
-                  <span style="color: white;">{{item.label}}</span>
-                </el-tag> -->
+                    <span style="color: white;">{{ item.label }}</span>
+                  </el-tag> -->
                 </template>
               </el-select>
             </section>

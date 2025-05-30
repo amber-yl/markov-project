@@ -20,7 +20,7 @@
           </el-button>
         </div>
         <div class="custom-mode flex">
-          <el-button v-for="(item, index) in scopeOptions" :key="item" @click="handleScopeChange(item, $event)"
+          <el-button v-for="(item) in scopeOptions" :key="item" @click="handleScopeChange(item, $event)"
             :class="['flex-1', { 'is-active': activeScope === item }]" class="scope-btn">
             <template #icon>
               <Icon :icon="'vi-ep:user'" v-if="item === '个人'" />
