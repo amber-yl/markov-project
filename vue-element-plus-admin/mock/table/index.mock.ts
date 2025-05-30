@@ -98,7 +98,6 @@ for (let i = 0; i < count; i++) {
     })
   )
 }
-
 export default [
   // 列表接口
   {
@@ -106,10 +105,6 @@ export default [
     method: 'get',
     timeout,
     response: () => {
-      // const { page = 1, limit = 10 } = query
-      // const pageList = List.filter(
-      //   (_, index) => index < limit * page && index >= limit * (page - 1)
-      // )
       return {
         code: SUCCESS_CODE,
         data: {
