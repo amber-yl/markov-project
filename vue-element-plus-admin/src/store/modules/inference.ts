@@ -123,7 +123,7 @@ export const useInferenceEvalStore = defineStore('inferenceEval', {
       this.selectedTasks = tasks
     }
   },
-  persist: true
+  // persist: true
 })
 
 export const useInferenceEvalStoreWithOut = () => {

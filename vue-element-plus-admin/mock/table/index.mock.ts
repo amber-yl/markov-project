@@ -1,6 +1,7 @@
 import Mock from 'mockjs'
 import { SUCCESS_CODE } from '@/constants'
 import { toAnyString } from '@/utils'
+import { userSchema } from './jsonschema'
 
 const timeout = 1000
 const count = 100
@@ -108,8 +109,20 @@ export default [
       return {
         code: SUCCESS_CODE,
         data: {
-          total: List.length,
           list: List
+        }
+      }
+    }
+  },
+  {
+    url: '/markov_sim/api/v1/system_config/get_create_model_schema',
+    method: 'get',
+    timeout,
+    response: () => {
+      return {
+        code: SUCCESS_CODE,
+        data: {
+          schema: Mock.toJSONSchema(userSchema)
         }
       }
     }
@@ -149,7 +162,7 @@ export default [
     method: 'post',
     response: ({ body }) => {
       const ids = body.ids
-      console.log(ids, "| ids");
+      console.log(ids, '| ids')
       if (!ids) {
         return {
           code: 500,

@@ -35,7 +35,6 @@ export const userSchema = {
         calibration_coefficient: {
           description: '利用率',
           examples: [0.7],
-          title: 'Tflops',
           exclusiveMinimum: 0,
           maximum: 1,
           title: 'Matrix Calibration Coefficient',

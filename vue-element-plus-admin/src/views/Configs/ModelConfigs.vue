@@ -1,5 +1,7 @@
 <template>
-  <el-card class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]">
+  <el-card
+    class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]"
+  >
     <header class="flex justify-between items-center mb-4">
       <section class="flex gap-2">
         <el-button type="primary" @click="handleCreate">
@@ -8,7 +10,11 @@
           </template>
           创建新配置
         </el-button>
-        <el-button type="danger" :disabled="selectedConfigs.length === 0" @click="handleBatchDelete">
+        <el-button
+          type="danger"
+          :disabled="selectedConfigs.length === 0"
+          @click="handleBatchDelete"
+        >
           <template #icon>
             <Icon :icon="'vi-ep:delete'" />
           </template>
@@ -16,7 +22,13 @@
         </el-button>
       </section>
       <section class="flex gap-2 items-center">
-        <el-input v-model="searchKeyword" placeholder="搜索配置名称..." style="width: 200px" clearable @input="handleSearch">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索配置名称..."
+          style="width: 200px"
+          clearable
+          @input="handleSearch"
+        >
           <template #prefix>
             <Icon :icon="'vi-ep:search'" />
           </template>
@@ -30,32 +42,61 @@
       </section>
     </header>
     <main>
-      <el-table v-loading="loading" :data="paginatedConfigs" stripe border style="width: 100%"
-        @selection-change="handleSelectionChange" :height="tableHeight">
+      <el-table
+        v-loading="loading"
+        :data="paginatedConfigs"
+        stripe
+        border
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+        :height="tableHeight"
+      >
         <el-table-column type="selection" width="55" />
         <!-- 动态列 -->
         <template v-for="(col, idx) in visibleColumns" :key="col.prop">
-          <el-table-column v-if="col.isShow && col.prop !== 'operations'" :prop="col.prop" :label="col.label"
-            :width="col.width" :min-width="col.minWidth" :fixed="col.fixed" align="center" show-overflow-tooltip>
+          <el-table-column
+            v-if="col.isShow && col.prop !== 'operations'"
+            :prop="col.prop"
+            :label="col.label"
+            :width="col.width"
+            :min-width="col.minWidth"
+            :fixed="col.fixed"
+            align="center"
+            show-overflow-tooltip
+          >
             <template #header>
               <div class="flex items-center justify-center gap-1">
                 <span>{{ col.label }}</span>
-                <el-popover v-if="!col.prop.includes('.') && !col.prop.includes('netWorks')" placement="bottom"
-                  :width="250" trigger="click" popper-class="filter-popover" ref="popverRef">
+                <el-popover
+                  v-if="!col.prop.includes('.') && !col.prop.includes('netWorks')"
+                  placement="bottom"
+                  :width="250"
+                  trigger="click"
+                  popper-class="filter-popover"
+                  ref="popverRef"
+                >
                   <template #reference>
-                    <Icon :icon="'vi-ant-design:filter-outlined'"
-                      class="cursor-pointer text-blue-500 hover:text-blue-700" @click.stop />
+                    <Icon
+                      :icon="'vi-ant-design:filter-outlined'"
+                      class="cursor-pointer text-blue-500 hover:text-blue-700"
+                      @click.stop
+                    />
                   </template>
                   <div class="filter-content">
                     <header class="mb-2">
-                      <el-checkbox :model-value="isAllSelected(col.prop)" :indeterminate="isIndeterminate(col.prop)"
-                        @change="(val: boolean) => handleSelectAll(col.prop, val)">
+                      <el-checkbox
+                        :model-value="isAllSelected(col.prop)"
+                        :indeterminate="isIndeterminate(col.prop)"
+                        @change="(val: boolean) => handleSelectAll(col.prop, val)"
+                      >
                         全选
                       </el-checkbox>
                     </header>
                     <div class="max-h-48 overflow-y-auto">
-                      <el-checkbox-group :model-value="getSelectedFilters(col.prop)"
-                        @change="(values: string[]) => handleFilterChange(col.prop, values)">
+                      <el-checkbox-group
+                        :model-value="getSelectedFilters(col.prop)"
+                        @change="(values: string[]) => handleFilterChange(col.prop, values)"
+                      >
                         <div v-for="item in getColumnValues(col.prop)" :key="item" class="mb-1">
                           <el-checkbox :label="item" :value="item">
                             {{ item }}
@@ -64,9 +105,7 @@
                       </el-checkbox-group>
                     </div>
                     <footer class="flex justify-end mt-3 pt-2 border-t">
-                      <el-button size="small" @click="clearFilter(col.prop)">
-                        清除
-                      </el-button>
+                      <el-button size="small" @click="clearFilter(col.prop)"> 清除 </el-button>
                       <el-button type="primary" size="small" @click="applyFilter(idx)">
                         确认
                       </el-button>
@@ -89,17 +128,11 @@
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <div class="flex gap-1">
-              <el-button type="primary" size="small" @click="handleClone(row)">
-                克隆
-              </el-button>
-              <el-button type="warning" size="small" @click="handleEdit(row)">
-                编辑
-              </el-button>
+              <el-button type="primary" size="small" @click="handleClone(row)"> 克隆 </el-button>
+              <el-button type="warning" size="small" @click="handleEdit(row)"> 编辑 </el-button>
               <el-popconfirm title="确定要删除这个配置吗？" @confirm="handleDelete(row.id)">
                 <template #reference>
-                  <el-button type="danger" size="small">
-                    删除
-                  </el-button>
+                  <el-button type="danger" size="small"> 删除 </el-button>
                 </template>
               </el-popconfirm>
             </div>
@@ -109,9 +142,15 @@
     </main>
     <footer>
       <div class="flex justify-end mt-4">
-        <el-pagination v-model:current-page="pagination.currentPage" v-model:page-size="pagination.pageSize"
-          :page-sizes="pagination.pageSizes" :total="pagination.total" layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+        <el-pagination
+          v-model:current-page="pagination.currentPage"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="pagination.pageSizes"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
       </div>
     </footer>
   </el-card>
@@ -123,17 +162,24 @@
         <div class="flex justify-between text-sm text-gray-600">
           <span>可管理列数: {{ transferData.length }}</span>
           <span>
-            已显示: {{ transferRightValue.length }} |
-            已隐藏: {{ transferData.length - transferRightValue.length }}
+            已显示: {{ transferRightValue.length }} | 已隐藏:
+            {{ transferData.length - transferRightValue.length }}
           </span>
         </div>
       </div>
-      <el-transfer v-model="transferRightValue" filterable :titles="['隐藏的列', '显示的列']" :data="transferData"
-        @change="handleTransferChange" :props="{
+      <el-transfer
+        v-model="transferRightValue"
+        filterable
+        :titles="['隐藏的列', '显示的列']"
+        :data="transferData"
+        @change="handleTransferChange"
+        :props="{
           key: 'key',
           label: 'label',
           disabled: 'disabled'
-        }" class="custom-transfer">
+        }"
+        class="custom-transfer"
+      >
         <template #default="{ option }">
           <span class="transfer-item">
             {{ option.label }}
@@ -149,26 +195,30 @@
 
       <!-- 快捷操作按钮 -->
       <div class="transfer-actions mt-4 flex gap-2 justify-center">
-        <el-button size="small" type="success" @click="showAllColumns">
-          显示所有
-        </el-button>
-        <el-button size="small" type="warning" @click="hideAllColumns">
-          隐藏所有
-        </el-button>
-        <el-button size="small" type="info" @click="resetColumns">
-          重置默认
-        </el-button>
+        <el-button size="small" type="success" @click="showAllColumns"> 显示所有 </el-button>
+        <el-button size="small" type="warning" @click="hideAllColumns"> 隐藏所有 </el-button>
+        <el-button size="small" type="info" @click="resetColumns"> 重置默认 </el-button>
       </div>
     </div>
   </el-drawer>
 
-  <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose"
-    style="height: 80%;">
+  <Dialog
+    v-model="dialogVisible"
+    :title="dialogTitle"
+    width="60%"
+    align-center
+    @close="handleDialogClose"
+    style="height: 80%"
+  >
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
           <el-form-item label="硬件名称" prop="name" required>
-            <el-input v-model="formData.name" placeholder="请输入硬件名称" :disabled="isCloneMode" />
+            <el-input
+              v-model="formData.name"
+              placeholder="请输入硬件名称"
+              :disabled="isCloneMode"
+            />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
@@ -182,56 +232,88 @@
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
           <el-form-item label="Cube算力" prop="matrix.float16.tflops">
-            <el-input-number v-model="formData.matrix.float16.tflops" controls-position="right" :controls="false"
-              style="width: 100%;" />
+            <el-input-number
+              v-model="formData.matrix.float16.tflops"
+              controls-position="right"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
           <el-form-item label="Vector算力" prop="vector.float16.tflops">
-            <el-input-number v-model="formData.vector.float16.tflops" controls-position="right" :controls="false"
-              style="width: 100%;" />
+            <el-input-number
+              v-model="formData.vector.float16.tflops"
+              controls-position="right"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
           <el-form-item label="显存容量" prop="men1.GiB">
-            <el-input-number v-model="formData.men1.GiB" controls-position="right" :controls="false"
-              style="width: 100%;" />
+            <el-input-number
+              v-model="formData.men1.GiB"
+              controls-position="right"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
           <el-form-item label="显存带宽" prop="men1.GiBps">
-            <el-input-number v-model="formData.men1.GiBps" controls-position="right" :controls="false"
-              style="width: 100%;" />
+            <el-input-number
+              v-model="formData.men1.GiBps"
+              controls-position="right"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
           <el-form-item label="Cube算力利用率" prop="men1.cube_calibration_coefficient">
-            <el-input-number v-model="formData.men1.cube_calibration_coefficient" controls-position="right"
-              :controls="false" style="width: 100%;" />
+            <el-input-number
+              v-model="formData.men1.cube_calibration_coefficient"
+              controls-position="right"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
           <el-form-item label="Vector算力利用率" prop="men1.vector_calibration_coefficient">
-            <el-input-number v-model="formData.men1.vector_calibration_coefficient" controls-position="right"
-              :controls="false" style="width: 100%;" />
+            <el-input-number
+              v-model="formData.men1.vector_calibration_coefficient"
+              controls-position="right"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
           <el-form-item label="GPU内存容量" prop="men2.GiB">
-            <el-input-number v-model="formData.men2.GiB" controls-position="right" :controls="false"
-              style="width: 100%;" />
+            <el-input-number
+              v-model="formData.men2.GiB"
+              controls-position="right"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
           <el-form-item label="GPU内存带宽" prop="men2.GiBps">
-            <el-input-number v-model="formData.men2.GiBps" controls-position="right" :controls="false"
-              style="width: 100%;" />
+            <el-input-number
+              v-model="formData.men2.GiBps"
+              controls-position="right"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
       </el-row>
@@ -239,7 +321,9 @@
         <el-col :sm="24" :lg="12">
           <el-form-item label="性能模式" prop="processing_mode">
             <el-radio-group v-model="formData.processing_mode">
-              <el-radio :value="mode" v-for="mode in Object.values(ProcessingMode)">{{ mode }}</el-radio>
+              <el-radio :value="mode" v-for="mode in Object.values(ProcessingMode)">{{
+                mode
+              }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
@@ -283,15 +367,15 @@ const columnDrawerVisible = ref(false)
 const dialogVisible = ref(false)
 const submitLoading = ref(false)
 const searchKeyword = ref('')
-const selectedConfigs = ref < SystemConfig[] > ([])
+const selectedConfigs = ref<SystemConfig[]>([])
 
 // 表单相关
 const formRef = ref()
 const isEditMode = ref(false)
 const isCloneMode = ref(false)
-const currentEditId = ref < string | null > (null)
+const currentEditId = ref<string | null>(null)
 
-const formData = ref < Partial < SystemConfig >> ({
+const formData = ref<Partial<SystemConfig>>({
   name: '',
   type: Type.gpu,
   matrix: {
@@ -324,12 +408,8 @@ const formRules = {
     { required: true, message: '请输入硬件名称', trigger: 'blur' },
     { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
   ],
-  type: [
-    { required: true, message: '请选择硬件类型', trigger: 'change' }
-  ],
-  processing_mode: [
-    { required: true, message: '请选择硬件类型', trigger: 'change' }
-  ]
+  type: [{ required: true, message: '请选择硬件类型', trigger: 'change' }],
+  processing_mode: [{ required: true, message: '请选择硬件类型', trigger: 'change' }]
 }
 
 const dialogTitle = computed(() => {
@@ -358,7 +438,7 @@ const handleCurrentChange = (page: number) => {
 // 选择处理
 const handleSelectionChange = (selection: SystemConfig[]) => {
   selectedConfigs.value = selection
-  systemConfigStore.setSelectedConfigs(selection.map(item => item.id))
+  systemConfigStore.setSelectedConfigs(selection.map((item) => item.id))
 }
 
 // 列管理
@@ -375,8 +455,8 @@ const handleTransferChange = (targetKeys: string[]) => {
 
 const showAllColumns = () => {
   const allKeys = systemConfigStore.columns
-    .filter(col => col.prop !== 'operations')
-    .map(col => col.prop)
+    .filter((col) => col.prop !== 'operations')
+    .map((col) => col.prop)
   handleTransferChange(allKeys)
 }
 
@@ -392,7 +472,7 @@ const resetColumns = () => {
 // 过滤相关 - 支持嵌套字段
 const getColumnValues = (prop: string) => {
   const values = new Set()
-  systemConfigStore.configs.forEach(config => {
+  systemConfigStore.configs.forEach((config) => {
     let value = config
     const props = prop.split('.')
     for (const p of props) {
@@ -442,7 +522,7 @@ const clearFilter = (prop: string) => {
   systemConfigStore.clearFilter(prop)
 }
 
-const popverRef = ref < Array < PopoverInstance >> ()
+const popverRef = ref<Array<PopoverInstance>>()
 const applyFilter = (idx: number) => {
   // 过滤会自动应用，这里可以关闭popover或显示消息
   popverRef.value[idx]?.hide()
@@ -485,7 +565,7 @@ const handleEdit = async (row) => {
 }
 
 const handleClone = async (row: SystemConfig) => {
-  console.log(row, "| handleClone");
+  console.log(row, '| handleClone')
   try {
     const detail = await systemConfigStore.getConfigDetail(row.id)
     formData.value = {
@@ -533,7 +613,7 @@ const handleBatchDelete = async () => {
       }
     )
 
-    const deletePromises = selectedConfigs.value.map(config =>
+    const deletePromises = selectedConfigs.value.map((config) =>
       systemConfigStore.deleteConfig(config.id)
     )
 
@@ -558,7 +638,7 @@ const handleSubmit = async () => {
     const submitData: Omit<SystemConfig, 'id'> = {
       name: formData.value.name || '',
       type: formData.value.type || Type.gpu,
-      created_at: isEditMode.value ? (formData.value.created_at || now) : now,
+      created_at: isEditMode.value ? formData.value.created_at || now : now,
       updated_at: now,
       matrix: formData.value.matrix || {
         float16: { tflops: 100, calibration_coefficient: 0.5 }
@@ -579,7 +659,7 @@ const handleSubmit = async () => {
       processing_mode: formData.value.processing_mode || 'fp32',
       netWorks: formData.value.netWorks || []
     }
-    console.log(isEditMode.value, "| isEditMode.value");
+    console.log(isEditMode.value, '| isEditMode.value')
     if (isEditMode.value && currentEditId.value) {
       await systemConfigStore.updateConfig(currentEditId.value, submitData)
       ElMessage.success('更新成功')
@@ -598,7 +678,7 @@ const handleSubmit = async () => {
 }
 
 const resetForm = () => {
-  console.log("resetForm");
+  console.log('resetForm')
   formData.value = {
     name: '',
     type: Type.gpu,
@@ -647,7 +727,7 @@ const handleResize = () => {
 // 生命周期
 onMounted(async () => {
   window.addEventListener('resize', handleResize)
-  await systemConfigStore.fetchConfigs()
+  await systemConfigStore.fetchSchemaConfigs()
 })
 
 onBeforeMount(() => {

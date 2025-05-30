@@ -8,6 +8,12 @@ export const markov_sim_get_sys_list = () => {
     url: '/markov_sim/api/v1/system_config/list'
   })
 }
+// 获取系统列表
+export const markov_sim_get_create_model_schema = () => {
+  return request.get<RequestResponse>({
+    url: '/markov_sim/api/v1/system_config/get_create_model_schema'
+  })
+}
 
 export const markov_sim_get_sys_detail_by_id = (id: string) => {
   return request.get({
