@@ -34,14 +34,14 @@
         @selection-change="handleSelectionChange" :height="tableHeight">
         <el-table-column type="selection" width="55" />
         <!-- 动态列 -->
-        <template v-for="col in visibleColumns" :key="col.prop">
+        <template v-for="(col, idx) in visibleColumns" :key="col.prop">
           <el-table-column v-if="col.isShow && col.prop !== 'operations'" :prop="col.prop" :label="col.label"
             :width="col.width" :min-width="col.minWidth" :fixed="col.fixed" align="center" show-overflow-tooltip>
             <template #header>
               <div class="flex items-center justify-center gap-1">
                 <span>{{ col.label }}</span>
                 <el-popover v-if="!col.prop.includes('.')" placement="bottom" :width="250" trigger="click"
-                  popper-class="filter-popover">
+                  popper-class="filter-popover" ref="popverRef">
                   <template #reference>
                     <Icon :icon="'vi-ant-design:filter-outlined'"
                       class="cursor-pointer text-blue-500 hover:text-blue-700" @click.stop />
@@ -67,7 +67,7 @@
                       <el-button size="small" @click="clearFilter(col.prop)">
                         清除
                       </el-button>
-                      <el-button type="primary" size="small" @click="applyFilter">
+                      <el-button type="primary" size="small" @click="applyFilter(idx)">
                         确认
                       </el-button>
                     </footer>
@@ -162,16 +162,16 @@
     </div>
   </el-drawer>
 
-  <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose">
-    {{ formData }}
+  <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose"
+    style="height: 80%;">
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="硬件名称" prop="name" required>
             <el-input v-model="formData.name" placeholder="请输入硬件名称" :disabled="isCloneMode" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="硬件类型" prop="type">
             <el-radio-group v-model="formData.type">
               <el-radio :value="type" v-for="type in Object.values(Type)">{{ type }}</el-radio>
@@ -180,13 +180,13 @@
         </el-col>
       </el-row>
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="Cube算力" prop="matrix.float16.tflops">
             <el-input-number v-model="formData.matrix.float16.tflops" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="Vector算力" prop="vector.float16.tflops">
             <el-input-number v-model="formData.vector.float16.tflops" controls-position="right" :controls="false"
               style="width: 100%;" />
@@ -194,13 +194,13 @@
         </el-col>
       </el-row>
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="显存容量" prop="men1.GiB">
             <el-input-number v-model="formData.men1.GiB" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="显存带宽" prop="men1.GiBps">
             <el-input-number v-model="formData.men1.GiBps" controls-position="right" :controls="false"
               style="width: 100%;" />
@@ -208,13 +208,13 @@
         </el-col>
       </el-row>
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="Cube算力利用率" prop="men1.cube_calibration_coefficient">
             <el-input-number v-model="formData.men1.cube_calibration_coefficient" controls-position="right"
               :controls="false" style="width: 100%;" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="Vector算力利用率" prop="men1.vector_calibration_coefficient">
             <el-input-number v-model="formData.men1.vector_calibration_coefficient" controls-position="right"
               :controls="false" style="width: 100%;" />
@@ -222,13 +222,13 @@
         </el-col>
       </el-row>
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="GPU内存容量" prop="men2.GiB">
             <el-input-number v-model="formData.men2.GiB" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="GPU内存带宽" prop="men2.GiBps">
             <el-input-number v-model="formData.men2.GiBps" controls-position="right" :controls="false"
               style="width: 100%;" />
@@ -236,7 +236,7 @@
         </el-col>
       </el-row>
       <el-row :gutter="20">
-        <el-col :span="24">
+        <el-col :sm="24" :lg="12">
           <el-form-item label="性能模式" prop="processing_mode">
             <el-radio-group v-model="formData.processing_mode">
               <el-radio :value="mode" v-for="mode in Object.values(ProcessingMode)">{{ mode }}</el-radio>
@@ -261,6 +261,7 @@ import { Dialog } from '@/components/Dialog'
 import type { SystemConfig } from '@/store/types'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Type, ProcessingMode } from '@/store/types/index.d'
+import type { PopoverInstance } from 'element-plus'
 
 // Table表格的高度
 const TABLE_HEIGHT = window.innerHeight - 260
@@ -441,8 +442,10 @@ const clearFilter = (prop: string) => {
   systemConfigStore.clearFilter(prop)
 }
 
-const applyFilter = () => {
+const popverRef = ref<Array<PopoverInstance>>()
+const applyFilter = (idx: number) => {
   // 过滤会自动应用，这里可以关闭popover或显示消息
+  popverRef.value[idx]?.hide()
   ElMessage.success('过滤条件已应用')
 }
 
