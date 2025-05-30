@@ -2,7 +2,7 @@
   <el-card>
     <div class="flex justify-between items-center">
       <section class="custom-header-left flex flex-col gap-4">
-        <h2>{{ props.modeName }}</h2>
+        <el-tag size="large" type="success">{{ props.modeName }}</el-tag>
         <el-button type="primary" @click="$emit('create')">
           {{ t('cardDetails.createNew') }}
         </el-button>

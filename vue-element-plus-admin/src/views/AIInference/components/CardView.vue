@@ -1,6 +1,8 @@
 <template>
   <div class="markov-cards-container grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
-    <el-card v-for="item in props.displayViewModeList" :key="item.id" class="select-card relative"
+    <el-card v-for="item in props.displayViewModeList" :key="item.id"
+      v-memo="[item.id, item.status, selectedItems[item.id], hoveredId]"
+      class="select-card relative transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
       style="max-width: 480px" @mouseenter="handleMouseEnter(item.id)" @mouseleave="handleMouseLeave"
       @click="emit('detail', item)">
       <div v-if="props.isSelectionMode" class="checkbox-wrapper absolute top-2 right-2 z-10">
@@ -8,33 +10,70 @@
           @change="() => handleSelect(item, selectedItems[item.id])" />
       </div>
       <template #header>
-        <span :class="{ 'text-blue-500': hoveredId === item.id }">{{ item.model }}</span>
+        <div class="flex items-center justify-between">
+          <span :class="{
+            'text-blue-500 font-medium': hoveredId === item.id,
+            'text-gray-700': hoveredId !== item.id
+          }" class="transition-colors duration-200 truncate">
+            {{ item.model }}
+          </span>
+          <el-tag :type="getStatusType(item.status)" size="small" effect="light" class="flex-shrink-0 ml-2">
+            {{ item.status }}
+          </el-tag>
+        </div>
       </template>
-      <div class="text item">
-        <p> {{ item.name }}</p>
-        <p> {{ item.createTime }}</p>
+      <div class="text item space-y-2">
+        <div class="flex items-center gap-2">
+          <Icon :icon="'vi-ant-design:project-outlined'" class="text-gray-400 flex-shrink-0" />
+          <p class="text-sm text-gray-600 truncate m-0">{{ item.name }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <Icon :icon="'vi-ant-design:calendar-outlined'" class="text-gray-400 flex-shrink-0" />
+          <p class="text-xs text-gray-500 m-0">{{ formatDate(item.createTime) }}</p>
+        </div>
       </div>
       <template #footer>
-        <section class="flex items-center gap-2">
-          <Icon :icon="'vi-ant-design:check-circle-filled'" :color="item.status === 'running' ? 'blue' : ''" />
-          <span :style="{ color: item.status === 'running' ? 'blue' : '' }">{{ item.status }}</span>
+        <section class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <Icon :icon="'vi-ant-design:check-circle-filled'" :color="item.status === 'running' ? '#10b981' : '#6b7280'"
+              class="transition-colors duration-200" />
+            <span :style="{ color: item.status === 'running' ? '#10b981' : '#6b7280' }"
+              class="text-sm font-medium transition-colors duration-200">
+              {{ getStatusText(item.status) }}
+            </span>
+          </div>
+          <div class="flex items-center gap-1 text-xs text-gray-400">
+            <Icon :icon="'vi-ant-design:user-outlined'" />
+            <span>{{ item.creator || 'Unknown' }}</span>
+          </div>
         </section>
       </template>
-      <footer class="absolute bottom-2 right-2 flex gap-2 transition-opacity duration-300 text-blue-500"
-        :class="{ 'opacity-0': hoveredId !== item.id }">
-        <Icon :icon="'vi-ant-design:edit-outlined'" @click.stop="handleEditTask(item, $event)" />
-        <el-popover effect="light" content="Top Center prompts info" placement="top" width="200">
+      <footer class="absolute bottom-2 right-2 flex gap-2 transition-all duration-300 text-blue-500" :class="{
+        'opacity-0 transform translate-y-2': hoveredId !== item.id,
+        'opacity-100 transform translate-y-0': hoveredId === item.id
+      }">
+        <el-tooltip content="编辑任务" placement="top" :show-after="500">
+          <Icon :icon="'vi-ant-design:edit-outlined'" @click.stop="handleEditTask(item, $event)"
+            class="hover:text-blue-600 cursor-pointer transition-colors duration-200" />
+        </el-tooltip>
+        <el-popover effect="light" placement="top" width="220" :show-after="300">
           <template #default>
-            <div v-for="(key) in ['model', 'handware', 'deployment']" :key="key">
-              <span class="horizontal-line">{{ key }}: {{ key }}</span>
+            <div class="space-y-2">
+              <div v-for="(key) in ['model', 'hardware', 'deployment']" :key="key" class="info-item">
+                <span class="font-medium text-gray-700">{{ key }}:</span>
+                <span class="text-gray-600 ml-2">{{ item[key] || 'N/A' }}</span>
+              </div>
             </div>
-            <!-- <Icon :icon="'vi-ant-design:question-circle-outlined'" @click.stop /> -->
           </template>
           <template #reference>
-            <Icon :icon="'vi-ant-design:question-circle-outlined'" @click.stop />
+            <Icon :icon="'vi-ant-design:question-circle-outlined'" @click.stop
+              class="hover:text-blue-600 cursor-pointer transition-colors duration-200" />
           </template>
         </el-popover>
-        <Icon :icon="'vi-ant-design:delete-outlined'" @click.stop="handleDeleteTask(item, $event)" />
+        <el-tooltip content="删除任务" placement="top" :show-after="500">
+          <Icon :icon="'vi-ant-design:delete-outlined'" @click.stop="handleDeleteTask(item, $event)"
+            class="hover:text-red-500 cursor-pointer transition-colors duration-200" />
+        </el-tooltip>
       </footer>
     </el-card>
   </div>
@@ -125,10 +164,22 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, reactive, computed, defineComponent, h } from 'vue'
 import { useCardSelection } from '@/composables/useCardSelection'
-import type { Task } from '@/store/types'
 import { useInferenceEvalStore } from '@/store/modules/inference'
 import { Dialog } from '@/components/Dialog'
 import { ElSelect, ElInputNumber, ElSwitch, ElOption, ElInput, ElRadio, ElRadioGroup } from 'element-plus'
+
+// Define Task type locally if not available from store
+interface Task {
+  id: number
+  name: string
+  model: string
+  status: string
+  createTime: string
+  updateTime?: string
+  creator?: string
+  hardware?: string
+  deployment?: string
+}
 
 const props = defineProps<{
   displayViewModeList: Task[]
@@ -549,6 +600,45 @@ const FormFieldRenderer = defineComponent({
     }
   }
 })
+
+// Utility functions
+const getStatusType = (status: string): 'success' | 'warning' | 'info' | 'primary' | 'danger' => {
+  const statusMap: Record<string, 'success' | 'warning' | 'info' | 'primary' | 'danger'> = {
+    'running': 'success',
+    'pending': 'warning',
+    'completed': 'info',
+    'failed': 'danger',
+    'stopped': 'info'
+  }
+  return statusMap[status] || 'primary'
+}
+
+const getStatusText = (status: string): string => {
+  const textMap: Record<string, string> = {
+    'running': '运行中',
+    'pending': '等待中',
+    'completed': '已完成',
+    'failed': '失败',
+    'stopped': '已停止'
+  }
+  return textMap[status] || status
+}
+
+const formatDate = (dateString: string): string => {
+  if (!dateString) return 'N/A'
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch {
+    return dateString
+  }
+}
 </script>
 
 <style lang="less" scoped>
