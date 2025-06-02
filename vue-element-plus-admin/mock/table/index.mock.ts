@@ -182,18 +182,34 @@ const paginate = (data: ListProps[], page: number, perPage: number) => {
 
 // 工具函数：处理筛选
 const filterData = (data: ListProps[], filters: any) => {
+  console.log('Mock API - 接收到的筛选条件:', filters)
+
   if (!filters) return data
 
   return data.filter(item => {
     for (const [key, value] of Object.entries(filters)) {
       if (value === null || value === undefined || value === '') continue
 
-      if (key === 'name' && typeof value === 'string') {
-        if (!item.name.toLowerCase().includes(value.toLowerCase())) return false
-      } else if (key === 'type' && value !== item.type) {
-        return false
-      } else if (key === 'processing_mode' && value !== item.processing_mode) {
-        return false
+      console.log(`筛选字段 ${key}, 筛选值:`, value, '数据项值:', item[key as keyof ListProps])
+
+      if (key === 'name') {
+        if (typeof value === 'string') {
+          if (!item.name.toLowerCase().includes(value.toLowerCase())) return false
+        } else if (Array.isArray(value)) {
+          if (!value.some(v => item.name.toLowerCase().includes(v.toLowerCase()))) return false
+        }
+      } else if (key === 'type') {
+        if (typeof value === 'string') {
+          if (value !== item.type) return false
+        } else if (Array.isArray(value)) {
+          if (!value.includes(item.type)) return false
+        }
+      } else if (key === 'processing_mode') {
+        if (typeof value === 'string') {
+          if (value !== item.processing_mode) return false
+        } else if (Array.isArray(value)) {
+          if (!value.includes(item.processing_mode)) return false
+        }
       }
     }
     return true

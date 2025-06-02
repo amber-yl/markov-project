@@ -1,14 +1,16 @@
 import { defineStore } from 'pinia'
 import { store } from '../index'
 import {
-  markov_sim_get_sys_list,
-  markov_sim_get_sys_detail_by_id,
-  markov_sim_post_sys_create,
-  markov_sim_post_sys_delete,
-  markov_sim_post_sys_update,
-  markov_sim_get_create_model_schema
+  markov_sim_get_all_configs,
+  markov_sim_get_config_by_id,
+  markov_sim_create_config,
+  markov_sim_delete_configs_by_ids,
+  markov_sim_update_config,
+  markov_sim_get_create_model_schema,
+  markov_sim_get_config_stats
 } from '@/api/request'
 import type { SystemConfig, TableColumn, TableFilter, PaginationConfig } from '@/store/types'
+import { ElMessage } from 'element-plus'
 
 interface SystemConfigState {
   configs: SystemConfig[]
@@ -17,7 +19,16 @@ interface SystemConfigState {
   filters: TableFilter
   columns: TableColumn[]
   selectedConfigs: string[]
-  schemeConfigs: {}
+  schemeConfigs: any
+  serverPagination: {
+    total: number
+    page: number
+    per_page: number
+    total_pages: number
+  }
+  sortConfig: {
+    order_bys: string[]
+  }
 }
 
 export const useSystemConfigStore = defineStore('systemConfig', {
@@ -29,35 +40,44 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       currentPage: 1,
       pageSize: 10,
       total: 0,
-      pageSizes: [5, 10, 20, 30, 40]
+      pageSizes: [5, 10, 20, 30, 40, 50]
+    },
+    serverPagination: {
+      total: 0,
+      page: 1,
+      per_page: 10,
+      total_pages: 0
+    },
+    sortConfig: {
+      order_bys: []
     },
     filters: {},
     columns: [
       { label: '硬件名称', prop: 'name', minWidth: '150', isShow: true },
       { label: '硬件类型', prop: 'type', minWidth: '120', isShow: true },
-      { label: '创建时间', prop: 'created_at', minWidth: '120', isShow: true },
-      { label: '更新时间', prop: 'updated_at', minWidth: '120', isShow: false },
+      { label: '创建时间', prop: 'created_at', minWidth: '160', isShow: true },
+      { label: '更新时间', prop: 'updated_at', minWidth: '160', isShow: false },
       { label: '性能模式', prop: 'processing_mode', minWidth: '120', isShow: true },
       {
-        label: 'Cube-float16-理论算力',
+        label: 'Cube-理论算力',
         prop: 'matrix.float16.tflops',
         minWidth: '180',
         isShow: true
       },
       {
-        label: 'Cube-float16-利用率',
+        label: 'Cube-利用率',
         prop: 'matrix.float16.calibration_coefficient',
         minWidth: '180',
         isShow: false
       },
       {
-        label: 'Vector-float16-理论算力',
+        label: 'Vector-理论算力',
         prop: 'vector.float16.tflops',
         minWidth: '180',
         isShow: false
       },
       {
-        label: 'Vector-float16-利用率',
+        label: 'Vector-利用率',
         prop: 'vector.float16.calibration_coefficient',
         minWidth: '180',
         isShow: false
@@ -76,9 +96,9 @@ export const useSystemConfigStore = defineStore('systemConfig', {
         minWidth: '180',
         isShow: false
       },
-      { label: 'GPU内存容量', prop: 'men2.GiB', minWidth: '120', isShow: false },
-      { label: 'GPU内存带宽', prop: 'men2.GiBps', minWidth: '120', isShow: false },
-      { label: '网络相关', prop: 'netWorks', minWidth: '120', isShow: false },
+      { label: 'CPU内存容量', prop: 'men2.GiB', minWidth: '120', isShow: false },
+      { label: 'CPU内存带宽', prop: 'men2.GiBps', minWidth: '120', isShow: false },
+      { label: '网络配置', prop: 'netWorks', minWidth: '120', isShow: false },
       { label: '操作', prop: 'operations', fixed: 'right', minWidth: '200', isShow: true }
     ],
     selectedConfigs: []
@@ -87,137 +107,118 @@ export const useSystemConfigStore = defineStore('systemConfig', {
   getters: {
     // 获取可见的列
     visibleColumns: (state) =>
-      state.columns.filter((col) => {
-        return col.isShow
-      }),
+      state.columns.filter((col) => col.isShow),
 
     // 获取隐藏的列
-    hiddenColumns: (state) => state.columns.filter((col) => !col.isShow),
-
-    // 获取过滤后的配置列表
-    filteredConfigs: (state) => {
-      let filtered = [...state.configs]
-
-      // 应用过滤器
-      Object.keys(state.filters).forEach((prop) => {
-        const filterValue = state.filters[prop]
-        if (Array.isArray(filterValue) && filterValue.length > 0) {
-          filtered = filtered.filter((config) =>
-            filterValue.includes(config[prop as keyof SystemConfig] as string)
-          )
-        } else if (typeof filterValue === 'string' && filterValue) {
-          filtered = filtered.filter((config) =>
-            String(config[prop as keyof SystemConfig])
-              .toLowerCase()
-              .includes(filterValue.toLowerCase())
-          )
-        }
-      })
-
-      return filtered
-    },
-
-    // 获取分页后的配置列表
-    paginatedConfigs: (state) => {
-      let filtered = [...state.configs]
-      if (Object.keys(state.filters).length > 0) {
-        Object.keys(state.filters).forEach((prop) => {
-          const filterValue = state.filters[prop]
-          if (Array.isArray(filterValue) && filterValue.length > 0) {
-            filtered = filtered.filter((config) =>
-              filterValue.includes(config[prop as keyof SystemConfig] as string)
-            )
-          } else if (typeof filterValue === 'string' && filterValue) {
-            filtered = filtered.filter((config) =>
-              String(config[prop as keyof SystemConfig])
-                .toLowerCase()
-                .includes(filterValue.toLowerCase())
-            )
-          }
-        })
-      }
-      const startIndex = (state.pagination.currentPage - 1) * state.pagination.pageSize
-      const endIndex = startIndex + state.pagination.pageSize
-      return filtered.slice(startIndex, endIndex)
-    },
+    hiddenColumns: (state) =>
+      state.columns.filter((col) => !col.isShow),
 
     // 获取某列的所有唯一值
     getColumnValues: (state) => (prop: string) => {
-      const values = new Set(state.configs.map((config) => config[prop as keyof SystemConfig]))
-      return Array.from(values)
+      const values = new Set()
+      state.configs.forEach(config => {
+        const value = getNestedValue(config, prop)
+        if (value !== undefined && value !== null) {
+          values.add(String(value))
+        }
+      })
+      return Array.from(values) as string[]
+    },
+
+    // 获取当前应用的筛选器
+    activeFilters: (state) => {
+      const active: Record<string, any> = {}
+      Object.keys(state.filters).forEach(key => {
+        const value = state.filters[key]
+        if (value !== undefined && value !== null && value !== '') {
+          if (Array.isArray(value) && value.length > 0) {
+            active[key] = value
+          } else if (typeof value === 'string' && value.trim()) {
+            active[key] = value.trim()
+          }
+        }
+      })
+      return active
     }
   },
 
   actions: {
-    // 获取配置列表
-    async fetchConfigs() {
+    // 获取配置列表（支持分页、筛选、排序）
+    async fetchConfigs(resetPage = false) {
       this.loading = true
       try {
-        const { data } = await markov_sim_get_sys_list()
-        const { list } = data
-        // 确保所有配置都有id字段
-        this.configs = list.map((item: any) => ({
-          ...item
-        }))
-        this.pagination.total = this.configs.length
+        if (resetPage) {
+          this.pagination.currentPage = 1
+        }
+
+        const params = {
+          filters: this.activeFilters,
+          order_bys: this.sortConfig.order_bys,
+          page: this.pagination.currentPage,
+          per_page: this.pagination.pageSize
+        }
+
+        console.log('发送API请求参数:', params)
+        console.log('当前筛选条件:', this.filters)
+        console.log('活跃筛选条件:', this.activeFilters)
+
+        const { data } = await markov_sim_get_all_configs(params)
+        const responseData = data
+
+        console.log('API响应数据:', responseData)
+
+        this.configs = responseData.list || []
+        this.serverPagination = {
+          total: responseData.total || 0,
+          page: responseData.page || 1,
+          per_page: responseData.per_page || 10,
+          total_pages: responseData.total_pages || 0
+        }
+
+        // 同步本地分页状态
+        this.pagination.total = this.serverPagination.total
+        this.pagination.currentPage = this.serverPagination.page
+
       } catch (error) {
         console.error('Failed to fetch configs:', error)
+        ElMessage.error('获取配置列表失败')
+        this.configs = []
+        this.serverPagination = { total: 0, page: 1, per_page: 10, total_pages: 0 }
       } finally {
         this.loading = false
       }
     },
-    // 获取Schema配置列表
+
+    // 获取Schema配置
     async fetchSchemaConfigs() {
       this.loading = true
       try {
         const { data } = await markov_sim_get_create_model_schema()
-        const { schema } = data
-        console.log(schema.template, "| schema")
-        // 确保所有配置都有id字段
-        this.schemeConfigs = schema.template
-        // this.pagination.total = this.configs.length
+        this.schemeConfigs = data.data?.schema || {}
       } catch (error) {
-        console.error('Failed to fetch configs:', error)
+        console.error('Failed to fetch schema configs:', error)
+        ElMessage.error('获取Schema配置失败')
       } finally {
         this.loading = false
       }
     },
 
     // 创建配置
-    async createConfig(data: SystemConfig) {
+    async createConfig(configData: Omit<SystemConfig, 'id' | 'created_at' | 'updated_at'>) {
       this.loading = true
       try {
-        await markov_sim_post_sys_create(data)
-      } catch (error) {
+        const { data } = await markov_sim_create_config(configData)
+        if (data) {
+          ElMessage.success('创建成功')
+          await this.fetchConfigs()
+          return data
+        } else {
+          throw new Error('创建失败')
+        }
+      } catch (error: any) {
         console.error('Failed to create config:', error)
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    // 删除配置
-    async deleteConfig(id: string) {
-      this.loading = true
-      try {
-        await markov_sim_post_sys_delete({ ids: id })
-      } catch (error) {
-        console.error('Failed to delete config:', error)
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    // 获取配置详情
-    async getConfigDetail(id: string) {
-      this.loading = true
-      try {
-        const res = await markov_sim_get_sys_detail_by_id(id)
-        console.log(res.data)
-        return res.data
-      } catch (error) {
-        console.error('Failed to fetch config detail:', error)
+        const message = error.response?.data?.message || error.message || '创建失败'
+        ElMessage.error(message)
         throw error
       } finally {
         this.loading = false
@@ -225,64 +226,127 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
 
     // 更新配置
-    async updateConfig(id: string, data: SystemConfig) {
+    async updateConfig(id: string, configData: Omit<SystemConfig, 'id' | 'created_at' | 'updated_at'>) {
       this.loading = true
       try {
-        // 通过id查找配置
-        const config = this.configs.find((config) => config.id === id)
-        if (!config) {
-          throw new Error('Config not found')
+        const updateData = { ...configData, id } as SystemConfig
+        const { data } = await markov_sim_update_config(updateData)
+
+        if (data) {
+          ElMessage.success('更新成功')
+          await this.fetchConfigs()
+          return data
+        } else {
+          throw new Error('更新失败')
         }
-        // 更新配置
-        // 发送更新请求
-        await markov_sim_post_sys_update(Object.assign(data, { id }))
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to update config:', error)
+        const message = error.response?.data?.message || error.message || '更新失败'
+        ElMessage.error(message)
         throw error
       } finally {
         this.loading = false
       }
     },
 
-    // 克隆配置实现
-    async cloneConfig(id: string, newName: string) {
+    // 获取配置详情
+    async getConfigDetail(id: string): Promise<SystemConfig> {
       this.loading = true
       try {
-        const originalConfig = this.configs.find((config) => config.id === id)
-        if (originalConfig) {
-          const clonedConfig: SystemConfig = {
-            ...originalConfig,
-            id: String(Date.now()),
-            name: newName,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-          this.configs.unshift(clonedConfig)
-          this.pagination.total++
-          return clonedConfig
+        const { data } = await markov_sim_get_config_by_id(id)
+        if (data) {
+          return data
+        } else {
+          throw new Error('获取详情失败')
         }
+      } catch (error: any) {
+        console.error('Failed to fetch config detail:', error)
+        const message = error.response?.data?.message || error.message || '获取详情失败'
+        ElMessage.error(message)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // 删除配置（单个或批量）
+    async deleteConfigs(ids: string[]) {
+      if (!ids || ids.length === 0) {
+        ElMessage.warning('请选择要删除的配置')
+        return
+      }
+
+      this.loading = true
+      try {
+        const { data } = await markov_sim_delete_configs_by_ids(ids)
+        if (data) {
+          ElMessage.success(`成功删除 ${ids.length} 条记录`)
+          await this.fetchConfigs()
+        } else {
+          throw new Error('删除失败')
+        }
+      } catch (error: any) {
+        console.error('Failed to delete configs:', error)
+        const message = error.response?.data?.message || error.message || '删除失败'
+        ElMessage.error(message)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // 克隆配置
+    async cloneConfig(id: string, newName: string) {
+      try {
+        const originalConfig = await this.getConfigDetail(id)
+        const cloneData = {
+          ...originalConfig,
+          name: newName
+        }
+        delete (cloneData as any).id
+        delete (cloneData as any).created_at
+        delete (cloneData as any).updated_at
+
+        return await this.createConfig(cloneData)
       } catch (error) {
         console.error('Failed to clone config:', error)
         throw error
-      } finally {
-        this.loading = false
       }
     },
 
-    // 设置过滤器
-    setFilter(prop: string, value: string[] | string) {
-      this.filters[prop] = value
-      this.pagination.currentPage = 1 // 重置到第一页
+    // 设置排序
+    setSorting(orderBys: string[]) {
+      this.sortConfig.order_bys = orderBys
+      this.fetchConfigs(true)
     },
 
-    // 清除过滤器
+    // 设置筛选器
+    setFilter(prop: string, value: string[] | string | null) {
+      console.log(`设置筛选器 ${prop}:`, value)
+      if (value === null || value === undefined || value === '' ||
+        (Array.isArray(value) && value.length === 0)) {
+        delete this.filters[prop]
+      } else {
+        this.filters[prop] = value
+      }
+      console.log('更新后的筛选条件:', this.filters)
+      this.fetchConfigs(true) // 筛选时重置到第一页
+    },
+
+    // 清除筛选器
     clearFilter(prop?: string) {
       if (prop) {
         delete this.filters[prop]
       } else {
         this.filters = {}
       }
-      this.pagination.currentPage = 1
+      this.fetchConfigs(true)
+    },
+
+    // 设置分页
+    setPagination(pagination: Partial<PaginationConfig>) {
+      this.pagination = { ...this.pagination, ...pagination }
+      this.fetchConfigs()
     },
 
     // 设置列可见性
@@ -329,11 +393,6 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       })
     },
 
-    // 设置分页
-    setPagination(pagination: Partial<PaginationConfig>) {
-      this.pagination = { ...this.pagination, ...pagination }
-    },
-
     // 设置选中的配置
     setSelectedConfigs(ids: string[]) {
       this.selectedConfigs = ids
@@ -345,11 +404,26 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       this.filters = {}
       this.pagination.currentPage = 1
       this.selectedConfigs = []
+      this.sortConfig.order_bys = []
+    },
+
+    // 获取统计信息
+    async getStats() {
+      try {
+        const { data } = await markov_sim_get_config_stats()
+        return data
+      } catch (error) {
+        console.error('Failed to fetch stats:', error)
+        return null
+      }
     }
   }
-
-  // persist: true
 })
+
+// 工具函数：获取嵌套对象的值
+function getNestedValue(obj: any, path: string): any {
+  return path.split('.').reduce((current, key) => current?.[key], obj)
+}
 
 export const useSystemConfigStoreWithOut = () => {
   return useSystemConfigStore(store)

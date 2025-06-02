@@ -43,7 +43,15 @@ interface ListProps {
   }[]
 }
 
-export interface RequestResponse {
+// 通用API响应接口
+export interface RequestResponse<T = any> {
+  code: number
+  message?: string
+  data: T
+}
+
+// 兼容旧版本的响应接口
+export interface LegacyRequestResponse {
   list: ListProps[]
   total: number
 }

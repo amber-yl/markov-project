@@ -30,7 +30,7 @@
       </section>
     </header>
     <main>
-      <el-table v-loading="loading" :data="paginatedConfigs" stripe border style="width: 100%"
+      <el-table v-loading="loading" :data="configs" stripe border style="width: 100%"
         @selection-change="handleSelectionChange" :height="tableHeight">
         <el-table-column type="selection" width="55" />
         <!-- 动态列 -->
@@ -41,7 +41,8 @@
               <div class="flex items-center justify-center gap-1">
                 <span>{{ col.label }}</span>
                 <el-popover v-if="!col.prop.includes('.') && !col.prop.includes('netWorks')" placement="bottom"
-                  :width="250" trigger="click" popper-class="filter-popover" ref="popverRef">
+                  :width="250" trigger="click" popper-class="filter-popover" :ref="(el) => setPopoverRef(el, idx)"
+                  @show="initTempFilter(col.prop)">
                   <template #reference>
                     <Icon :icon="'vi-ant-design:filter-outlined'"
                       class="cursor-pointer text-blue-500 hover:text-blue-700" @click.stop />
@@ -79,6 +80,16 @@
               <span v-if="col.prop.includes('.')">
                 {{ getNestedValue(row, col.prop) }}
               </span>
+              <span v-else-if="col.prop === 'created_at' || col.prop === 'updated_at'">
+                {{ formatDateTime(row[col.prop]) }}
+              </span>
+              <el-tag v-else-if="col.prop === 'type'" :type="row.type === 'gpu' ? 'primary' : 'success'">
+                {{ row.type.toUpperCase() }}
+              </el-tag>
+              <el-tag v-else-if="col.prop === 'processing_mode'"
+                :type="row.processing_mode === 'roofline' ? 'warning' : 'info'">
+                {{ row.processing_mode }}
+              </el-tag>
               <span v-else>
                 {{ Array.isArray(row[col.prop]) ? row[col.prop][0] : row[col.prop] }}
               </span>
@@ -162,8 +173,7 @@
     </div>
   </el-drawer>
 
-  <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose"
-    style="height: 80%;">
+  <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose">
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
@@ -174,7 +184,7 @@
         <el-col :sm="24" :lg="12">
           <el-form-item label="硬件类型" prop="type">
             <el-radio-group v-model="formData.type">
-              <el-radio :value="type" v-for="type in Object.values(Type)">{{ type }}</el-radio>
+              <el-radio :value="type" v-for="type in Object.values(Type)" :key="type">{{ type }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
@@ -182,13 +192,13 @@
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
           <el-form-item label="Cube算力" prop="matrix.float16.tflops">
-            <el-input-number v-model="formData.matrix.float16.tflops" controls-position="right" :controls="false"
+            <el-input-number v-model="formData.matrix!.float16.tflops" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
           <el-form-item label="Vector算力" prop="vector.float16.tflops">
-            <el-input-number v-model="formData.vector.float16.tflops" controls-position="right" :controls="false"
+            <el-input-number v-model="formData.vector!.float16.tflops" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
@@ -196,13 +206,13 @@
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
           <el-form-item label="显存容量" prop="men1.GiB">
-            <el-input-number v-model="formData.men1.GiB" controls-position="right" :controls="false"
+            <el-input-number v-model="formData.men1!.GiB" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
           <el-form-item label="显存带宽" prop="men1.GiBps">
-            <el-input-number v-model="formData.men1.GiBps" controls-position="right" :controls="false"
+            <el-input-number v-model="formData.men1!.GiBps" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
@@ -210,27 +220,27 @@
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
           <el-form-item label="Cube算力利用率" prop="men1.cube_calibration_coefficient">
-            <el-input-number v-model="formData.men1.cube_calibration_coefficient" controls-position="right"
-              :controls="false" style="width: 100%;" />
+            <el-input-number v-model="formData.men1!.cube_calibration_coefficient" controls-position="right"
+              :controls="false" :min="0" :max="1" :step="0.01" style="width: 100%;" />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
           <el-form-item label="Vector算力利用率" prop="men1.vector_calibration_coefficient">
-            <el-input-number v-model="formData.men1.vector_calibration_coefficient" controls-position="right"
-              :controls="false" style="width: 100%;" />
+            <el-input-number v-model="formData.men1!.vector_calibration_coefficient" controls-position="right"
+              :controls="false" :min="0" :max="1" :step="0.01" style="width: 100%;" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :sm="24" :lg="12">
-          <el-form-item label="GPU内存容量" prop="men2.GiB">
-            <el-input-number v-model="formData.men2.GiB" controls-position="right" :controls="false"
+          <el-form-item label="CPU内存容量" prop="men2.GiB">
+            <el-input-number v-model="formData.men2!.GiB" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
         <el-col :sm="24" :lg="12">
-          <el-form-item label="GPU内存带宽" prop="men2.GiBps">
-            <el-input-number v-model="formData.men2.GiBps" controls-position="right" :controls="false"
+          <el-form-item label="CPU内存带宽" prop="men2.GiBps">
+            <el-input-number v-model="formData.men2!.GiBps" controls-position="right" :controls="false"
               style="width: 100%;" />
           </el-form-item>
         </el-col>
@@ -239,7 +249,7 @@
         <el-col :sm="24" :lg="12">
           <el-form-item label="性能模式" prop="processing_mode">
             <el-radio-group v-model="formData.processing_mode">
-              <el-radio :value="mode" v-for="mode in Object.values(ProcessingMode)">{{ mode }}</el-radio>
+              <el-radio :value="mode" v-for="mode in Object.values(ProcessingMode)" :key="mode">{{ mode }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
@@ -255,7 +265,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick, onBeforeMount } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useSystemConfigStore } from '@/store/modules/systemConfigs'
 import { Dialog } from '@/components/Dialog'
 import type { SystemConfig } from '@/store/types'
@@ -265,12 +275,13 @@ import type { PopoverInstance } from 'element-plus'
 
 // Table表格的高度
 const TABLE_HEIGHT = window.innerHeight - 260
+
 // Store
 const systemConfigStore = useSystemConfigStore()
 
 // 响应式数据
 const loading = computed(() => systemConfigStore.loading)
-const paginatedConfigs = computed(() => systemConfigStore.paginatedConfigs)
+const configs = computed(() => systemConfigStore.configs)
 const pagination = computed(() => systemConfigStore.pagination)
 const visibleColumns = computed(() => systemConfigStore.visibleColumns)
 const transferData = computed(() => systemConfigStore.getTransferData())
@@ -278,12 +289,17 @@ const transferRightValue = computed({
   get: () => systemConfigStore.getRightValue(),
   set: (value) => systemConfigStore.handleTransferChange(value)
 })
+
 // 页面状态
 const columnDrawerVisible = ref(false)
 const dialogVisible = ref(false)
 const submitLoading = ref(false)
 const searchKeyword = ref('')
 const selectedConfigs = ref<SystemConfig[]>([])
+const popoverRefs = ref<Map<number, PopoverInstance>>(new Map())
+
+// 临时筛选状态 - 只有点击确认才应用
+const tempFilters = ref<Record<string, string[]>>({})
 
 // 表单相关
 const formRef = ref()
@@ -291,7 +307,8 @@ const isEditMode = ref(false)
 const isCloneMode = ref(false)
 const currentEditId = ref<string | null>(null)
 
-const formData = ref<Partial<SystemConfig>>({
+// 创建初始表单数据的工厂函数
+const createInitialFormData = (): Partial<SystemConfig> => ({
   name: '',
   type: Type.gpu,
   matrix: {
@@ -316,8 +333,11 @@ const formData = ref<Partial<SystemConfig>>({
     GiB: 32,
     GiBps: 300
   },
-  processing_mode: ProcessingMode.roofline
+  processing_mode: ProcessingMode.roofline,
+  netWorks: []
 })
+
+const formData = ref<Partial<SystemConfig>>(createInitialFormData())
 
 const formRules = {
   name: [
@@ -328,7 +348,7 @@ const formRules = {
     { required: true, message: '请选择硬件类型', trigger: 'change' }
   ],
   processing_mode: [
-    { required: true, message: '请选择硬件类型', trigger: 'change' }
+    { required: true, message: '请选择性能模式', trigger: 'change' }
   ]
 }
 
@@ -337,13 +357,25 @@ const dialogTitle = computed(() => {
   return isEditMode.value ? '编辑配置' : '创建配置'
 })
 
+// 工具函数
+const getNestedValue = (obj: any, path: string) => {
+  return path.split('.').reduce((current, key) => current?.[key], obj)
+}
+
+const formatDateTime = (dateString: string) => {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleString('zh-CN')
+}
+
+const setPopoverRef = (el: any, index: number) => {
+  if (el) {
+    popoverRefs.value.set(index, el)
+  }
+}
+
 // 搜索功能
 const handleSearch = (value: string) => {
-  if (value.trim()) {
-    systemConfigStore.setFilter('name', value.trim())
-  } else {
-    systemConfigStore.clearFilter('name')
-  }
+  systemConfigStore.setFilter('name', value.trim() || null)
 }
 
 // 分页处理
@@ -358,18 +390,15 @@ const handleCurrentChange = (page: number) => {
 // 选择处理
 const handleSelectionChange = (selection: SystemConfig[]) => {
   selectedConfigs.value = selection
-  systemConfigStore.setSelectedConfigs(selection.map(item => item.id))
+  systemConfigStore.setSelectedConfigs(selection.map(item => item.id!))
 }
 
 // 列管理
 const toggleColumnManager = () => {
-  console.log('Transfer data:', transferData.value)
-  console.log('Right value:', transferRightValue.value)
   columnDrawerVisible.value = true
 }
 
 const handleTransferChange = (targetKeys: string[]) => {
-  console.log('Transfer change:', targetKeys)
   systemConfigStore.handleTransferChange(targetKeys)
 }
 
@@ -385,27 +414,20 @@ const hideAllColumns = () => {
 }
 
 const resetColumns = () => {
-  const defaultVisible = ['name', 'type', 'created_at', 'updated_at', 'matrix.float16.tflops']
+  const defaultVisible = ['name', 'type', 'created_at', 'processing_mode', 'matrix.float16.tflops']
   handleTransferChange(defaultVisible)
 }
 
-// 过滤相关 - 支持嵌套字段
+// 过滤相关
 const getColumnValues = (prop: string) => {
-  const values = new Set()
-  systemConfigStore.configs.forEach(config => {
-    let value = config
-    const props = prop.split('.')
-    for (const p of props) {
-      value = value?.[p]
-    }
-    if (value !== undefined && value !== null) {
-      values.add(String(value))
-    }
-  })
-  return Array.from(values) as string[]
+  return systemConfigStore.getColumnValues(prop)
 }
 
 const getSelectedFilters = (prop: string) => {
+  // 优先从临时筛选状态获取，如果没有则从store获取
+  if (tempFilters.value[prop]) {
+    return tempFilters.value[prop]
+  }
   const filterValue = systemConfigStore.filters[prop]
   return Array.isArray(filterValue) ? filterValue : []
 }
@@ -424,47 +446,66 @@ const isIndeterminate = (prop: string) => {
 
 const handleSelectAll = (prop: string, checked: boolean) => {
   if (checked) {
-    systemConfigStore.setFilter(prop, getColumnValues(prop))
+    tempFilters.value[prop] = getColumnValues(prop)
   } else {
-    systemConfigStore.clearFilter(prop)
+    tempFilters.value[prop] = []
   }
 }
 
 const handleFilterChange = (prop: string, values: string[]) => {
-  if (values.length > 0) {
-    systemConfigStore.setFilter(prop, values)
-  } else {
-    systemConfigStore.clearFilter(prop)
-  }
+  // 只更新临时筛选状态，不立即应用到store
+  tempFilters.value[prop] = values
 }
 
 const clearFilter = (prop: string) => {
-  systemConfigStore.clearFilter(prop)
+  // 清除临时筛选状态
+  tempFilters.value[prop] = []
+  // 立即应用清除操作
+  systemConfigStore.setFilter(prop, null)
 }
 
-const popverRef = ref<Array<PopoverInstance>>()
 const applyFilter = (idx: number) => {
-  // 过滤会自动应用，这里可以关闭popover或显示消息
-  popverRef.value[idx]?.hide()
-  ElMessage.success('过滤条件已应用')
+  console.log('应用筛选条件:', tempFilters.value)
+
+  // 应用所有临时筛选到store
+  Object.keys(tempFilters.value).forEach(prop => {
+    const values = tempFilters.value[prop]
+    console.log(`设置筛选条件 ${prop}:`, values)
+    systemConfigStore.setFilter(prop, values.length > 0 ? values : null)
+  })
+
+  // 清空临时筛选状态
+  tempFilters.value = {}
+
+  // 隐藏popover
+  const popover = popoverRefs.value.get(idx)
+  if (popover) {
+    popover.hide()
+  }
+  ElMessage.success('筛选条件已应用')
 }
 
-// 获取嵌套对象的值
-const getNestedValue = (obj: any, path: string) => {
-  return path.split('.').reduce((current, key) => current?.[key], obj)
+// 初始化临时筛选状态
+const initTempFilter = (prop: string) => {
+  console.log('初始化临时筛选状态:', prop)
+  if (!tempFilters.value[prop]) {
+    const currentFilter = systemConfigStore.filters[prop]
+    tempFilters.value[prop] = Array.isArray(currentFilter) ? [...currentFilter] : []
+    console.log(`${prop} 当前筛选状态:`, tempFilters.value[prop])
+  }
 }
 
 // CRUD操作
 const handleCreate = () => {
-  // resetForm()
+  resetForm()
   isEditMode.value = false
   isCloneMode.value = false
   dialogVisible.value = true
 }
 
-const handleEdit = async (row) => {
+const handleEdit = async (row: SystemConfig) => {
   try {
-    const detail = await systemConfigStore.getConfigDetail(row.id)
+    const detail = await systemConfigStore.getConfigDetail(row.id!)
     formData.value = {
       name: detail.name,
       type: detail.type,
@@ -475,19 +516,18 @@ const handleEdit = async (row) => {
       processing_mode: detail.processing_mode,
       netWorks: detail.netWorks || []
     }
-    currentEditId.value = row.id
+    currentEditId.value = row.id!
     isEditMode.value = true
     isCloneMode.value = false
     dialogVisible.value = true
   } catch (error) {
-    ElMessage.error('获取配置详情失败')
+    console.error('获取配置详情失败:', error)
   }
 }
 
 const handleClone = async (row: SystemConfig) => {
-  console.log(row, "| handleClone");
   try {
-    const detail = await systemConfigStore.getConfigDetail(row.id)
+    const detail = await systemConfigStore.getConfigDetail(row.id!)
     formData.value = {
       name: `${detail.name}_副本_${Date.now()}`,
       type: detail.type,
@@ -502,17 +542,15 @@ const handleClone = async (row: SystemConfig) => {
     isCloneMode.value = true
     dialogVisible.value = true
   } catch (error) {
-    ElMessage.error('获取配置详情失败')
+    console.error('获取配置详情失败:', error)
   }
 }
 
 const handleDelete = async (id: string) => {
   try {
-    await systemConfigStore.deleteConfig(id)
-    ElMessage.success('删除成功')
-    await systemConfigStore.fetchConfigs()
+    await systemConfigStore.deleteConfigs([id])
   } catch (error) {
-    ElMessage.error('删除失败')
+    console.error('删除失败:', error)
   }
 }
 
@@ -533,102 +571,52 @@ const handleBatchDelete = async () => {
       }
     )
 
-    const deletePromises = selectedConfigs.value.map(config =>
-      systemConfigStore.deleteConfig(config.id)
-    )
-
-    await Promise.all(deletePromises)
-    ElMessage.success('批量删除成功')
+    const ids = selectedConfigs.value.map(config => config.id!)
+    await systemConfigStore.deleteConfigs(ids)
     selectedConfigs.value = []
-    await systemConfigStore.fetchConfigs()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('批量删除失败')
+      console.error('批量删除失败:', error)
     }
   }
 }
 
 const handleSubmit = async () => {
   if (!formRef.value) return
+
   try {
     await formRef.value.validate()
     submitLoading.value = true
-    // 构建完整的SystemConfig对象
-    const now = new Date().toISOString()
-    const submitData: Omit<SystemConfig, 'id'> = {
-      name: formData.value.name || '',
-      type: formData.value.type || Type.gpu,
-      created_at: isEditMode.value ? (formData.value.created_at || now) : now,
-      updated_at: now,
-      matrix: formData.value.matrix || {
-        float16: { tflops: 100, calibration_coefficient: 0.5 }
-      },
-      vector: formData.value.vector || {
-        float16: { tflops: 50, calibration_coefficient: 0.5 }
-      },
-      men1: formData.value.men1 || {
-        GiB: 16,
-        GiBps: 500,
-        cube_calibration_coefficient: 0.5,
-        vector_calibration_coefficient: 0.5
-      },
-      men2: formData.value.men2 || {
-        GiB: 32,
-        GiBps: 300
-      },
-      processing_mode: formData.value.processing_mode || 'fp32',
+
+    // 构建提交数据，排除 id, created_at, updated_at
+    const submitData = {
+      name: formData.value.name!,
+      type: formData.value.type!,
+      matrix: formData.value.matrix!,
+      vector: formData.value.vector!,
+      men1: formData.value.men1!,
+      men2: formData.value.men2!,
+      processing_mode: formData.value.processing_mode!,
       netWorks: formData.value.netWorks || []
     }
-    console.log(isEditMode.value, "| isEditMode.value");
+
     if (isEditMode.value && currentEditId.value) {
       await systemConfigStore.updateConfig(currentEditId.value, submitData)
-      ElMessage.success('更新成功')
     } else {
       await systemConfigStore.createConfig(submitData)
-      ElMessage.success('创建成功')
     }
+
     dialogVisible.value = false
-    await systemConfigStore.fetchConfigs()
   } catch (error) {
-    console.error('Submit error:', error)
-    ElMessage.error(isEditMode.value ? '更新失败' : '创建失败')
+    console.error('提交失败:', error)
   } finally {
     submitLoading.value = false
   }
 }
 
 const resetForm = () => {
-  console.log("resetForm");
-  formData.value = {
-    name: '',
-    type: Type.gpu,
-    created_at: '',
-    updated_at: '',
-    matrix: {
-      float16: {
-        tflops: 100,
-        calibration_coefficient: 0.5
-      }
-    },
-    vector: {
-      float16: {
-        tflops: 50,
-        calibration_coefficient: 0.5
-      }
-    },
-    men1: {
-      GiB: 16,
-      GiBps: 500,
-      cube_calibration_coefficient: 0.5,
-      vector_calibration_coefficient: 0.5
-    },
-    men2: {
-      GiB: 32,
-      GiBps: 300
-    },
-    processing_mode: 'fp32',
-    netWorks: []
-  }
+  formData.value = createInitialFormData()
+  currentEditId.value = null
   nextTick(() => {
     formRef.value?.clearValidate()
   })
@@ -638,10 +626,11 @@ const handleDialogClose = () => {
   dialogVisible.value = false
   resetForm()
 }
+
 // 封装动态监听表格高度的方法
 const tableHeight = ref(TABLE_HEIGHT)
 const handleResize = () => {
-  tableHeight.value = TABLE_HEIGHT
+  tableHeight.value = window.innerHeight - 260
 }
 
 // 生命周期
@@ -650,7 +639,7 @@ onMounted(async () => {
   await systemConfigStore.fetchConfigs()
 })
 
-onBeforeMount(() => {
+onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
 })
 
