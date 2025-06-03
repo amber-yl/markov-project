@@ -157,3 +157,5 @@ export const uiConfig = {
     ]
   }
 }
+
+export const defaultVisible = ['name', 'type', 'matrix.float16.tflops', 'processing_mode']

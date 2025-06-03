@@ -3,17 +3,17 @@
     <!-- 统计信息 -->
     <div class="stats mb-4 p-3 bg-gray-50 rounded">
       <div class="flex justify-between text-sm text-gray-600">
-        <span>可管理列数: {{ columns.length }}</span>
+        <span>可管理列数: {{ transferData.length }}</span>
         <span>
-          已显示: {{ visibleCount }} |
-          已隐藏: {{ hiddenCount }}
+          已显示: {{ transferRightValue.length }} |
+          已隐藏: {{ transferData.length - transferRightValue.length }}
         </span>
       </div>
     </div>
 
     <!-- 列管理器 -->
-    <el-transfer v-model="rightValue" filterable :titles="['隐藏的列', '显示的列']" :data="transferData" @change="handleChange"
-      :props="{
+    <el-transfer v-model="transferRightValue" filterable :titles="['隐藏的列', '显示的列']" :data="transferData"
+      @change="handleTransferChange" :props="{
         key: 'key',
         label: 'label',
         disabled: 'disabled'
@@ -47,78 +47,90 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
+import { useSystemConfigStore } from '@/store/modules/systemConfigs'
+import { defaultVisible } from '@/store/config'
 
-interface Column {
-  prop: string
-  label: string
-  defaultHidden?: boolean
-  [key: string]: any
-}
+// interface Column {
+//   prop: string
+//   label: string
+//   defaultHidden?: boolean
+//   [key: string]: any
+// }
+// interface Props {
+//   columns: Column[]
+//   visibleColumns: Column[]
+// }
+// const props = defineProps<Props>()
+// const emit = defineEmits<{
+//   'column-change': [visibleProps: string[]]
+// }>()
 
-interface Props {
-  columns: Column[]
-  visibleColumns: Column[]
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'column-change': [visibleProps: string[]]
-}>()
-
-const rightValue = ref<string[]>([])
-
-// Transfer数据
-const transferData = computed(() => {
-  return props.columns
-    .filter(col => col.prop !== 'operations') // 排除操作列
-    .map(col => ({
-      key: col.prop,
-      label: col.label,
-      disabled: false
-    }))
+const systemConfigStore = useSystemConfigStore()
+const transferRightValue = computed({
+  get: () => systemConfigStore.getRightValue(),
+  set: (value) => systemConfigStore.handleTransferChange(value)
 })
 
+// const rightValue = ref<string[]>([])
+
+// Transfer数据
+const transferData = computed(() => systemConfigStore.getTransferData())
+// 处理变化
+const handleTransferChange = (targetKeys: string[]) => {
+  systemConfigStore.handleTransferChange(targetKeys)
+}
+// 默认展示的列
+const defaultVisibleColumns = ref<any>()
+defaultVisibleColumns.value = defaultVisible
+
+
 // 统计信息
-const visibleCount = computed(() => rightValue.value.length)
-const hiddenCount = computed(() => transferData.value.length - rightValue.value.length)
+// const visibleCount = computed(() => rightValue.value.length)
+// const hiddenCount = computed(() => transferData.value.length - rightValue.value.length)
 
 // 处理变化
-const handleChange = (targetKeys: string[]) => {
-  rightValue.value = targetKeys
-  emit('column-change', targetKeys)
-}
+// const handleChange = (targetKeys: string[]) => {
+//   rightValue.value = targetKeys
+//   // emit('column-change', targetKeys)
+// }
 
 // 显示所有列
 const showAllColumns = () => {
   const allKeys = transferData.value.map(item => item.key)
-  handleChange(allKeys)
+  handleTransferChange(allKeys)
 }
 
 // 隐藏所有列
 const hideAllColumns = () => {
-  handleChange([])
+  handleTransferChange([])
 }
 
 // 重置为默认
 const resetToDefault = () => {
-  const defaultVisible = props.columns
-    .filter(col => !col.defaultHidden && col.prop !== 'operations')
-    .map(col => col.prop)
-  handleChange(defaultVisible)
+  // const defaultVisible = systemConfigStore.schemeConfigs.uiConfig?.table?.columns
+  //   .filter(col => !col.defaultHidden && col.prop !== 'operations')
+  //   .map(col => col.prop)
+  handleTransferChange(defaultVisibleColumns.value)
 }
 
+// const resetToDefault = () => {
+//   const defaultVisible = props.columns
+//     .filter(col => !col.defaultHidden && col.prop !== 'operations')
+//     .map(col => col.prop)
+//   handleChange(defaultVisible)
+// }
+
 // 初始化右侧值
-watch(
-  () => props.visibleColumns,
-  (visibleColumns) => {
-    rightValue.value = visibleColumns
-      .filter(col => col.prop !== 'operations')
-      .map(col => col.prop)
-  },
-  { immediate: true }
-)
+// watch(
+//   () => props.visibleColumns,
+//   (visibleColumns) => {
+//     rightValue.value = visibleColumns
+//       .filter(col => col.prop !== 'operations')
+//       .map(col => col.prop)
+//   },
+//   { immediate: true }
+// )
 </script>
 
 <style lang="less" scoped>

@@ -97,8 +97,7 @@
 
     <!-- 列管理抽屉 -->
     <el-drawer v-model="columnDrawerVisible" title="列管理" direction="rtl" size="45%">
-      <schema-table-column-manager :columns="allColumns" :visible-columns="visibleColumns"
-        @column-change="handleColumnChange" />
+      <schema-table-column-manager />
     </el-drawer>
   </div>
 </template>

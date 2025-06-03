@@ -360,7 +360,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
 
     // 获取Transfer数据
     getTransferData() {
-      return this.columns
+      return this.schemeConfigs.uiConfig.table.columns
         .filter((col) => col.prop !== 'operations')
         .map((col) => ({
           key: col.prop,
@@ -371,16 +371,16 @@ export const useSystemConfigStore = defineStore('systemConfig', {
 
     // 获取右侧已选中的列
     getRightValue() {
-      return this.columns
-        .filter((col) => col.isShow && col.prop !== 'operations')
+      return this.schemeConfigs.uiConfig.table.columns
+        .filter((col) => !col.defaultHidden && col.prop !== 'operations')
         .map((col) => col.prop)
     },
 
     // 处理Transfer变化
     handleTransferChange(targetKeys: string[]) {
-      this.columns.forEach((col) => {
+      this.schemeConfigs.uiConfig.table.columns.forEach((col) => {
         if (col.prop !== 'operations') {
-          col.isShow = targetKeys.includes(col.prop)
+          col.defaultHidden = !targetKeys.includes(col.prop)
         }
       })
     },
