@@ -22,7 +22,7 @@
 
     <!-- 带宽格式 -->
     <span v-else-if="column.formatter === 'bandwidth'">
-      {{ formatBandwidth(value) }}
+      {{ formatBandwidth(value) }} ---
     </span>
 
     <!-- 标签格式 -->
@@ -32,12 +32,14 @@
 
     <!-- 数组格式 -->
     <div v-else-if="Array.isArray(value)" class="array-display">
-      <el-tag v-for="(item, index) in value.slice(0, 3)" :key="index" size="small" class="mr-1">
-        {{ item }}
-      </el-tag>
-      <span v-if="value.length > 3" class="text-gray-500">
+      <div v-for="(item, index) in value" :key="index">
+        <el-tag v-for="(key, idx) in Object.keys(item)" :key="idx" size="small" class="mr-1">
+          {{ key }} : {{ item[key] }}
+        </el-tag>
+      </div>
+      <!-- <span v-if="value.length > 3" class="text-gray-500">
         +{{ value.length - 3 }}
-      </span>
+      </span> -->
     </div>
 
     <!-- 默认文本格式 -->
@@ -48,7 +50,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 
 interface Column {
   prop: string
@@ -138,6 +139,7 @@ const formatDefault = (value: any) => {
   .array-display {
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 4px;
   }

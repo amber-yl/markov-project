@@ -30,10 +30,10 @@ export const uiConfig = {
         prop: 'name',
         label: '硬件名称',
         minWidth: 120,
-        sortable: true,
+        sortable: false,
         filterable: false,
         filterType: 'text',
-        defaultHidden: false
+        defaultHidden: true
       },
       {
         prop: 'type',
@@ -71,7 +71,7 @@ export const uiConfig = {
         filterable: true,
         filterType: 'select',
         formatter: 'tag',
-        defaultHidden: false
+        defaultHidden: true
       },
       {
         prop: 'matrix.float16.tflops',
@@ -80,7 +80,7 @@ export const uiConfig = {
         sortable: true,
         filterable: false,
         formatter: 'number',
-        defaultHidden: false
+        defaultHidden: true
       },
       {
         prop: 'matrix.float16.calibration_coefficient',
@@ -149,9 +149,9 @@ export const uiConfig = {
         prop: 'networks',
         label: '网络配置',
         minWidth: 120,
-        sortable: true,
+        sortable: false,
         filterable: false,
-        formatter: 'bandwidth',
+        // formatter: 'bandwidth',
         defaultHidden: false
       }
     ]
