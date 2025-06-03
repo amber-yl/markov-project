@@ -140,10 +140,10 @@ const generateHardwareConfig = (type: Type): Partial<ListProps> => {
       },
       processing_mode: Mock.Random.pick([ProcessingMode.roofline, ProcessingMode.noOverlap]),
       networks: Mock.Random.pick([
-        [{ bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }],
-        [{ bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }],
-        [{ bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }],
-        [{ bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 }]
+        [{ bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }, { bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }],
+        [{ bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }, { bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }],
+        [{ bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }, { bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }],
+        [{ bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 }, { bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 }]
       ])
     }
   }

@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 export function usePagination<T>(list: T[], defaultPageSize = 5) {
   console.log(list, "| list");
 
-
   const currentPage = ref(1)
   const pageSize = ref(defaultPageSize)
   const total = ref(list.length)

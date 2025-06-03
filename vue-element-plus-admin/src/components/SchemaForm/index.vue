@@ -1,13 +1,13 @@
 <template>
   <div class="schema-form">
-    <el-form ref="formRef" :model="formData" :rules="formRules" :label-width="labelWidth" :size="size">
+    <el-form ref="formRef" :model="formData" :rules="formRules" label-width="auto" :size="size">
       <template v-if="schema.uiConfig?.form?.groups">
         <!-- 分组表单 -->
         <div v-for="group in schema.uiConfig.form.groups" :key="group.title" class="form-group">
           <h3 class="group-title">{{ group.title }}</h3>
           <el-row :gutter="schema.uiConfig.form.layout?.gutter || 20">
             <template v-for="fieldPath in group.fields" :key="fieldPath">
-              <el-col :span="24 / (schema.uiConfig.form.layout?.columns || 2)">
+              <el-col :lg="24 / (schema.uiConfig.form.layout?.columns || 2)">
                 <schema-form-item :field-path="fieldPath" :schema="schema" :form-data="formData"
                   @update:value="handleFieldUpdate" />
               </el-col>
@@ -83,13 +83,7 @@ const initFormData = () => {
           // 为必填数组字段创建最小数量的默认项
           const defaultItems: any[] = []
           for (let i = 0; i < minItems; i++) {
-            if (property.items.$ref) {
-              const refPath = property.items.$ref.replace('#/$defs/', '')
-              const refSchema = props.schema.$defs?.[refPath]
-              if (refSchema) {
-                defaultItems.push(createDefaultObject(refSchema))
-              }
-            } else if (property.items.properties) {
+            if (property.items.properties) {
               defaultItems.push(createDefaultObject(property.items))
             } else {
               defaultItems.push(getDefaultValueByType(property.items.type || 'string'))
@@ -100,8 +94,16 @@ const initFormData = () => {
           setNestedValue(data, fullKey, [])
         }
       } else {
-        // 处理基本类型
-        const defaultValue = property.default ?? getDefaultValueByType(property.type)
+        // 处理基本类型和 anyOf 类型
+        let defaultValue
+        
+        if (property.anyOf && Array.isArray(property.anyOf)) {
+          // 处理 anyOf 类型（如可选的 calibration_coefficient 字段）
+          defaultValue = property.default !== undefined ? property.default : null
+        } else {
+          defaultValue = property.default ?? getDefaultValueByType(property.type)
+        }
+        
         setNestedValue(data, fullKey, defaultValue)
       }
     })
@@ -117,6 +119,8 @@ const getDefaultValueByType = (type: string) => {
     case 'string':
       return ''
     case 'number':
+      return 0
+    case 'integer':
       return 0
     case 'boolean':
       return false
@@ -138,6 +142,9 @@ const createDefaultObject = (schema: any): any => {
     const property = schema.properties[key]
     if (property.default !== undefined) {
       obj[key] = property.default
+    } else if (property.anyOf && Array.isArray(property.anyOf)) {
+      // 处理 anyOf 类型字段
+      obj[key] = property.default !== undefined ? property.default : null
     } else {
       obj[key] = getDefaultValueByType(property.type)
     }
@@ -170,33 +177,28 @@ const getNestedValue = (obj: any, path: string) => {
 const isFieldRequired = (fieldPath: string): boolean => {
   const pathParts = fieldPath.split('.')
   let currentSchema = props.schema
-  let currentRequired = props.schema.required || []
-
+  
   // 检查根级别是否必填
-  if (currentRequired.includes(pathParts[0])) {
-    return true
+  if (props.schema.required?.includes(pathParts[0])) {
+    // 如果根级别字段必填，需要进一步检查是否是嵌套对象的必填字段
+    if (pathParts.length === 1) {
+      return true
+    }
   }
 
-  // 检查嵌套对象的必填字段
-  for (let i = 0; i < pathParts.length; i++) {
+  // 遍历路径检查嵌套对象的必填字段
+  for (let i = 0; i < pathParts.length - 1; i++) {
     const part = pathParts[i]
-
+    
     if (currentSchema.properties?.[part]) {
       currentSchema = currentSchema.properties[part]
-
-      // 如果是对象类型，检查其required字段
+      
+      // 检查当前对象的required字段
       if (currentSchema.type === 'object' && currentSchema.required) {
         const nextPart = pathParts[i + 1]
         if (nextPart && currentSchema.required.includes(nextPart)) {
           return true
         }
-      }
-    } else if (currentSchema.$ref) {
-      const refPath = currentSchema.$ref.replace('#/$defs/', '')
-      currentSchema = props.schema.$defs?.[refPath] || {}
-
-      if (currentSchema.required && currentSchema.required.includes(part)) {
-        return true
       }
     }
   }
@@ -213,39 +215,49 @@ const formRules = computed(() => {
       const fullKey = prefix ? `${prefix}.${key}` : key
       const property = properties[key]
 
-      if (property.$ref) {
-        const refPath = property.$ref.replace('#/$defs/', '')
-        const refSchema = props.schema.$defs?.[refPath]
-        if (refSchema && refSchema.properties) {
-          generateRules(refSchema.properties, fullKey)
-        }
-      } else if (property.type === 'object' && property.properties) {
+      if (property.type === 'object' && property.properties) {
         generateRules(property.properties, fullKey)
       } else {
         const fieldRules: any[] = []
-
-        // 必填验证 - 使用更准确的检查逻辑
+        
+        // 处理 anyOf 类型字段
+        let actualProperty = property
+        if (property.anyOf && Array.isArray(property.anyOf)) {
+          // 从 anyOf 中找到非 null 的类型定义
+          const nonNullType = property.anyOf.find((item: any) => item.type !== null && item.type !== 'null')
+          if (nonNullType) {
+            actualProperty = { ...property, ...nonNullType }
+          }
+        }
+        
+        // 必填验证
         if (isFieldRequired(fullKey)) {
           fieldRules.push({
             required: true,
-            message: `请输入${property.title || key}`,
-            trigger: property.type === 'string' ? 'blur' : 'change'
+            message: `请输入${actualProperty.title || key}`,
+            trigger: ['string'].includes(actualProperty.type) ? 'blur' : 'change'
           })
         }
 
         // 类型验证
-        if (property.type === 'number') {
-          fieldRules.push({
-            type: 'number',
-            message: `${property.title || key}必须是数字`,
-            trigger: 'change'
-          })
-
-          if (property.exclusiveMinimum !== undefined) {
+        if (actualProperty.type === 'number' || actualProperty.type === 'integer') {
+          // 数字类型验证
+          if (actualProperty.type === 'integer') {
             fieldRules.push({
               validator: (rule: any, value: any, callback: any) => {
-                if (value !== null && value !== undefined && value <= property.exclusiveMinimum) {
-                  callback(new Error(`${property.title || key}必须大于${property.exclusiveMinimum}`))
+                if (value !== null && value !== undefined && value !== '' && !Number.isInteger(Number(value))) {
+                  callback(new Error(`${actualProperty.title || key}必须是整数`))
+                } else {
+                  callback()
+                }
+              },
+              trigger: 'change'
+            })
+          } else {
+            fieldRules.push({
+              validator: (rule: any, value: any, callback: any) => {
+                if (value !== null && value !== undefined && value !== '' && isNaN(Number(value))) {
+                  callback(new Error(`${actualProperty.title || key}必须是数字`))
                 } else {
                   callback()
                 }
@@ -254,11 +266,74 @@ const formRules = computed(() => {
             })
           }
 
-          if (property.maximum !== undefined) {
+          // 最小值验证
+          if (actualProperty.exclusiveMinimum !== undefined) {
             fieldRules.push({
               validator: (rule: any, value: any, callback: any) => {
-                if (value !== null && value !== undefined && value > property.maximum) {
-                  callback(new Error(`${property.title || key}必须小于等于${property.maximum}`))
+                if (value !== null && value !== undefined && value !== '' && Number(value) <= actualProperty.exclusiveMinimum) {
+                  callback(new Error(`${actualProperty.title || key}必须大于${actualProperty.exclusiveMinimum}`))
+                } else {
+                  callback()
+                }
+              },
+              trigger: 'change'
+            })
+          }
+
+          if (actualProperty.minimum !== undefined) {
+            fieldRules.push({
+              validator: (rule: any, value: any, callback: any) => {
+                if (value !== null && value !== undefined && value !== '' && Number(value) < actualProperty.minimum) {
+                  callback(new Error(`${actualProperty.title || key}必须大于等于${actualProperty.minimum}`))
+                } else {
+                  callback()
+                }
+              },
+              trigger: 'change'
+            })
+          }
+
+          // 最大值验证
+          if (actualProperty.maximum !== undefined) {
+            fieldRules.push({
+              validator: (rule: any, value: any, callback: any) => {
+                if (value !== null && value !== undefined && value !== '' && Number(value) > actualProperty.maximum) {
+                  callback(new Error(`${actualProperty.title || key}必须小于等于${actualProperty.maximum}`))
+                } else {
+                  callback()
+                }
+              },
+              trigger: 'change'
+            })
+          }
+        }
+
+        // 字符串长度验证
+        if (actualProperty.type === 'string') {
+          if (actualProperty.maxLength !== undefined) {
+            fieldRules.push({
+              max: actualProperty.maxLength,
+              message: `${actualProperty.title || key}长度不能超过${actualProperty.maxLength}个字符`,
+              trigger: 'blur'
+            })
+          }
+          
+          if (actualProperty.minLength !== undefined) {
+            fieldRules.push({
+              min: actualProperty.minLength,
+              message: `${actualProperty.title || key}长度不能少于${actualProperty.minLength}个字符`,
+              trigger: 'blur'
+            })
+          }
+        }
+
+        // 数组验证
+        if (actualProperty.type === 'array') {
+          if (actualProperty.minItems !== undefined) {
+            fieldRules.push({
+              validator: (rule: any, value: any, callback: any) => {
+                if (Array.isArray(value) && value.length < actualProperty.minItems) {
+                  callback(new Error(`${actualProperty.title || key}至少需要${actualProperty.minItems}项`))
                 } else {
                   callback()
                 }

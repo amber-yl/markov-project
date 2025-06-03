@@ -33,7 +33,7 @@ export const uiConfig = {
         sortable: false,
         filterable: false,
         filterType: 'text',
-        defaultHidden: true
+        defaultHidden: false
       },
       {
         prop: 'type',
@@ -148,11 +148,11 @@ export const uiConfig = {
       {
         prop: 'networks',
         label: '网络配置',
-        minWidth: 120,
+        minWidth: 180,
         sortable: false,
         filterable: false,
         // formatter: 'bandwidth',
-        defaultHidden: false
+        defaultHidden: true
       }
     ]
   }

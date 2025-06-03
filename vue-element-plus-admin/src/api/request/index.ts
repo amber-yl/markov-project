@@ -24,7 +24,7 @@ interface SchemaResponse {
 
 // 获取创建模型的JSON Schema
 export const markov_sim_get_create_model_schema = () => {
-  return request.get<RequestResponse<SchemaResponse>>({
+  return request.get<SchemaResponse>({
     url: '/markov_sim/api/v1/system_config/get_create_model_schema'
   })
 }

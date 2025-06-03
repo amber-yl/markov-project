@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import type { Task, PaginationConfig } from '../types'
+import type { SystemConfig, PaginationConfig } from '../types'
 import { store } from '../index'
 
 interface InferenceEvalInfoState {
-  allTasks: Task[]
-  personalTasks: Task[]
-  selectedTasks: Task[]
+  allTasks: SystemConfig[]
+  personalTasks: SystemConfig[]
+  selectedTasks: SystemConfig[]
   loading: boolean
   pagination: PaginationConfig
   filters: {
@@ -17,9 +17,9 @@ interface InferenceEvalInfoState {
 export const useInferenceEvalStore = defineStore('inferenceEval', {
   state: (): InferenceEvalInfoState => {
     return {
-      allTasks: [] as Task[],
-      personalTasks: [] as Task[],
-      selectedTasks: [] as Task[],
+      allTasks: [] as SystemConfig[],
+      personalTasks: [] as SystemConfig[],
+      selectedTasks: [] as SystemConfig[],
       loading: true,
       pagination: {
         currentPage: 0,
@@ -35,10 +35,10 @@ export const useInferenceEvalStore = defineStore('inferenceEval', {
   },
   getters: {
     getTaskStatusList(state: InferenceEvalInfoState) {
-      return [...new Set(state.allTasks.map((task) => task.status))]
+      return [...new Set(state.allTasks.map((SystemConfig) => SystemConfig.status))]
     },
     getModelNameList(state: InferenceEvalInfoState) {
-      return [...new Set(state.allTasks.map((task) => task.model))]
+      return [...new Set(state.allTasks.map((SystemConfig) => SystemConfig.model))]
     }
   },
   actions: {
@@ -113,13 +113,13 @@ export const useInferenceEvalStore = defineStore('inferenceEval', {
           creator: 'creator6'
         }
       ]
-      this.allTasks = tableData as Task[]
+      this.allTasks = tableData as any[]
     },
-    async createTask(task: Task) {
+    async createTask(SystemConfig: SystemConfig) {
       // 实现创建任务的逻辑
     },
-    async deleteTask(task: Task) { },
-    setSelectedTasks(tasks: Task[]) {
+    async deleteTask(SystemConfig: SystemConfig) { },
+    setSelectedTasks(tasks: SystemConfig[]) {
       this.selectedTasks = tasks
     }
   },

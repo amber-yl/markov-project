@@ -129,8 +129,7 @@ const handleModelChange = (model: string) => {
 }
 
 const displayViewModeList = computed(() => {
-  const allTasks = inferenceEvalStore.$state.allTasks as Task[]
-  let filteredTasks = allTasks
+  let filteredTasks = inferenceEvalStore.allTasks as Task[]
 
   // 根据状态过滤
   if (statusValue.value.length > 0) {
@@ -146,7 +145,7 @@ const displayViewModeList = computed(() => {
       task.name.toLowerCase().includes(title.value.toLowerCase())
     ) as Task[]
   }
-
+  console.log(filteredTasks, "| filteredTasks");
   return filteredTasks
 })
 
@@ -201,7 +200,6 @@ watch(selectCards, (newValue) => {
   }
 }, { immediate: true, deep: true })
 
-const { currentList, ...pagination } = usePagination(displayViewModeList.value)
 
 const handleDetail = (task) => {
   router.push({
@@ -212,11 +210,15 @@ const handleDetail = (task) => {
   })
 }
 
+
+
 onMounted(async () => {
   // await fetchData()
   await inferenceEvalStore.fetchTasks()
   loading.value = false
 })
+
+const { currentList, ...pagination } = usePagination(displayViewModeList.value)
 
 const jump2Comparison = () => {
   router.push({

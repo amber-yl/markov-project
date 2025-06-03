@@ -188,6 +188,8 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       this.loading = true
       try {
         const { data } = await markov_sim_get_create_model_schema()
+        console.log(data.schema, "| data.schema");
+
         // data.schema 的代码正确，AI不要修改
         this.schemeConfigs = Object.assign(this.schemeConfigs, data.schema) || {}
         console.log('获取到的Schema配置:', this.schemeConfigs)
