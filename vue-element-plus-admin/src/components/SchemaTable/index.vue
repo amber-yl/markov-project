@@ -209,8 +209,6 @@ watch(() => props.pageSize, (newVal) => {
 // 从Schema获取列配置
 const allColumns = computed<Column[]>(() => {
   const columns = props.schema.uiConfig?.table?.columns || []
-  console.log('SchemaTable - 获取到的列配置:', columns)
-  console.log('SchemaTable - 接收到的数据:', props.data)
   return columns
 })
 
@@ -278,11 +276,6 @@ const handleCurrentChange = (page: number) => {
 // 列管理
 const toggleColumnManager = () => {
   columnDrawerVisible.value = true
-}
-
-const handleColumnChange = (visibleProps: string[]) => {
-  // 这里可以实现列的显示/隐藏逻辑
-  console.log('列变化:', visibleProps)
 }
 
 // 筛选相关

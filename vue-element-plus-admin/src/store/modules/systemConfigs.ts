@@ -342,21 +342,21 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
 
     // 设置列可见性
-    setColumnVisibility(prop: string, visible: boolean) {
-      const column = this.columns.find((col) => col.prop === prop)
-      if (column && column.prop !== 'operations') {
-        column.isShow = visible
-      }
-    },
+    // setColumnVisibility(prop: string, visible: boolean) {
+    //   const column = this.columns.find((col) => col.prop === prop)
+    //   if (column && column.prop !== 'operations') {
+    //     column.isShow = visible
+    //   }
+    // },
 
     // 批量设置列可见性
-    setColumnsVisibility(columns: string[]) {
-      this.columns.forEach((col) => {
-        if (col.prop !== 'operations') {
-          col.isShow = columns.includes(col.prop)
-        }
-      })
-    },
+    // setColumnsVisibility(columns: string[]) {
+    //   this.columns.forEach((col) => {
+    //     if (col.prop !== 'operations') {
+    //       col.isShow = columns.includes(col.prop)
+    //     }
+    //   })
+    // },
 
     // 获取Transfer数据
     getTransferData() {

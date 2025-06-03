@@ -72,8 +72,6 @@ const transferRightValue = computed({
   set: (value) => systemConfigStore.handleTransferChange(value)
 })
 
-// const rightValue = ref<string[]>([])
-
 // Transfer数据
 const transferData = computed(() => systemConfigStore.getTransferData())
 // 处理变化
@@ -83,17 +81,6 @@ const handleTransferChange = (targetKeys: string[]) => {
 // 默认展示的列
 const defaultVisibleColumns = ref<any>()
 defaultVisibleColumns.value = defaultVisible
-
-
-// 统计信息
-// const visibleCount = computed(() => rightValue.value.length)
-// const hiddenCount = computed(() => transferData.value.length - rightValue.value.length)
-
-// 处理变化
-// const handleChange = (targetKeys: string[]) => {
-//   rightValue.value = targetKeys
-//   // emit('column-change', targetKeys)
-// }
 
 // 显示所有列
 const showAllColumns = () => {
@@ -114,23 +101,6 @@ const resetToDefault = () => {
   handleTransferChange(defaultVisibleColumns.value)
 }
 
-// const resetToDefault = () => {
-//   const defaultVisible = props.columns
-//     .filter(col => !col.defaultHidden && col.prop !== 'operations')
-//     .map(col => col.prop)
-//   handleChange(defaultVisible)
-// }
-
-// 初始化右侧值
-// watch(
-//   () => props.visibleColumns,
-//   (visibleColumns) => {
-//     rightValue.value = visibleColumns
-//       .filter(col => col.prop !== 'operations')
-//       .map(col => col.prop)
-//   },
-//   { immediate: true }
-// )
 </script>
 
 <style lang="less" scoped>
