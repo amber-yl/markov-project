@@ -17,9 +17,14 @@ interface StatsResponse {
   by_processing_mode: Record<string, number>
 }
 
+interface SchemaResponse {
+  schema: any
+  originalSchema?: any
+}
+
 // 获取创建模型的JSON Schema
 export const markov_sim_get_create_model_schema = () => {
-  return request.get<RequestResponse>({
+  return request.get<RequestResponse<SchemaResponse>>({
     url: '/markov_sim/api/v1/system_config/get_create_model_schema'
   })
 }
@@ -31,7 +36,7 @@ export const markov_sim_get_all_configs = (params: {
   page?: number
   per_page?: number
 }) => {
-  return request.post<ListResponse>({
+  return request.post<RequestResponse<ListResponse>>({
     url: '/markov_sim/api/v1/system_config/get_all',
     data: params
   })

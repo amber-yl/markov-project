@@ -11,6 +11,7 @@ import {
 } from '@/api/request'
 import type { SystemConfig, TableColumn, TableFilter, PaginationConfig } from '@/store/types'
 import { ElMessage } from 'element-plus'
+import { uiConfig } from '../config'
 
 interface SystemConfigState {
   configs: SystemConfig[]
@@ -34,7 +35,9 @@ interface SystemConfigState {
 export const useSystemConfigStore = defineStore('systemConfig', {
   state: (): SystemConfigState => ({
     configs: [],
-    schemeConfigs: {},
+    schemeConfigs: {
+      uiConfig: uiConfig
+    },
     loading: false,
     pagination: {
       currentPage: 1,
@@ -53,16 +56,16 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
     filters: {},
     columns: [
-      { label: '硬件名称', prop: 'name', minWidth: '150', isShow: true },
-      { label: '硬件类型', prop: 'type', minWidth: '120', isShow: true },
-      { label: '创建时间', prop: 'created_at', minWidth: '160', isShow: true },
+      { label: '硬件名称', prop: 'name', minWidth: '150', isShow: false },
+      { label: '硬件类型', prop: 'type', minWidth: '120', isShow: false },
+      { label: '创建时间', prop: 'created_at', minWidth: '160', isShow: false },
       { label: '更新时间', prop: 'updated_at', minWidth: '160', isShow: false },
-      { label: '性能模式', prop: 'processing_mode', minWidth: '120', isShow: true },
+      { label: '性能模式', prop: 'processing_mode', minWidth: '120', isShow: false },
       {
         label: 'Cube-理论算力',
         prop: 'matrix.float16.tflops',
         minWidth: '180',
-        isShow: true
+        isShow: false
       },
       {
         label: 'Cube-利用率',
@@ -82,23 +85,23 @@ export const useSystemConfigStore = defineStore('systemConfig', {
         minWidth: '180',
         isShow: false
       },
-      { label: '显存容量', prop: 'men1.GiB', minWidth: '120', isShow: false },
-      { label: '显存带宽', prop: 'men1.GiBps', minWidth: '120', isShow: false },
+      { label: '显存容量', prop: 'mem1.GiB', minWidth: '120', isShow: false },
+      { label: '显存带宽', prop: 'mem1.GBps', minWidth: '120', isShow: false },
       {
         label: 'Cube算力利用率',
-        prop: 'men1.cube_calibration_coefficient',
+        prop: 'mem1.cube_calibration_coefficient',
         minWidth: '180',
         isShow: false
       },
       {
         label: 'Vector算力利用率',
-        prop: 'men1.vector_calibration_coefficient',
+        prop: 'mem1.vector_calibration_coefficient',
         minWidth: '180',
         isShow: false
       },
-      { label: 'CPU内存容量', prop: 'men2.GiB', minWidth: '120', isShow: false },
-      { label: 'CPU内存带宽', prop: 'men2.GiBps', minWidth: '120', isShow: false },
-      { label: '网络配置', prop: 'netWorks', minWidth: '120', isShow: false },
+      { label: 'CPU内存容量', prop: 'mem2.GiB', minWidth: '120', isShow: false },
+      { label: 'CPU内存带宽', prop: 'mem2.GBps', minWidth: '120', isShow: false },
+      { label: '网络配置', prop: 'networks', minWidth: '120', isShow: false },
       { label: '操作', prop: 'operations', fixed: 'right', minWidth: '200', isShow: true }
     ],
     selectedConfigs: []
@@ -150,23 +153,14 @@ export const useSystemConfigStore = defineStore('systemConfig', {
         if (resetPage) {
           this.pagination.currentPage = 1
         }
-
         const params = {
           filters: this.activeFilters,
           order_bys: this.sortConfig.order_bys,
           page: this.pagination.currentPage,
           per_page: this.pagination.pageSize
         }
-
-        console.log('发送API请求参数:', params)
-        console.log('当前筛选条件:', this.filters)
-        console.log('活跃筛选条件:', this.activeFilters)
-
         const { data } = await markov_sim_get_all_configs(params)
-        const responseData = data
-
-        console.log('API响应数据:', responseData)
-
+        const responseData = data.data || data
         this.configs = responseData.list || []
         this.serverPagination = {
           total: responseData.total || 0,
@@ -194,7 +188,9 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       this.loading = true
       try {
         const { data } = await markov_sim_get_create_model_schema()
-        this.schemeConfigs = data.data?.schema || {}
+        // data.schema 的代码正确，AI不要修改
+        this.schemeConfigs = Object.assign(this.schemeConfigs, data.schema) || {}
+        console.log('获取到的Schema配置:', this.schemeConfigs)
       } catch (error) {
         console.error('Failed to fetch schema configs:', error)
         ElMessage.error('获取Schema配置失败')
@@ -278,13 +274,9 @@ export const useSystemConfigStore = defineStore('systemConfig', {
 
       this.loading = true
       try {
-        const { data } = await markov_sim_delete_configs_by_ids(ids)
-        if (data) {
-          ElMessage.success(`成功删除 ${ids.length} 条记录`)
-          await this.fetchConfigs()
-        } else {
-          throw new Error('删除失败')
-        }
+        await markov_sim_delete_configs_by_ids(ids)
+        ElMessage.success(`成功删除 ${ids.length} 条记录`)
+        await this.fetchConfigs()
       } catch (error: any) {
         console.error('Failed to delete configs:', error)
         const message = error.response?.data?.message || error.message || '删除失败'

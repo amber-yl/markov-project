@@ -1,7 +1,7 @@
 import Mock from 'mockjs'
 import { SUCCESS_CODE } from '@/constants'
 import { toAnyString } from '@/utils'
-import { userSchema } from './jsonschema'
+import { enhancedSystemConfigSchema } from './jsonschema'
 
 const timeout = 1000
 const count = 100
@@ -34,20 +34,20 @@ interface ListProps {
       calibration_coefficient: number
     }
   }
-  men1: {
+  mem1: {
     GiB: number
-    GiBps: number
+    GBps: number
     cube_calibration_coefficient: number
     vector_calibration_coefficient: number
   }
-  men2: {
+  mem2: {
     GiB: number
-    GiBps: number
+    GBps: number
     cube_calibration_coefficient?: number
     vector_calibration_coefficient?: number
   }
   processing_mode: ProcessingMode
-  netWorks: {
+  networks: {
     bandWidth: number
     efficiency: number
     size: number
@@ -93,18 +93,18 @@ const generateHardwareConfig = (type: Type): Partial<ListProps> => {
           calibration_coefficient: Mock.Random.float(0.7, 0.9, 2, 2)
         }
       },
-      men1: {
+      mem1: {
         GiB: Mock.Random.pick([8, 12, 16, 24, 32, 48, 64, 80, 128]), // 常见GPU显存配置
-        GiBps: Mock.Random.integer(400, 2000), // GPU显存带宽
+        GBps: Mock.Random.integer(400, 2000), // GPU显存带宽
         cube_calibration_coefficient: Mock.Random.float(0.5, 0.8, 2, 2),
         vector_calibration_coefficient: Mock.Random.float(0.3, 0.7, 2, 2)
       },
-      men2: {
+      mem2: {
         GiB: Mock.Random.pick([16, 32, 64, 128, 256, 512]), // 系统内存
-        GiBps: Mock.Random.integer(50, 200) // 系统内存带宽
+        GBps: Mock.Random.integer(50, 200) // 系统内存带宽
       },
       processing_mode: Mock.Random.pick([ProcessingMode.roofline, ProcessingMode.noOverlap]),
-      netWorks: Mock.Random.pick([
+      networks: Mock.Random.pick([
         [{ bandWidth: 100, efficiency: 0.8, size: 1, latency: 0.001 }], // 单卡
         [{ bandWidth: 400, efficiency: 0.85, size: 2, latency: 0.002 }], // 双卡
         [{ bandWidth: 600, efficiency: 0.9, size: 4, latency: 0.003 }], // 四卡
@@ -128,18 +128,18 @@ const generateHardwareConfig = (type: Type): Partial<ListProps> => {
           calibration_coefficient: Mock.Random.float(0.75, 0.92, 2, 2)
         }
       },
-      men1: {
+      mem1: {
         GiB: Mock.Random.pick([32, 64, 128, 256, 512]), // NPU显存配置
-        GiBps: Mock.Random.integer(900, 3000), // NPU显存带宽通常更高
+        GBps: Mock.Random.integer(900, 3000), // NPU显存带宽通常更高
         cube_calibration_coefficient: Mock.Random.float(0.6, 0.85, 2, 2),
         vector_calibration_coefficient: Mock.Random.float(0.4, 0.75, 2, 2)
       },
-      men2: {
+      mem2: {
         GiB: Mock.Random.pick([64, 128, 256, 512, 1024]), // NPU系统内存
-        GiBps: Mock.Random.integer(100, 400)
+        GBps: Mock.Random.integer(100, 400)
       },
       processing_mode: Mock.Random.pick([ProcessingMode.roofline, ProcessingMode.noOverlap]),
-      netWorks: Mock.Random.pick([
+      networks: Mock.Random.pick([
         [{ bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }],
         [{ bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }],
         [{ bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }],
@@ -280,7 +280,7 @@ const createItem = (data: Omit<ListProps, 'id' | 'created_at' | 'updated_at'>): 
 }
 
 export default [
-  // 获取创建模型的JSON Schema
+  // 获取创建模型的JSON Schema - 返回增强的schema
   {
     url: '/markov_sim/api/v1/system_config/get_create_model_schema',
     method: 'get',
@@ -289,7 +289,8 @@ export default [
       return {
         code: SUCCESS_CODE,
         data: {
-          schema: Mock.toJSONSchema(userSchema)
+          schema: enhancedSystemConfigSchema, // 使用增强的schema
+          // originalSchema: userSchema // 保留原有的schema作为备用
         }
       }
     }

@@ -10,11 +10,9 @@ export enum ProcessingMode {
 
 // 系统配置相关类型
 export interface SystemConfig {
-  id: string
-  created_at: string
-  updated_at: string
-  name: string // 硬件名称
-  type: Type // 硬件类型
+  id?: string
+  name: string
+  type: 'npu' | 'gpu'
   matrix: {
     float16: {
       tflops: number
@@ -27,25 +25,25 @@ export interface SystemConfig {
       calibration_coefficient: number
     }
   }
-  men1: {
+  mem1: {
     GiB: number
-    GiBps: number
-    cube_calibration_coefficient: number
-    vector_calibration_coefficient: number
-  }
-  men2: {
-    GiB: number
-    GiBps: number
+    GBps: number
     cube_calibration_coefficient?: number
     vector_calibration_coefficient?: number
   }
-  processing_mode: string
-  netWorks: {
+  mem2: {
+    GiB: number
+    GBps: number
+  }
+  processing_mode: 'roofline' | 'no_overlap'
+  networks: {
     bandWidth: number
     efficiency: number
     size: number
     latency: number
   }[]
+  created_at?: string
+  updated_at?: string
 }
 
 export interface ConfigFormData {

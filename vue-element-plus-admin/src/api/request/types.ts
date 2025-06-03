@@ -55,3 +55,40 @@ export interface LegacyRequestResponse {
   list: ListProps[]
   total: number
 }
+
+export interface SystemConfigDetailData {
+  id: string
+  created_at: string
+  updated_at: string
+  name: string
+  type: string
+  matrix: {
+    float16: {
+      tflops: number
+      calibration_coefficient: number
+    }
+  }
+  vector: {
+    float16: {
+      tflops: number
+      calibration_coefficient: number
+    }
+  }
+  mem1: {
+    GiB: number
+    GBps: number
+    cube_calibration_coefficient?: number
+    vector_calibration_coefficient?: number
+  }
+  mem2: {
+    GiB: number
+    GBps: number
+  }
+  processing_mode: string
+  networks: {
+    bandWidth: number
+    efficiency: number
+    size: number
+    latency: number
+  }[]
+}
