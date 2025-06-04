@@ -1,16 +1,45 @@
 <template>
-  <el-card class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]">
+  <el-card
+    class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]"
+  >
     <!-- Schema驱动的数据表格 -->
-    <schema-table :schema="configSchema" :data="configs" :loading="loading" :height="tableHeight"
-      :current-page="pagination.currentPage" :page-size="pagination.pageSize" :total="pagination.total"
-      :page-sizes="pagination.pageSizes" create-button-text="创建新配置" search-placeholder="搜索配置名称..."
-      @create="handleCreate" @edit="handleEdit" @clone="handleClone" @delete="handleDelete"
-      @batch-delete="handleBatchDeleteFromTable" @search="handleSearch" @filter-change="handleFilterChange"
-      @page-change="handleCurrentChange" @size-change="handleSizeChange" @selection-change="handleSelectionChange" />
+    <schema-table
+      :schema="configSchema"
+      :data="configs"
+      :loading="loading"
+      :height="tableHeight"
+      :current-page="pagination.currentPage"
+      :page-size="pagination.pageSize"
+      :total="pagination.total"
+      :page-sizes="pagination.pageSizes"
+      create-button-text="创建新配置"
+      search-placeholder="搜索配置名称..."
+      @create="handleCreate"
+      @edit="handleEdit"
+      @clone="handleClone"
+      @delete="handleDelete"
+      @batch-delete="handleBatchDeleteFromTable"
+      @search="handleSearch"
+      @filter-change="handleFilterChange"
+      @page-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+      @selection-change="handleSelectionChange"
+    />
 
     <!-- Schema驱动的表单对话框 -->
-    <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose">
-      <schema-form ref="schemaFormRef" :schema="configSchema" v-model="formData" @validate="handleFormValidate" />
+    <Dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="60%"
+      align-center
+      @close="handleDialogClose"
+    >
+      <schema-form
+        ref="schemaFormRef"
+        :schema="configSchema"
+        v-model="formData"
+        @validate="handleFormValidate"
+      />
       <template #footer>
         <el-button @click="handleDialogClose">取消</el-button>
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">
@@ -77,12 +106,12 @@ const handleCurrentChange = (page: number) => {
 // 选择处理
 const handleSelectionChange = (selection: SystemConfig[]) => {
   selectedConfigs.value = selection
-  systemConfigStore.setSelectedConfigs(selection.map(item => item.id!))
+  systemConfigStore.setSelectedConfigs(selection.map((item) => item.id!))
 }
 
 // 筛选处理
 const handleFilterChange = (filters: Record<string, any>) => {
-  Object.keys(filters).forEach(key => {
+  Object.keys(filters).forEach((key) => {
     systemConfigStore.setFilter(key, filters[key])
   })
 }
@@ -147,17 +176,13 @@ const handleBatchDelete = async (rows: SystemConfig[]) => {
   }
 
   try {
-    await ElMessageBox.confirm(
-      `确定要删除选中的 ${rows.length} 个配置吗？`,
-      '批量删除',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
+    await ElMessageBox.confirm(`确定要删除选中的 ${rows.length} 个配置吗？`, '批量删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
 
-    const ids = rows.map(config => config.id!)
+    const ids = rows.map((config) => config.id!)
     await systemConfigStore.deleteConfigs(ids)
     selectedConfigs.value = []
   } catch (error) {
@@ -228,4 +253,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="less" scoped>
-// Schema组件自带样式，这里可以保持简洁</style>
+// Schema组件自带样式，这里可以保持简洁
+</style>

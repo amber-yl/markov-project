@@ -57,18 +57,47 @@ interface ListProps {
 
 // 真实的硬件名称数据
 const GPU_NAMES = [
-  'NVIDIA RTX 4090', 'NVIDIA RTX 4080', 'NVIDIA RTX 4070 Ti', 'NVIDIA RTX 4070',
-  'NVIDIA RTX 4060 Ti', 'NVIDIA RTX 4060', 'NVIDIA RTX 3090 Ti', 'NVIDIA RTX 3090',
-  'NVIDIA RTX 3080 Ti', 'NVIDIA RTX 3080', 'NVIDIA RTX 3070 Ti', 'NVIDIA RTX 3070',
-  'NVIDIA A100', 'NVIDIA H100', 'NVIDIA V100', 'NVIDIA T4', 'Tesla P100',
-  'AMD RX 7900 XTX', 'AMD RX 7900 XT', 'AMD RX 7800 XT', 'AMD RX 7700 XT'
+  'NVIDIA RTX 4090',
+  'NVIDIA RTX 4080',
+  'NVIDIA RTX 4070 Ti',
+  'NVIDIA RTX 4070',
+  'NVIDIA RTX 4060 Ti',
+  'NVIDIA RTX 4060',
+  'NVIDIA RTX 3090 Ti',
+  'NVIDIA RTX 3090',
+  'NVIDIA RTX 3080 Ti',
+  'NVIDIA RTX 3080',
+  'NVIDIA RTX 3070 Ti',
+  'NVIDIA RTX 3070',
+  'NVIDIA A100',
+  'NVIDIA H100',
+  'NVIDIA V100',
+  'NVIDIA T4',
+  'Tesla P100',
+  'AMD RX 7900 XTX',
+  'AMD RX 7900 XT',
+  'AMD RX 7800 XT',
+  'AMD RX 7700 XT'
 ]
 
 const NPU_NAMES = [
-  'Huawei Ascend 910B', 'Huawei Ascend 910A', 'Huawei Ascend 310P', 'Huawei Ascend 310',
-  'Intel Gaudi2', 'Intel Gaudi', 'Google TPU v4', 'Google TPU v3', 'Google TPU v2',
-  'Cambricon MLU370', 'Cambricon MLU290', 'Cambricon MLU270', 'Cambricon MLU220',
-  'Horizon Journey-5', 'Horizon Journey-3', 'Rockchip RK3588', 'Sophgo BM1684X'
+  'Huawei Ascend 910B',
+  'Huawei Ascend 910A',
+  'Huawei Ascend 310P',
+  'Huawei Ascend 310',
+  'Intel Gaudi2',
+  'Intel Gaudi',
+  'Google TPU v4',
+  'Google TPU v3',
+  'Google TPU v2',
+  'Cambricon MLU370',
+  'Cambricon MLU290',
+  'Cambricon MLU270',
+  'Cambricon MLU220',
+  'Horizon Journey-5',
+  'Horizon Journey-3',
+  'Rockchip RK3588',
+  'Sophgo BM1684X'
 ]
 
 // 生成更真实的硬件配置数据
@@ -108,7 +137,7 @@ const generateHardwareConfig = (type: Type): Partial<ListProps> => {
         [{ bandWidth: 100, efficiency: 0.8, size: 1, latency: 0.001 }], // 单卡
         [{ bandWidth: 400, efficiency: 0.85, size: 2, latency: 0.002 }], // 双卡
         [{ bandWidth: 600, efficiency: 0.9, size: 4, latency: 0.003 }], // 四卡
-        [{ bandWidth: 800, efficiency: 0.92, size: 8, latency: 0.005 }]  // 八卡
+        [{ bandWidth: 800, efficiency: 0.92, size: 8, latency: 0.005 }] // 八卡
       ])
     }
   } else {
@@ -140,10 +169,22 @@ const generateHardwareConfig = (type: Type): Partial<ListProps> => {
       },
       processing_mode: Mock.Random.pick([ProcessingMode.roofline, ProcessingMode.noOverlap]),
       networks: Mock.Random.pick([
-        [{ bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }, { bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }],
-        [{ bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }, { bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }],
-        [{ bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }, { bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }],
-        [{ bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 }, { bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 }]
+        [
+          { bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 },
+          { bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }
+        ],
+        [
+          { bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 },
+          { bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }
+        ],
+        [
+          { bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 },
+          { bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }
+        ],
+        [
+          { bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 },
+          { bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 }
+        ]
       ])
     }
   }
@@ -157,7 +198,9 @@ for (let i = 0; i < count; i++) {
   const config = generateHardwareConfig(type)
   const now = new Date()
   const createdAt = new Date(now.getTime() - Mock.Random.integer(0, 365 * 24 * 60 * 60 * 1000))
-  const updatedAt = new Date(createdAt.getTime() + Mock.Random.integer(0, (now.getTime() - createdAt.getTime())))
+  const updatedAt = new Date(
+    createdAt.getTime() + Mock.Random.integer(0, now.getTime() - createdAt.getTime())
+  )
 
   List.push({
     id: toAnyString(),
@@ -186,7 +229,7 @@ const filterData = (data: ListProps[], filters: any) => {
 
   if (!filters) return data
 
-  return data.filter(item => {
+  return data.filter((item) => {
     for (const [key, value] of Object.entries(filters)) {
       if (value === null || value === undefined || value === '') continue
 
@@ -196,7 +239,7 @@ const filterData = (data: ListProps[], filters: any) => {
         if (typeof value === 'string') {
           if (!item.name.toLowerCase().includes(value.toLowerCase())) return false
         } else if (Array.isArray(value)) {
-          if (!value.some(v => item.name.toLowerCase().includes(v.toLowerCase()))) return false
+          if (!value.some((v) => item.name.toLowerCase().includes(v.toLowerCase()))) return false
         }
       } else if (key === 'type') {
         if (typeof value === 'string') {
@@ -243,19 +286,19 @@ const sortData = (data: ListProps[], orderBys: string[]) => {
 
 // 工具函数：查找单项数据
 const findById = (id: string): ListProps | undefined => {
-  return List.find(item => item.id === id)
+  return List.find((item) => item.id === id)
 }
 
 // 工具函数：删除数据
 const deleteByIds = (ids: string[]): boolean => {
   const initialLength = List.length
-  List = List.filter(item => !ids.includes(item.id!))
+  List = List.filter((item) => !ids.includes(item.id!))
   return List.length < initialLength
 }
 
 // 工具函数：更新数据
 const updateItem = (id: string, updateData: Partial<ListProps>): ListProps | null => {
-  const index = List.findIndex(item => item.id === id)
+  const index = List.findIndex((item) => item.id === id)
   if (index === -1) return null
 
   List[index] = {
@@ -289,7 +332,7 @@ export default [
       return {
         code: SUCCESS_CODE,
         data: {
-          schema: enhancedSystemConfigSchema, // 使用增强的schema
+          schema: enhancedSystemConfigSchema // 使用增强的schema
           // originalSchema: userSchema // 保留原有的schema作为备用
         }
       }
@@ -312,7 +355,7 @@ export default [
         }
 
         // 检查名称是否已存在
-        const existing = List.find(item => item.name === body.name)
+        const existing = List.find((item) => item.name === body.name)
         if (existing) {
           return {
             code: 400,
@@ -351,7 +394,7 @@ export default [
 
         // 检查名称是否已被其他项使用
         if (body.name) {
-          const existing = List.find(item => item.name === body.name && item.id !== body.id)
+          const existing = List.find((item) => item.name === body.name && item.id !== body.id)
           if (existing) {
             return {
               code: 400,
@@ -461,19 +504,21 @@ export default [
     url: '/markov_sim/api/v1/system_config/get_all',
     method: 'post',
     timeout,
-    response: ({ body }: {
+    response: ({
+      body
+    }: {
       body: {
-        filters?: { name?: string; type?: Type; processing_mode?: ProcessingMode };
-        order_bys?: string[];
-        page?: number;
-        per_page?: number;
+        filters?: { name?: string; type?: Type; processing_mode?: ProcessingMode }
+        order_bys?: string[]
+        page?: number
+        page_size?: number
       }
     }) => {
       try {
-        const { filters, order_bys = [], page = 1, per_page = 10 } = body || {}
+        const { filters, order_bys = [], page = 1, page_size = 10 } = body || {}
 
         // 验证分页参数
-        if (page < 1 || per_page < 1 || per_page > 100) {
+        if (page < 1 || page_size < 1 || page_size > 100) {
           return {
             code: 400,
             message: '无效的分页参数'
@@ -487,7 +532,7 @@ export default [
         filteredData = sortData(filteredData, order_bys)
 
         // 应用分页
-        const paginatedResult = paginate(filteredData, page, per_page)
+        const paginatedResult = paginate(filteredData, page, page_size)
 
         return {
           code: SUCCESS_CODE,
@@ -495,7 +540,7 @@ export default [
             list: paginatedResult.items,
             total: paginatedResult.total,
             page: paginatedResult.page,
-            per_page: paginatedResult.perPage,
+            page_size: paginatedResult.perPage,
             total_pages: paginatedResult.totalPages
           }
         }
@@ -514,20 +559,26 @@ export default [
     method: 'get',
     timeout,
     response: () => {
-      const stats = List.reduce((acc, item) => {
-        acc[item.type] = (acc[item.type] || 0) + 1
-        return acc
-      }, {} as Record<Type, number>)
+      const stats = List.reduce(
+        (acc, item) => {
+          acc[item.type] = (acc[item.type] || 0) + 1
+          return acc
+        },
+        {} as Record<Type, number>
+      )
 
       return {
         code: SUCCESS_CODE,
         data: {
           total: List.length,
           by_type: stats,
-          by_processing_mode: List.reduce((acc, item) => {
-            acc[item.processing_mode] = (acc[item.processing_mode] || 0) + 1
-            return acc
-          }, {} as Record<ProcessingMode, number>)
+          by_processing_mode: List.reduce(
+            (acc, item) => {
+              acc[item.processing_mode] = (acc[item.processing_mode] || 0) + 1
+              return acc
+            },
+            {} as Record<ProcessingMode, number>
+          )
         }
       }
     }

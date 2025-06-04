@@ -1,6 +1,6 @@
 <template>
   <el-card
-    class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--footer-card-height))] overflow-auto">
+    class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))] relative">
     <div class="p-6 mb-4 flex flex-col gap-6">
       <el-steps :active="active" finish-status="success" align-center>
         <el-step :title="t('AIInference.modelSelection')" />
@@ -25,13 +25,13 @@
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
                   <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
@@ -41,20 +41,19 @@
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
                   <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
             </el-row>
           </div>
           <!-- MLA提示配置 -->
           <div class="custom-section">
-
             <el-alert v-if="formData[active].attnType === 'mla'" title="MLA Extended Options are now visible!"
               type="success" :closable="false" show-icon />
             <el-alert v-else-if="formData[active].attnType === 'moe'"
@@ -75,126 +74,171 @@
             </el-divider>
             <el-row :gutter="20">
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item prop="norm"
-                  :rules="getFieldRules({ field: 'norm', label: 'norm', component: 'Select', required: true })"
-                  :label-position="'left'">
+                <el-form-item prop="norm" :rules="getFieldRules({
+                  field: 'norm',
+                  label: 'norm',
+                  component: 'Select',
+                  required: true
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="norm" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">norm</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'norm', label: 'norm', component: 'Select', componentProps: { placeholder: '请选择' }, options: [{ label: 'RMSNorm', value: 'rmsnorm' }, { label: 'LayerNorm', value: 'layernorm' }] }"
-                    :value="formData[active].norm" @update="(value) => handleFieldUpdate('norm', value)"
-                    style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'norm',
+                    label: 'norm',
+                    component: 'Select',
+                    componentProps: { placeholder: '请选择' },
+                    options: [
+                      { label: 'RMSNorm', value: 'rmsnorm' },
+                      { label: 'LayerNorm', value: 'layernorm' }
+                    ]
+                  }" :value="formData[active].norm" @update="(value) => handleFieldUpdate('norm', value)"
+                    style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="hybridModelEnable"
-                  :rules="getFieldRules({ field: 'hybridModelEnable', label: 'hybrid_model_enable', component: 'Switch' })"
-                  :label-position="'left'">
+                <el-form-item prop="hybridModelEnable" :rules="getFieldRules({
+                  field: 'hybridModelEnable',
+                  label: 'hybrid_model_enable',
+                  component: 'Switch'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_model_enable" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">hybrid_model_enable</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'hybridModelEnable', label: 'hybrid_model_enable', component: 'Switch' }"
-                    :value="formData[active].hybridModelEnable"
-                    @update="(value) => handleFieldUpdate('hybridModelEnable', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'hybridModelEnable',
+                    label: 'hybrid_model_enable',
+                    component: 'Switch'
+                  }" :value="formData[active].hybridModelEnable"
+                    @update="(value) => handleFieldUpdate('hybridModelEnable', value)" style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="hybridDenseBlocksNum"
-                  :rules="getFieldRules({ field: 'hybridDenseBlocksNum', label: 'hybrid_dense_blocks_num', component: 'InputNumber' })"
-                  :label-position="'left'">
+                <el-form-item prop="hybridDenseBlocksNum" :rules="getFieldRules({
+                  field: 'hybridDenseBlocksNum',
+                  label: 'hybrid_dense_blocks_num',
+                  component: 'InputNumber'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_dense_blocks_num" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">hybrid_dense_blocks_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'hybridDenseBlocksNum', label: 'hybrid_dense_blocks_num', component: 'InputNumber', componentProps: { controls: false, placeholder: '0' } }"
-                    :value="formData[active].hybridDenseBlocksNum"
-                    @update="(value) => handleFieldUpdate('hybridDenseBlocksNum', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'hybridDenseBlocksNum',
+                    label: 'hybrid_dense_blocks_num',
+                    component: 'InputNumber',
+                    componentProps: { controls: false, placeholder: '0' }
+                  }" :value="formData[active].hybridDenseBlocksNum"
+                    @update="(value) => handleFieldUpdate('hybridDenseBlocksNum', value)" style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="embeddingOutputShare"
-                  :rules="getFieldRules({ field: 'embeddingOutputShare', label: 'embedding_output_share', component: 'Switch' })"
-                  :label-position="'left'">
+                <el-form-item prop="embeddingOutputShare" :rules="getFieldRules({
+                  field: 'embeddingOutputShare',
+                  label: 'embedding_output_share',
+                  component: 'Switch'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="embedding_output_share" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">embedding_output_share</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'embeddingOutputShare', label: 'embedding_output_share', component: 'Switch' }"
-                    :value="formData[active].embeddingOutputShare"
-                    @update="(value) => handleFieldUpdate('embeddingOutputShare', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'embeddingOutputShare',
+                    label: 'embedding_output_share',
+                    component: 'Switch'
+                  }" :value="formData[active].embeddingOutputShare"
+                    @update="(value) => handleFieldUpdate('embeddingOutputShare', value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item prop="embeddingSize"
-                  :rules="getFieldRules({ field: 'embeddingSize', label: 'embedding_size', component: 'InputNumber' })"
-                  :label-position="'left'">
+                <el-form-item prop="embeddingSize" :rules="getFieldRules({
+                  field: 'embeddingSize',
+                  label: 'embedding_size',
+                  component: 'InputNumber'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="embedding_size" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">embedding_size</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'embeddingSize', label: 'embedding_size', component: 'InputNumber', componentProps: { controls: false, placeholder: '0' } }"
-                    :value="formData[active].embeddingSize"
-                    @update="(value) => handleFieldUpdate('embeddingSize', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'embeddingSize',
+                    label: 'embedding_size',
+                    component: 'InputNumber',
+                    componentProps: { controls: false, placeholder: '0' }
+                  }" :value="formData[active].embeddingSize"
+                    @update="(value) => handleFieldUpdate('embeddingSize', value)" style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="hybridMoeBlocksNum"
-                  :rules="getFieldRules({ field: 'hybridMoeBlocksNum', label: 'hybrid_moe_blocks_num', component: 'InputNumber' })"
-                  :label-position="'left'">
+                <el-form-item prop="hybridMoeBlocksNum" :rules="getFieldRules({
+                  field: 'hybridMoeBlocksNum',
+                  label: 'hybrid_moe_blocks_num',
+                  component: 'InputNumber'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_moe_blocks_num" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">hybrid_moe_blocks_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'hybridMoeBlocksNum', label: 'hybrid_moe_blocks_num', component: 'InputNumber', componentProps: { controls: false, placeholder: '0' } }"
-                    :value="formData[active].hybridMoeBlocksNum"
-                    @update="(value) => handleFieldUpdate('hybridMoeBlocksNum', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'hybridMoeBlocksNum',
+                    label: 'hybrid_moe_blocks_num',
+                    component: 'InputNumber',
+                    componentProps: { controls: false, placeholder: '0' }
+                  }" :value="formData[active].hybridMoeBlocksNum"
+                    @update="(value) => handleFieldUpdate('hybridMoeBlocksNum', value)" style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="mtpModuleNum"
-                  :rules="getFieldRules({ field: 'mtpModuleNum', label: 'mtp_module_num', component: 'InputNumber' })"
-                  :label-position="'left'">
+                <el-form-item prop="mtpModuleNum" :rules="getFieldRules({
+                  field: 'mtpModuleNum',
+                  label: 'mtp_module_num',
+                  component: 'InputNumber'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="mtp_module_num" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">mtp_module_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'mtpModuleNum', label: 'mtp_module_num', component: 'InputNumber', componentProps: { controls: false, placeholder: '0' } }"
-                    :value="formData[active].mtpModuleNum" @update="(value) => handleFieldUpdate('mtpModuleNum', value)"
-                    style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'mtpModuleNum',
+                    label: 'mtp_module_num',
+                    component: 'InputNumber',
+                    componentProps: { controls: false, placeholder: '0' }
+                  }" :value="formData[active].mtpModuleNum"
+                    @update="(value) => handleFieldUpdate('mtpModuleNum', value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -219,13 +263,13 @@
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
                   <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
@@ -235,13 +279,13 @@
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
                   <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -266,13 +310,13 @@
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
                   <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
@@ -282,13 +326,13 @@
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
                   <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px;" />
+                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -313,126 +357,171 @@
             </el-divider>
             <el-row :gutter="20">
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item prop="norm"
-                  :rules="getFieldRules({ field: 'norm', label: 'norm', component: 'Select', required: true })"
-                  :label-position="'left'">
+                <el-form-item prop="norm" :rules="getFieldRules({
+                  field: 'norm',
+                  label: 'norm',
+                  component: 'Select',
+                  required: true
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="norm" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">norm</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'norm', label: 'norm', component: 'Select', componentProps: { placeholder: '请选择' }, options: [{ label: 'RMSNorm', value: 'rmsnorm' }, { label: 'LayerNorm', value: 'layernorm' }] }"
-                    :value="formData[active].norm" @update="(value) => handleFieldUpdate('norm', value)"
-                    style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'norm',
+                    label: 'norm',
+                    component: 'Select',
+                    componentProps: { placeholder: '请选择' },
+                    options: [
+                      { label: 'RMSNorm', value: 'rmsnorm' },
+                      { label: 'LayerNorm', value: 'layernorm' }
+                    ]
+                  }" :value="formData[active].norm" @update="(value) => handleFieldUpdate('norm', value)"
+                    style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="hybridModelEnable"
-                  :rules="getFieldRules({ field: 'hybridModelEnable', label: 'hybrid_model_enable', component: 'Switch' })"
-                  :label-position="'left'">
+                <el-form-item prop="hybridModelEnable" :rules="getFieldRules({
+                  field: 'hybridModelEnable',
+                  label: 'hybrid_model_enable',
+                  component: 'Switch'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_model_enable" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">hybrid_model_enable</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'hybridModelEnable', label: 'hybrid_model_enable', component: 'Switch' }"
-                    :value="formData[active].hybridModelEnable"
-                    @update="(value) => handleFieldUpdate('hybridModelEnable', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'hybridModelEnable',
+                    label: 'hybrid_model_enable',
+                    component: 'Switch'
+                  }" :value="formData[active].hybridModelEnable"
+                    @update="(value) => handleFieldUpdate('hybridModelEnable', value)" style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="hybridDenseBlocksNum"
-                  :rules="getFieldRules({ field: 'hybridDenseBlocksNum', label: 'hybrid_dense_blocks_num', component: 'InputNumber' })"
-                  :label-position="'left'">
+                <el-form-item prop="hybridDenseBlocksNum" :rules="getFieldRules({
+                  field: 'hybridDenseBlocksNum',
+                  label: 'hybrid_dense_blocks_num',
+                  component: 'InputNumber'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_dense_blocks_num" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">hybrid_dense_blocks_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'hybridDenseBlocksNum', label: 'hybrid_dense_blocks_num', component: 'InputNumber', componentProps: { controls: false, placeholder: '0' } }"
-                    :value="formData[active].hybridDenseBlocksNum"
-                    @update="(value) => handleFieldUpdate('hybridDenseBlocksNum', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'hybridDenseBlocksNum',
+                    label: 'hybrid_dense_blocks_num',
+                    component: 'InputNumber',
+                    componentProps: { controls: false, placeholder: '0' }
+                  }" :value="formData[active].hybridDenseBlocksNum"
+                    @update="(value) => handleFieldUpdate('hybridDenseBlocksNum', value)" style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="embeddingOutputShare"
-                  :rules="getFieldRules({ field: 'embeddingOutputShare', label: 'embedding_output_share', component: 'Switch' })"
-                  :label-position="'left'">
+                <el-form-item prop="embeddingOutputShare" :rules="getFieldRules({
+                  field: 'embeddingOutputShare',
+                  label: 'embedding_output_share',
+                  component: 'Switch'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="embedding_output_share" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">embedding_output_share</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'embeddingOutputShare', label: 'embedding_output_share', component: 'Switch' }"
-                    :value="formData[active].embeddingOutputShare"
-                    @update="(value) => handleFieldUpdate('embeddingOutputShare', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'embeddingOutputShare',
+                    label: 'embedding_output_share',
+                    component: 'Switch'
+                  }" :value="formData[active].embeddingOutputShare"
+                    @update="(value) => handleFieldUpdate('embeddingOutputShare', value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item prop="embeddingSize"
-                  :rules="getFieldRules({ field: 'embeddingSize', label: 'embedding_size', component: 'InputNumber' })"
-                  :label-position="'left'">
+                <el-form-item prop="embeddingSize" :rules="getFieldRules({
+                  field: 'embeddingSize',
+                  label: 'embedding_size',
+                  component: 'InputNumber'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="embedding_size" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">embedding_size</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'embeddingSize', label: 'embedding_size', component: 'InputNumber', componentProps: { controls: false, placeholder: '0' } }"
-                    :value="formData[active].embeddingSize"
-                    @update="(value) => handleFieldUpdate('embeddingSize', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'embeddingSize',
+                    label: 'embedding_size',
+                    component: 'InputNumber',
+                    componentProps: { controls: false, placeholder: '0' }
+                  }" :value="formData[active].embeddingSize"
+                    @update="(value) => handleFieldUpdate('embeddingSize', value)" style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="hybridMoeBlocksNum"
-                  :rules="getFieldRules({ field: 'hybridMoeBlocksNum', label: 'hybrid_moe_blocks_num', component: 'InputNumber' })"
-                  :label-position="'left'">
+                <el-form-item prop="hybridMoeBlocksNum" :rules="getFieldRules({
+                  field: 'hybridMoeBlocksNum',
+                  label: 'hybrid_moe_blocks_num',
+                  component: 'InputNumber'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_moe_blocks_num" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">hybrid_moe_blocks_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'hybridMoeBlocksNum', label: 'hybrid_moe_blocks_num', component: 'InputNumber', componentProps: { controls: false, placeholder: '0' } }"
-                    :value="formData[active].hybridMoeBlocksNum"
-                    @update="(value) => handleFieldUpdate('hybridMoeBlocksNum', value)" style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'hybridMoeBlocksNum',
+                    label: 'hybrid_moe_blocks_num',
+                    component: 'InputNumber',
+                    componentProps: { controls: false, placeholder: '0' }
+                  }" :value="formData[active].hybridMoeBlocksNum"
+                    @update="(value) => handleFieldUpdate('hybridMoeBlocksNum', value)" style="width: 300px" />
                 </el-form-item>
-                <el-form-item prop="mtpModuleNum"
-                  :rules="getFieldRules({ field: 'mtpModuleNum', label: 'mtp_module_num', component: 'InputNumber' })"
-                  :label-position="'left'">
+                <el-form-item prop="mtpModuleNum" :rules="getFieldRules({
+                  field: 'mtpModuleNum',
+                  label: 'mtp_module_num',
+                  component: 'InputNumber'
+                })
+                  " :label-position="'left'">
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="mtp_module_num" placement="top">
                         <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0;" />
+                          style="margin-right: 8px; flex-shrink: 0" />
                       </el-tooltip>
                       <span class="label-text">mtp_module_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer
-                    :field="{ field: 'mtpModuleNum', label: 'mtp_module_num', component: 'InputNumber', componentProps: { controls: false, placeholder: '0' } }"
-                    :value="formData[active].mtpModuleNum" @update="(value) => handleFieldUpdate('mtpModuleNum', value)"
-                    style="width: 300px;" />
+                  <FormFieldRenderer :field="{
+                    field: 'mtpModuleNum',
+                    label: 'mtp_module_num',
+                    component: 'InputNumber',
+                    componentProps: { controls: false, placeholder: '0' }
+                  }" :value="formData[active].mtpModuleNum"
+                    @update="(value) => handleFieldUpdate('mtpModuleNum', value)" style="width: 300px" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -442,13 +531,12 @@
 
       <div v-if="active === 3" class="flex flex-col gap-4 min-h-40 pl-20 pt-20">
         <h2>Run Simulation with selected parameters?</h2>
-        <div><el-tag size="large" effect="dark" style="width: 120px;">Task Name</el-tag> : <el-input
-            placeholder="Enter job Name" v-model="taskName" style="width: 400px;" /></div>
+        <div><el-tag size="large" effect="dark" style="width: 120px">Task Name</el-tag> :
+          <el-input placeholder="Enter job Name" v-model="taskName" style="width: 400px" />
+        </div>
         <p v-for="(step, idx) in ['modelSelection', 'handwareSelection', 'environment']">
-          <el-tag size="large" effect="dark" style="width: 120px;">{{ step }}</el-tag> : <el-tag size="large"
-            effect="light">{{
-              formData[idx][step]
-            }}</el-tag>
+          <el-tag size="large" effect="dark" style="width: 120px">{{ step }}</el-tag> :
+          <el-tag size="large" effect="light">{{ formData[idx][step] }}</el-tag>
         </p>
       </div>
     </div>
@@ -458,14 +546,15 @@
           t('common.prevLabel')
         }}</el-button>
         <!-- :disabled="!canProceed" -->
-        <el-button type="primary" @click="handleNext" :loading="isSubmitting"> {{
-          active === 3 ? t('common.ok') : t('common.nextLabel')
-          }}</el-button>
-        <el-button @click="handleCancelModelChange" type="info">
-          取消模型选择
-        </el-button>
+        <el-button type="primary" @click="handleNext" :loading="isSubmitting">
+          {{ active === 3 ? t('common.ok') : t('common.nextLabel') }}</el-button>
+        <el-button type="info"> 保存草稿 </el-button>
       </div>
     </footer>
+    <div class="absolute top-4 right-6" @click="handleCancelModelChange">
+      <!-- #f56c6c -->
+      <Icon :icon="'vi-ep:close-bold'" :size="25" color="var(--el-color-danger)" />
+    </div>
   </el-card>
 </template>
 
@@ -530,7 +619,7 @@ const formData = reactive([
     embeddingOutputShare: false,
     embeddingSize: 0,
     hybridMoeBlocksNum: 0,
-    mtpModuleNum: 0,
+    mtpModuleNum: 0
   },
   {
     // Step 1: Hardware Configuration
@@ -543,7 +632,7 @@ const formData = reactive([
     batchSize: 32,
     maxSequenceLength: 2048,
     precision: '',
-    optimizationLevel: '',
+    optimizationLevel: ''
   },
   {
     // Step 2: Deployment Configuration
@@ -761,7 +850,7 @@ const allFormSections: FormSection[][] = [
           options: [
             { label: 'B20', value: 'B20' },
             { label: 'R20', value: 'R20' },
-            { label: 'H20', value: 'H20' },
+            { label: 'H20', value: 'H20' }
           ]
         }
       ]
@@ -942,7 +1031,7 @@ const currentStepSections = computed(() => {
 
 // 过滤可见的sections (排除High-Level Options，因为它单独渲染)
 const visibleSections = computed(() => {
-  return currentStepSections.value.filter(section => {
+  return currentStepSections.value.filter((section) => {
     // 排除High-Level Options，因为它在toggle-section下方单独渲染
     if (section.key === 'highLevel') {
       return false
@@ -988,7 +1077,7 @@ const validationRules = {
 // 计算当前步骤是否可以继续
 const canProceed = computed(() => {
   const requiredFields = validationRules[active.value] || []
-  return requiredFields.every(field => {
+  return requiredFields.every((field) => {
     const value = formData[active.value][field]
     return value !== '' && value !== null && value !== undefined
   })
@@ -1096,7 +1185,7 @@ const validateStep = (step: number) => {
   const requiredFields = validationRules[step] || []
   const errors: string[] = []
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     const value = formData[step][field]
     if (!value || value === '') {
       errors.push(field)
@@ -1162,18 +1251,14 @@ const handlePrevious = async () => {
 // 重置表单
 const handleReset = async () => {
   try {
-    await ElMessageBox.confirm(
-      'This will reset all form data. Are you sure?',
-      'Reset Form',
-      {
-        confirmButtonText: 'Yes, reset',
-        cancelButtonText: 'Cancel',
-        type: 'warning'
-      }
-    )
+    await ElMessageBox.confirm('This will reset all form data. Are you sure?', 'Reset Form', {
+      confirmButtonText: 'Yes, reset',
+      cancelButtonText: 'Cancel',
+      type: 'warning'
+    })
 
     // 重置表单数据
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       if (typeof formData[key] === 'boolean') {
         formData[key] = false
       } else if (typeof formData[key] === 'number') {
@@ -1191,22 +1276,17 @@ const handleReset = async () => {
 
     ElMessage.success('Form has been reset')
     emit('formReset')
-
   } catch {
     // User cancelled
   }
 }
 
 const handleCancelModelChange = async () => {
-  await ElMessageBox.confirm(
-    '确认取消模型创建吗?',
-    '取消创建',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  )
+  await ElMessageBox.confirm('确认取消模型创建吗?', '取消创建', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
   ElMessage.success('取消创建模型')
   emit('cancel')
 }
@@ -1217,7 +1297,7 @@ const handleSubmit = async (taskName: string) => {
   try {
     // 模拟API调用
     console.log('Form submitted:', formData, 'Form value:', taskName)
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     ElMessage.success('Configuration submitted successfully!')
     // emit('formSubmit', formData, taskName)
     // 可以在这里添加路由跳转或其他逻辑
@@ -1263,7 +1343,7 @@ defineExpose({
 })
 
 const excuteFromData = () => {
-  console.log("获取填写完成的表单");
+  console.log('获取填写完成的表单')
 }
 
 // 字段验证规则
@@ -1324,20 +1404,25 @@ const FormFieldRenderer = defineComponent({
       const { field, value } = props
       switch (field.component) {
         case 'Select':
-          return h(ElSelect, {
-            modelValue: value || '',
-            'onUpdate:modelValue': handleUpdate,
-            clearable: true,
-            ...field.componentProps
-          }, {
-            default: () => field.options?.map(option =>
-              h(ElOption, {
-                key: option.value,
-                label: option.label,
-                value: option.value
-              })
-            )
-          })
+          return h(
+            ElSelect,
+            {
+              modelValue: value || '',
+              'onUpdate:modelValue': handleUpdate,
+              clearable: true,
+              ...field.componentProps
+            },
+            {
+              default: () =>
+                field.options?.map((option) =>
+                  h(ElOption, {
+                    key: option.value,
+                    label: option.label,
+                    value: option.value
+                  })
+                )
+            }
+          )
 
         case 'InputNumber':
           return h(ElInputNumber, {
@@ -1370,7 +1455,7 @@ const handleFieldUpdate = (field: string, value: any) => {
   // 创建新的 modelValue
   const newModelValue = { ...formData }
 
-  console.log(newModelValue, 'newModelValue');
+  console.log(newModelValue, 'newModelValue')
 
   // 特殊字段变化处理
   if (field === 'attnType') {
@@ -1383,7 +1468,6 @@ const handleAdvancedConfigToggle = (value: boolean) => {
   showAdvancedConfig.value = value
   emit('sectionToggle', { sectionKey: 'advanced', visible: value })
 }
-
 </script>
 
 <style lang="less" scoped>

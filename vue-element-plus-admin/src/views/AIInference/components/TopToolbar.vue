@@ -9,9 +9,13 @@
       </section>
       <section class="custom-header-right">
         <div class="custom-mode flex mb-4">
-          <el-button v-for="(item, index) in props.models" :key="item.model"
+          <el-button
+            v-for="(item, index) in props.models"
+            :key="item.model"
             @click="handleViewModeChange(item.model, $event)"
-            :class="['flex-1', { 'is-active': activeViewMode === item.model }]" class="view-mode-btn">
+            :class="['flex-1', { 'is-active': activeViewMode === item.model }]"
+            class="view-mode-btn"
+          >
             <template #icon>
               <Icon :icon="'vi-ep:grid'" v-if="item.model === 'Grid'" />
               <Icon :icon="'vi-ep:list'" v-else />
@@ -20,8 +24,13 @@
           </el-button>
         </div>
         <div class="custom-mode flex">
-          <el-button v-for="(item) in scopeOptions" :key="item" @click="handleScopeChange(item, $event)"
-            :class="['flex-1', { 'is-active': activeScope === item }]" class="scope-btn">
+          <el-button
+            v-for="item in scopeOptions"
+            :key="item"
+            @click="handleScopeChange(item, $event)"
+            :class="['flex-1', { 'is-active': activeScope === item }]"
+            class="scope-btn"
+          >
             <template #icon>
               <Icon :icon="'vi-ep:user'" v-if="item === '个人'" />
               <Icon :icon="'vi-ep:office-building'" v-else />
@@ -72,11 +81,14 @@ const handleScopeChange = (scope: string, event: Event) => {
   emit('scopeChange', scope, event)
 }
 
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    activeViewMode.value = newValue
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue) {
+      activeViewMode.value = newValue
+    }
   }
-})
+)
 
 const handleChangeBtn = (model: string, event: Event) => {
   handleViewModeChange(model, event)
@@ -123,7 +135,7 @@ const handleChangeBtn = (model: string, event: Event) => {
     }
   }
 
-  .el-button+.el-button {
+  .el-button + .el-button {
     margin-left: 0;
     border-left: none;
   }

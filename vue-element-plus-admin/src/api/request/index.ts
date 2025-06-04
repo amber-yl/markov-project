@@ -7,7 +7,7 @@ interface ListResponse {
   list: SystemConfig[]
   total: number
   page: number
-  per_page: number
+  page_size: number
   total_pages: number
 }
 
@@ -34,7 +34,7 @@ export const markov_sim_get_all_configs = (params: {
   filters?: { name?: string; type?: string; processing_mode?: string }
   order_bys?: string[]
   page?: number
-  per_page?: number
+  page_size?: number
 }) => {
   return request.post<RequestResponse<ListResponse>>({
     url: '/markov_sim/api/v1/system_config/get_all',
@@ -50,7 +50,9 @@ export const markov_sim_get_config_by_id = (id: string) => {
 }
 
 // 创建系统配置
-export const markov_sim_create_config = (params: Omit<SystemConfig, 'id' | 'created_at' | 'updated_at'>) => {
+export const markov_sim_create_config = (
+  params: Omit<SystemConfig, 'id' | 'created_at' | 'updated_at'>
+) => {
   return request.post<SystemConfig>({
     url: '/markov_sim/api/v1/system_config/create',
     data: params

@@ -1,85 +1,83 @@
 <template>
-  <ContentDetailWrap>
-    <section v-if="centerDialogVisible">
-      <SimulationForm @cancel="handleCancel" @formSubmit="handleSubmit" />
-    </section>
-    <section v-else>
-      <TopToolbar v-model="viewMode" :models="models" :modeName="modeName" @create="createNewSimulation"
-        @change="handleModelChange" @scopeChange="handleScopeChange" />
-      <el-card
-        class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2">
-        <header class="flex justify-between mb-2">
-          <section class="custom-left-box">
-            <el-button v-if="isSelectionMode" @click="jump2Comparison" type="primary" :disabled="isDisabled">
-              <template #icon>
-                <Icon :icon="'vi-ep:info-filled'" />
-              </template>
-              已选择 {{ selectCards.length }}个
-            </el-button>
-            <el-button @click="changeIsSelectionMode" :type="!isSelectionMode ? 'primary' : 'danger'">
-              <template #icon>
-                <Icon :icon="'vi-ant-design:retweet-outlined'" v-if="!isSelectionMode" />
-                <Icon :icon="'vi-ep:info-filled'" v-else />
-              </template>
-              <span>{{ (isSelectionMode ? '取消' : '开始') + '模型对比' }}</span>
-            </el-button>
+  <section v-if="!centerDialogVisible">
+    <SimulationForm @cancel="handleCancel" @formSubmit="handleSubmit" />
+  </section>
+  <section v-else>
+    <TopToolbar v-model="viewMode" :models="models" :modeName="modeName" @create="createNewSimulation"
+      @change="handleModelChange" @scopeChange="handleScopeChange" />
+    <el-card
+      class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2">
+      <header class="flex justify-between mb-2">
+        <section class="custom-left-box">
+          <el-button v-if="isSelectionMode" @click="jump2Comparison" type="primary" :disabled="isDisabled">
+            <template #icon>
+              <Icon :icon="'vi-ep:info-filled'" />
+            </template>
+            已选择 {{ selectCards.length }}个
+          </el-button>
+          <el-button @click="changeIsSelectionMode" :type="!isSelectionMode ? 'primary' : 'danger'">
+            <template #icon>
+              <Icon :icon="'vi-ant-design:retweet-outlined'" v-if="!isSelectionMode" />
+              <Icon :icon="'vi-ep:info-filled'" v-else />
+            </template>
+            <span>{{ (isSelectionMode ? '取消' : '开始') + '模型对比' }}</span>
+          </el-button>
+        </section>
+        <section class="flex gap-2">
+          <section class="custom-tag-select">
+            <el-select v-model="statusValue" multiple placeholder="筛选运行状态" style="min-width: 200px; max-width: 400px"
+              collapse-tags collapse-tags-tooltip :max-collapse-tags="2" clearable>
+              <el-option v-for="(status, index) in inferenceEvalStore.getTaskStatusList" :key="index" :label="status"
+                :value="status">
+                <div class="flex items-center">
+                  <el-tag :type="getStatusTagType(status)" size="small" style="margin-right: 8px" effect="light" />
+                  <span :class="getStatusTextClass(status)">{{ status }}</span>
+                </div>
+              </el-option>
+            </el-select>
           </section>
-          <section class="flex gap-2">
-            <section class="custom-tag-select">
-              <el-select v-model="statusValue" multiple placeholder="筛选运行状态" style="min-width: 200px;max-width: 400px;"
-                collapse-tags collapse-tags-tooltip :max-collapse-tags="2" clearable>
-                <el-option v-for="(status, index) in inferenceEvalStore.getTaskStatusList" :key="index" :label="status"
-                  :value="status">
-                  <div class="flex items-center">
-                    <el-tag :type="getStatusTagType(status)" size="small" style="margin-right: 8px" effect="light" />
-                    <span :class="getStatusTextClass(status)">{{ status }}</span>
-                  </div>
-                </el-option>
-              </el-select>
-            </section>
-            <section class="custom-right-box relative">
-              <el-input style="width: 240px;" placeholder="搜索模型名称..." @input="(v: string) => onSearchInput(v)"
-                :model-value="title" @focus="onSearchFocus" @blur="onSearchBlur" clearable @clear="handleSearchClear">
-                <template #prefix>
-                  <Icon :icon="searchLoading ? 'vi-ep:loading' : 'vi-ant-design:search-outlined'"
-                    :class="{ 'animate-spin': searchLoading }" />
-                </template>
-              </el-input>
-              <div v-show="isShow" class="custom-search-result">
-                <div v-if="searchLoading" class="custom-search-loading">
-                  <el-skeleton :rows="3" animated />
-                </div>
-                <div v-else-if="filterData.length === 0 && title" class="custom-search-empty">
-                  <el-empty :image-size="60" description="未找到匹配的模型" />
-                </div>
-                <el-card v-else v-for="(item, index) in filterData" :key="index" class="custom-search-item"
-                  @click="changeModelName(item)">
-                  <div class="flex items-center justify-between">
-                    <p class="model-name">{{ item }}</p>
-                    <Icon :icon="'vi-ant-design:enter-outlined'" class="select-icon" />
-                  </div>
-                </el-card>
+          <section class="custom-right-box relative">
+            <el-input style="width: 240px" placeholder="搜索模型名称..." @input="(v: string) => onSearchInput(v)"
+              :model-value="title" @focus="onSearchFocus" @blur="onSearchBlur" clearable @clear="handleSearchClear">
+              <template #prefix>
+                <Icon :icon="searchLoading ? 'vi-ep:loading' : 'vi-ant-design:search-outlined'"
+                  :class="{ 'animate-spin': searchLoading }" />
+              </template>
+            </el-input>
+            <div v-show="isShow" class="custom-search-result">
+              <div v-if="searchLoading" class="custom-search-loading">
+                <el-skeleton :rows="3" animated />
               </div>
-            </section>
+              <div v-else-if="filterData.length === 0 && title" class="custom-search-empty">
+                <el-empty :image-size="60" description="未找到匹配的模型" />
+              </div>
+              <el-card v-else v-for="(item, index) in filterData" :key="index" class="custom-search-item"
+                @click="changeModelName(item)">
+                <div class="flex items-center justify-between">
+                  <p class="model-name">{{ item }}</p>
+                  <Icon :icon="'vi-ant-design:enter-outlined'" class="select-icon" />
+                </div>
+              </el-card>
+            </div>
           </section>
-        </header>
-        <el-skeleton v-if="viewMode === 'Grid'" :rows="5" :loading="loading" animated>
-          <CardView :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
-            @detail="handleDetail" :isDisabled="isDisabled" />
-        </el-skeleton>
-        <el-skeleton v-else :rows="5" :loading="loading" animated>
-          <table-view :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
-            @detail="handleDetail" />
-        </el-skeleton>
-        <footer class="flex justify-end mt-4">
-          <el-pagination v-model:current-page="pagination.currentPage.value"
-            v-model:page-size="pagination.pageSize.value" :page-sizes="[5, 10, 15, 20]" :size="'small'"
-            layout="total, sizes, prev, pager, next, jumper" :total="displayViewModeList.length"
-            @size-change="pagination.handleSizeChange" @current-change="pagination.handleCurrentChange" />
-        </footer>
-      </el-card>
-    </section>
-  </ContentDetailWrap>
+        </section>
+      </header>
+      <el-skeleton v-if="viewMode === 'Grid'" :rows="5" :loading="loading" animated>
+        <CardView :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
+          @detail="handleDetail" :isDisabled="isDisabled" />
+      </el-skeleton>
+      <el-skeleton v-else :rows="5" :loading="loading" animated>
+        <table-view :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
+          @detail="handleDetail" />
+      </el-skeleton>
+      <footer class="flex justify-end mt-4">
+        <el-pagination v-model:current-page="pagination.currentPage.value" v-model:page-size="pagination.pageSize.value"
+          :page-sizes="[5, 10, 15, 20]" :size="'small'" layout="total, sizes, prev, pager, next, jumper"
+          :total="displayViewModeList.length" @size-change="pagination.handleSizeChange"
+          @current-change="pagination.handleCurrentChange" />
+      </footer>
+    </el-card>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -129,29 +127,35 @@ const handleModelChange = (model: string) => {
 }
 
 const displayViewModeList = computed(() => {
-  let filteredTasks = inferenceEvalStore.allTasks as Task[]
+  // 先将allTasks转为unknown类型，再转为Task类型，确保类型安全
+  let filteredTasks = inferenceEvalStore.allTasks as unknown as Task[]
 
   // 根据状态过滤
   if (statusValue.value.length > 0) {
-    filteredTasks = filteredTasks.filter(task =>
+    filteredTasks = filteredTasks.filter((task) =>
       statusValue.value.includes(task.status)
     ) as Task[]
   }
 
   // 根据模型名称过滤
   if (title.value) {
-    filteredTasks = filteredTasks.filter(task =>
-      task.model.toLowerCase().includes(title.value.toLowerCase()) ||
-      task.name.toLowerCase().includes(title.value.toLowerCase())
+    filteredTasks = filteredTasks.filter(
+      (task) =>
+        task.model.toLowerCase().includes(title.value.toLowerCase()) ||
+        task.name.toLowerCase().includes(title.value.toLowerCase())
     ) as Task[]
   }
-  console.log(filteredTasks, "| filteredTasks");
+  console.log(filteredTasks, '| filteredTasks')
   return filteredTasks
 })
 
-watch(currentScope, (newValue) => {
-  // 切换范围时的处理逻辑
-}, { immediate: true })
+watch(
+  currentScope,
+  (newValue) => {
+    // 切换范围时的处理逻辑
+  },
+  { immediate: true }
+)
 
 const isSelectionMode = ref(false)
 const createNewSimulation = () => {
@@ -181,7 +185,7 @@ const handleSelect = (task, checked?: boolean) => {
     selectCards.value = task.map((item) => item.id)
   } else {
     if (checked) {
-      selectCards.value.push((task).id)
+      selectCards.value.push(task.id)
     } else {
       const index = selectCards.value.findIndex((id) => id === task.id)
       if (index !== -1) {
@@ -191,15 +195,18 @@ const handleSelect = (task, checked?: boolean) => {
   }
 }
 
-watch(selectCards, (newValue) => {
-  if (newValue.length >= 3) {
-    isDisabled.value = true
-    ElMessage.info('对比模型不能超过3条')
-  } else {
-    isDisabled.value = false
-  }
-}, { immediate: true, deep: true })
-
+watch(
+  selectCards,
+  (newValue) => {
+    if (newValue.length >= 3) {
+      isDisabled.value = true
+      ElMessage.info('对比模型不能超过3条')
+    } else {
+      isDisabled.value = false
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 const handleDetail = (task) => {
   router.push({
@@ -209,8 +216,6 @@ const handleDetail = (task) => {
     }
   })
 }
-
-
 
 onMounted(async () => {
   // await fetchData()
@@ -235,7 +240,6 @@ const changeIsSelectionMode = () => {
     selectCards.value = []
   }
 }
-
 
 // 使用防抖优化搜索性能
 const debouncedSearch = debounce((val: string) => {
@@ -311,29 +315,30 @@ const handleSearchClear = () => {
   searchLoading.value = false
 }
 
-const getStatusTagType = (status: string): 'success' | 'warning' | 'info' | 'primary' | 'danger' => {
+const getStatusTagType = (
+  status: string
+): 'success' | 'warning' | 'info' | 'primary' | 'danger' => {
   const statusMap: Record<string, 'success' | 'warning' | 'info' | 'primary' | 'danger'> = {
-    'running': 'success',
-    'pending': 'warning',
-    'completed': 'info',
-    'failed': 'danger',
-    'stopped': 'info'
+    running: 'success',
+    pending: 'warning',
+    completed: 'info',
+    failed: 'danger',
+    stopped: 'info'
   }
   return statusMap[status] || 'primary'
 }
 
 const getStatusTextClass = (status: string) => {
   const classMap: Record<string, string> = {
-    'running': 'text-green-600',
-    'pending': 'text-orange-600',
-    'completed': 'text-blue-600',
-    'failed': 'text-red-600',
-    'stopped': 'text-gray-600'
+    running: 'text-green-600',
+    pending: 'text-orange-600',
+    completed: 'text-blue-600',
+    failed: 'text-red-600',
+    stopped: 'text-gray-600'
   }
   return classMap[status] || 'text-gray-600'
 }
 </script>
-
 
 <style lang="less" scoped>
 .custom-search-result {

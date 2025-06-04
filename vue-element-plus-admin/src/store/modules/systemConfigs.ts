@@ -24,7 +24,7 @@ interface SystemConfigState {
   serverPagination: {
     total: number
     page: number
-    per_page: number
+    page_size: number
     total_pages: number
   }
   sortConfig: {
@@ -48,7 +48,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     serverPagination: {
       total: 0,
       page: 1,
-      per_page: 10,
+      page_size: 10,
       total_pages: 0
     },
     sortConfig: {
@@ -109,17 +109,15 @@ export const useSystemConfigStore = defineStore('systemConfig', {
 
   getters: {
     // 获取可见的列
-    visibleColumns: (state) =>
-      state.columns.filter((col) => col.isShow),
+    visibleColumns: (state) => state.columns.filter((col) => col.isShow),
 
     // 获取隐藏的列
-    hiddenColumns: (state) =>
-      state.columns.filter((col) => !col.isShow),
+    hiddenColumns: (state) => state.columns.filter((col) => !col.isShow),
 
     // 获取某列的所有唯一值
     getColumnValues: (state) => (prop: string) => {
       const values = new Set()
-      state.configs.forEach(config => {
+      state.configs.forEach((config) => {
         const value = getNestedValue(config, prop)
         if (value !== undefined && value !== null) {
           values.add(String(value))
@@ -131,7 +129,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     // 获取当前应用的筛选器
     activeFilters: (state) => {
       const active: Record<string, any> = {}
-      Object.keys(state.filters).forEach(key => {
+      Object.keys(state.filters).forEach((key) => {
         const value = state.filters[key]
         if (value !== undefined && value !== null && value !== '') {
           if (Array.isArray(value) && value.length > 0) {
@@ -157,7 +155,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
           filters: this.activeFilters,
           order_bys: this.sortConfig.order_bys,
           page: this.pagination.currentPage,
-          per_page: this.pagination.pageSize
+          page_size: this.pagination.pageSize
         }
         const { data } = await markov_sim_get_all_configs(params)
         const responseData = data.data || data
@@ -165,19 +163,18 @@ export const useSystemConfigStore = defineStore('systemConfig', {
         this.serverPagination = {
           total: responseData.total || 0,
           page: responseData.page || 1,
-          per_page: responseData.per_page || 10,
+          page_size: responseData.page_size || 10,
           total_pages: responseData.total_pages || 0
         }
 
         // 同步本地分页状态
         this.pagination.total = this.serverPagination.total
         this.pagination.currentPage = this.serverPagination.page
-
       } catch (error) {
         console.error('Failed to fetch configs:', error)
         ElMessage.error('获取配置列表失败')
         this.configs = []
-        this.serverPagination = { total: 0, page: 1, per_page: 10, total_pages: 0 }
+        this.serverPagination = { total: 0, page: 1, page_size: 10, total_pages: 0 }
       } finally {
         this.loading = false
       }
@@ -188,7 +185,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       this.loading = true
       try {
         const { data } = await markov_sim_get_create_model_schema()
-        console.log(data.schema, "| data.schema");
+        console.log(data.schema, '| data.schema')
 
         // data.schema 的代码正确，AI不要修改
         this.schemeConfigs = Object.assign(this.schemeConfigs, data.schema) || {}
@@ -224,7 +221,10 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
 
     // 更新配置
-    async updateConfig(id: string, configData: Omit<SystemConfig, 'id' | 'created_at' | 'updated_at'>) {
+    async updateConfig(
+      id: string,
+      configData: Omit<SystemConfig, 'id' | 'created_at' | 'updated_at'>
+    ) {
       this.loading = true
       try {
         const updateData = { ...configData, id } as SystemConfig
@@ -317,8 +317,12 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     // 设置筛选器
     setFilter(prop: string, value: string[] | string | null) {
       console.log(`设置筛选器 ${prop}:`, value)
-      if (value === null || value === undefined || value === '' ||
-        (Array.isArray(value) && value.length === 0)) {
+      if (
+        value === null ||
+        value === undefined ||
+        value === '' ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
         delete this.filters[prop]
       } else {
         this.filters[prop] = value

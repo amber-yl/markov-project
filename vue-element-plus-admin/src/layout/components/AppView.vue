@@ -25,6 +25,9 @@ const getCaches = computed((): string[] => {
       }
     ]"
   >
+    <!-- <el-card
+      class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]"
+    > -->
     <router-view>
       <template #default="{ Component, route }">
         <keep-alive :include="getCaches">
@@ -32,6 +35,7 @@ const getCaches = computed((): string[] => {
         </keep-alive>
       </template>
     </router-view>
+    <!-- </el-card> -->
   </section>
   <!-- <Footer v-if="footer" /> -->
 </template>
