@@ -56,10 +56,38 @@
               </el-popover>
             </div>
           </template>
-
           <!-- 单元格内容 -->
           <template #default="{ row }">
             <schema-table-cell :value="getNestedValue(row, column.prop)" :column="column" :row="row" />
+          </template>
+        </el-table-column>
+      </template>
+
+      <template v-for="column in visibleNetWorksColumns" :key="column.prop">
+        <el-table-column :label="column.label" :fixed="column.fixed" :sortable="column.sortable" align="center"
+          show-overflow-tooltip>
+          <!-- 动态渲染网络子列 -->
+          <template v-for="(subColumn, index) in networkSubColumns" :key="`${column.prop}-${index}`">
+            <el-table-column :label="subColumn.label" :prop="column.prop"
+              :width="getSubColumnWidth(column.width, networkSubColumns.length)"
+              :min-width="getSubColumnWidth(column.minWidth, networkSubColumns.length)" :fixed="column.fixed"
+              :sortable="column.sortable" align="center" show-overflow-tooltip>
+
+              <!-- 表头带筛选 -->
+              <template #header v-if="column.filterable">
+                <table-filter-header :label="subColumn.label" :column="column" :prop="`${column.prop}-${index}`"
+                  :table-data="tableData" :current-filter="getCurrentFilter(`${column.prop}-${index}`)"
+                  @filter-change="handleFilterChange" @filter-confirm="handleFilterConfirm"
+                  @filter-clear="handleFilterClear" @popover-ref="setPopoverRef" @init-temp-filter="initTempFilter" />
+              </template>
+
+              <!-- 单元格内容 -->
+              <template #default="{ row }">
+                <el-tag size="small" class="array-tag">
+                  {{ getNetworkValue(row, column.prop, index) }}
+                </el-tag>
+              </template>
+            </el-table-column>
           </template>
         </el-table-column>
       </template>
@@ -108,6 +136,7 @@ import { Icon } from '@/components/Icon'
 import SchemaTableCell from './SchemaTableCell.vue'
 import SchemaTableFilter from './SchemaTableFilter.vue'
 import SchemaTableColumnManager from './SchemaTableColumnManager.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 
 interface Column {
   prop: string
@@ -197,14 +226,37 @@ const currentFilters = ref<Record<string, any>>({})
 const localCurrentPage = ref(props.currentPage)
 const localPageSize = ref(props.pageSize)
 
-// 监听props变化，更新本地状态
-watch(() => props.currentPage, (newVal) => {
-  localCurrentPage.value = newVal
-}, { immediate: true })
+// 筛选相关
+const getCurrentFilter = (prop: string) => {
+  return currentFilters.value[prop] || []
+}
 
-watch(() => props.pageSize, (newVal) => {
-  localPageSize.value = newVal
-}, { immediate: true })
+const initTempFilter = (prop: string) => {
+  if (!tempFilters.value[prop]) {
+    tempFilters.value[prop] = [...(currentFilters.value[prop] || [])]
+  }
+}
+
+const handleFilterChange = (prop: string, values: any[]) => {
+  tempFilters.value[prop] = values
+}
+
+const handleFilterConfirm = (prop: string) => {
+  currentFilters.value[prop] = [...(tempFilters.value[prop] || [])]
+  emit('filter-change', currentFilters.value)
+
+  // 隐藏popover
+  const popover = popoverRefs.value.get(prop)
+  if (popover) {
+    popover.hide()
+  }
+}
+
+const handleFilterClear = (prop: string) => {
+  delete currentFilters.value[prop]
+  delete tempFilters.value[prop]
+  emit('filter-change', currentFilters.value)
+}
 
 // 从Schema获取列配置
 const allColumns = computed<Column[]>(() => {
@@ -212,9 +264,13 @@ const allColumns = computed<Column[]>(() => {
   return columns
 })
 
-// 可见列
+// 可见列除了NetWorks
 const visibleColumns = computed(() => {
-  return allColumns.value.filter(col => !col.defaultHidden)
+  return allColumns.value.filter(col => !col.defaultHidden && col.prop !== 'networks')
+})
+// 可见列仅显示NetWorks
+const visibleNetWorksColumns = computed(() => {
+  return allColumns.value.filter(col => !col.defaultHidden && col.prop === 'networks')
 })
 
 // 表格数据
@@ -230,6 +286,15 @@ const setPopoverRef = (el: any, prop: string) => {
     popoverRefs.value.set(prop, el)
   }
 }
+
+// 监听props变化，更新本地状态
+watch(() => props.currentPage, (newVal) => {
+  localCurrentPage.value = newVal
+}, { immediate: true })
+
+watch(() => props.pageSize, (newVal) => {
+  localPageSize.value = newVal
+}, { immediate: true })
 
 // 事件处理
 const handleCreate = () => {
@@ -278,36 +343,28 @@ const toggleColumnManager = () => {
   columnDrawerVisible.value = true
 }
 
-// 筛选相关
-const getCurrentFilter = (prop: string) => {
-  return currentFilters.value[prop] || []
-}
+// 网络子列相关
+const networkSubColumns = computed(() => {
+  // 如果schema中没有配置网络子列，使用默认配置
+  return props.schema.uiConfig?.table?.networkSubColumns || [
+    { label: '节点内带宽', key: 'internal' },
+    { label: '节点间带宽', key: 'external' }
+  ]
+})
 
-const initTempFilter = (prop: string) => {
-  if (!tempFilters.value[prop]) {
-    tempFilters.value[prop] = [...(currentFilters.value[prop] || [])]
+const getSubColumnWidth = (width?: number, count: number = 1) => {
+  if (width && count > 1) {
+    return Math.floor(width / count)
   }
+  return width
 }
 
-const handleFilterChange = (prop: string, values: any[]) => {
-  tempFilters.value[prop] = values
-}
-
-const handleFilterConfirm = (prop: string) => {
-  currentFilters.value[prop] = [...(tempFilters.value[prop] || [])]
-  emit('filter-change', currentFilters.value)
-
-  // 隐藏popover
-  const popover = popoverRefs.value.get(prop)
-  if (popover) {
-    popover.hide()
+const getNetworkValue = (row: any, prop: string, index: number) => {
+  const value = row[prop]
+  if (Array.isArray(value) && value.length > index) {
+    return value[index]
   }
-}
-
-const handleFilterClear = (prop: string) => {
-  delete currentFilters.value[prop]
-  delete tempFilters.value[prop]
-  emit('filter-change', currentFilters.value)
+  return '-'
 }
 </script>
 
@@ -331,6 +388,68 @@ const handleFilterClear = (prop: string) => {
     display: flex;
     justify-content: flex-end;
     margin-top: 16px;
+  }
+
+  .array-tag {
+    margin: 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    background-color: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    border: 1px solid var(--el-color-primary-light-8);
+
+    &:hover {
+      background-color: var(--el-color-primary-light-8);
+    }
+  }
+
+  :deep(.el-table) {
+    .el-table__header-wrapper {
+      .el-table__header {
+        th {
+          background-color: var(--el-color-primary-light-9);
+          color: var(--el-text-color-primary);
+          font-weight: 600;
+        }
+      }
+    }
+
+    .el-table__body-wrapper {
+      .el-table__row {
+        &:hover {
+          background-color: var(--el-color-primary-light-9);
+        }
+      }
+    }
+  }
+
+  .flex {
+    display: flex;
+
+    &.items-center {
+      align-items: center;
+    }
+
+    &.justify-center {
+      justify-content: center;
+    }
+
+    &.gap-1 {
+      gap: 4px;
+    }
+  }
+
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  .text-blue-500 {
+    color: var(--el-color-primary);
+
+    &:hover {
+      color: var(--el-color-primary-dark-2);
+    }
   }
 }
 </style>

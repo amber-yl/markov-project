@@ -22,7 +22,7 @@
 
     <!-- 带宽格式 -->
     <span v-else-if="column.formatter === 'bandwidth'">
-      {{ formatBandwidth(value) }} ---
+      {{ formatBandwidth(value) }}
     </span>
 
     <!-- 标签格式 -->
