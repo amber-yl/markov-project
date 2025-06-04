@@ -299,6 +299,13 @@ export const enhancedSystemConfigSchema = {
         }
       }
     },
+
+    processing_mode: {
+      description: '性能模型',
+      enum: ['roofline', 'no_overlap'],
+      title: 'Processing Mode',
+      type: 'string',
+    },
     networks: {
       description: '网络配置',
       title: 'Networks',
@@ -340,12 +347,6 @@ export const enhancedSystemConfigSchema = {
         }
       },
       minItems: 2,
-    },
-    processing_mode: {
-      description: '性能模型',
-      enum: ['roofline', 'no_overlap'],
-      title: 'Processing Mode',
-      type: 'string',
     }
   },
   required: ['name', 'type', 'matrix', 'vector', 'mem1', 'mem2', 'networks', 'processing_mode']

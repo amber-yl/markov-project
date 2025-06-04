@@ -1,57 +1,89 @@
 <template>
-  <el-form-item :label="fieldConfig.title" :prop="fieldPath">
-    <!-- 输入框 -->
-    <el-input v-if="fieldConfig.type === 'string' && !(fieldConfig?.enum?.length > 0)" :model-value="fieldValue"
-      @update:model-value="handleUpdate"  />
-
-    <!-- 整数输入框 -->
-    <el-input-number v-else-if="fieldConfig.type === 'integer'" :model-value="fieldValue"
-      @update:model-value="handleUpdate" controls-position="right" :controls="false" style="width: 100%"
-      :precision="0" :step="1"  />
-
-    <!-- 数字输入框 -->
-    <el-input-number v-else-if="fieldConfig.type === 'number'" :model-value="fieldValue"
-      @update:model-value="handleUpdate" controls-position="right" :controls="false" style="width: 100%"
-       />
-
-    <!-- 单选框组 -->
-    <el-radio-group v-else-if="fieldConfig.type === 'radio'" :model-value="fieldValue"
-      @update:model-value="handleUpdate">
-      <el-radio v-for="option in fieldConfig.uiProps?.options" :key="option.value" :value="option.value">
+  <el-form-item :label="displayPath" :prop="fieldPath">
+    <!-- 枚举字段 - 单选框组 (选项少时) -->
+    <el-radio-group v-if="fieldConfig.uiType === 'radio'" :model-value="fieldValue" @update:model-value="handleUpdate">
+      <el-radio v-for="option in fieldConfig.options" :key="option.value" :value="option.value">
         {{ option.label }}
       </el-radio>
     </el-radio-group>
 
-    <!-- 选择框 -->
-    <el-select v-else-if="fieldConfig.type === 'select'" :model-value="fieldValue" @update:model-value="handleUpdate"
-      style="width: 100%" >
-      <el-option v-for="option in fieldConfig.uiProps?.options" :key="option.value" :label="option.label"
+    <!-- 枚举字段 - 选择框 (选项多时) -->
+    <el-select v-else-if="fieldConfig.uiType === 'select'" :model-value="fieldValue" @update:model-value="handleUpdate"
+      style="width: 100%" clearable :placeholder="`请选择${getFieldLabel()}`">
+      <el-option v-for="option in fieldConfig.options" :key="option.value" :label="option.label"
         :value="option.value" />
     </el-select>
 
     <!-- 开关 -->
-    <el-switch v-else-if="fieldConfig.type === 'switch'" :model-value="fieldValue" @update:model-value="handleUpdate"
-       />
+    <el-switch v-else-if="fieldConfig.uiType === 'switch'" :model-value="fieldValue"
+      @update:model-value="handleUpdate" />
+
+    <!-- 整数输入框 -->
+    <el-input-number v-else-if="fieldConfig.uiType === 'integer'" :model-value="fieldValue"
+      @update:model-value="handleUpdate" controls-position="right" :controls="false" style="width: 100%" :precision="0"
+      :step="1" :min="fieldConfig.minimum" :max="fieldConfig.maximum" />
+
+    <!-- 数字输入框 -->
+    <el-input-number v-else-if="fieldConfig.uiType === 'number'" :model-value="fieldValue"
+      @update:model-value="handleUpdate" controls-position="right" :controls="false" style="width: 100%"
+      :precision="fieldConfig.precision || 2" :step="fieldConfig.step || 0.1" :min="fieldConfig.minimum"
+      :max="fieldConfig.maximum" />
+
+    <!-- 多行文本 -->
+    <el-input v-else-if="fieldConfig.uiType === 'textarea'" :model-value="fieldValue" @update:model-value="handleUpdate"
+      type="textarea" :rows="fieldConfig.rows || 3" :placeholder="fieldConfig.description || `请输入${getFieldLabel()}`" />
 
     <!-- 数组类型 -->
-    <div v-else-if="fieldConfig.type === 'array'" class="array-field">
+    <div v-else-if="fieldConfig.uiType === 'array'" class="array-field">
       <div v-for="(item, index) in fieldValue" :key="index" class="array-item">
         <div class="array-item-content">
-          <schema-form-item v-for="(subProperty, subKey) in Object.keys(item)" :key="subKey"
-            :field-path="`${fieldPath}.${index}.${subProperty}`" :schema="props.schema" :form-data="formData"
-            @update:value="handleArrayItemUpdate" />
+          <!-- 基本类型数组 -->
+          <template v-if="!arrayItemSchema.properties">
+            <el-input v-if="arrayItemSchema.type === 'string'" :model-value="item"
+              @update:model-value="(val) => updateArrayItem(index, val)"
+              :placeholder="`${getFieldLabel()} 第${index + 1}项`" />
+            <el-input-number v-else-if="arrayItemSchema.type === 'number'" :model-value="item"
+              @update:model-value="(val) => updateArrayItem(index, val)" style="width: 100%" />
+            <el-input-number v-else-if="arrayItemSchema.type === 'integer'" :model-value="item"
+              @update:model-value="(val) => updateArrayItem(index, val)" style="width: 100%" :precision="0" />
+          </template>
+          <!-- 对象类型数组 -->
+          <template v-else>
+            <el-row :gutter="12">
+              <el-col v-for="(subProperty, subKey) in arrayItemSchema.properties" :key="subKey"
+                :span="24 / Math.min(Object.keys(arrayItemSchema.properties).length, 3)">
+                <schema-form-item :field-path="`${fieldPath}.${index}.${subKey}`" :schema="props.schema"
+                  :form-data="formData" @update:value="handleArrayItemUpdate" />
+              </el-col>
+            </el-row>
+          </template>
         </div>
-        <el-button type="danger" size="small" @click="removeArrayItem(index)" class="remove-btn">
+        <el-button type="danger" size="small" @click="removeArrayItem(index)" class="remove-btn" :icon="'Delete'">
           删除
         </el-button>
       </div>
-      <el-button type="primary" size="small" @click="addArrayItem" class="add-btn">
-        添加
+      <el-button type="primary" size="small" @click="addArrayItem" class="add-btn" :icon="'Plus'">
+        添加{{ getFieldLabel() }}
       </el-button>
     </div>
-    <!-- 默认输入框 -->
+
+    <!-- 对象类型 -->
+    <div v-else-if="fieldConfig.uiType === 'object'" class="object-field">
+      <el-card shadow="never" class="object-card">
+        <el-row :gutter="12">
+          <el-col v-for="(subProperty, subKey) in fieldConfig.properties" :key="subKey"
+            :span="24 / Math.min(Object.keys(fieldConfig.properties).length, 2)">
+            <schema-form-item :field-path="`${fieldPath}.${subKey}`" :schema="props.schema" :form-data="formData"
+              @update:value="handleUpdate" />
+          </el-col>
+        </el-row>
+      </el-card>
+    </div>
+
+    <!-- 默认字符串输入框 -->
     <el-input v-else :model-value="fieldValue" @update:model-value="handleUpdate"
-      :placeholder="fieldConfig.description" />
+      :placeholder="fieldConfig.description || `请输入${getFieldLabel()}`" :maxlength="fieldConfig.maxLength"
+      :show-word-limit="!!fieldConfig.maxLength" />
   </el-form-item>
 </template>
 
@@ -60,6 +92,7 @@ import { computed } from 'vue'
 
 interface Props {
   fieldPath: string
+  displayPath?: string
   schema: any
   formData: any
 }
@@ -106,7 +139,7 @@ const fieldConfig = computed(() => {
     currentProperty = {}
   }
 
-  // 处理 anyOf 类型 (如可选的 cube_calibration_coefficient 和 vector_calibration_coefficient)
+  // 处理 anyOf 类型 (如可选的 calibration_coefficient 字段)
   if (currentProperty.anyOf && Array.isArray(currentProperty.anyOf)) {
     // 从 anyOf 中找到非 null 的类型定义
     const nonNullType = currentProperty.anyOf.find((item: any) => item.type !== null && item.type !== 'null')
@@ -121,42 +154,44 @@ const fieldConfig = computed(() => {
       }
     }
   }
-  if (currentProperty.enum) {
-    currentProperty.type = currentProperty.enum.length <= 2 ? 'radio' : 'select'
-    currentProperty.uiProps = {
-      options: currentProperty.enum.map((value: any) => ({
-        label: value,
-        value: value
-      }))
-    }
-  }
-  if (currentProperty.type === 'boolean') {
-    currentProperty.type = 'switch'
-  }
-  // 推断UI类型
-  if (!currentProperty.type) {
-    if (currentProperty.enum) {
-      currentProperty.type = currentProperty.enum.length <= 3 ? 'radio' : 'select'
-      currentProperty.uiProps = {
-        options: currentProperty.enum.map((value: any) => ({
-          label: value,
-          value: value
-        }))
-      }
-    } else if (currentProperty.type === 'number') {
-      currentProperty.type = 'number'
-    } else if (currentProperty.type === 'integer') {
-      currentProperty.type = 'integer'
-    } else if (currentProperty.type === 'boolean') {
-      currentProperty.type = 'switch'
-    } else if (currentProperty.type === 'array') {
-      currentProperty.type = 'array'
+
+  // 根据schema的类型和属性推断UI类型
+  let uiType = 'string'
+  let options: any[] = []
+
+  if (currentProperty.enum && Array.isArray(currentProperty.enum)) {
+    // 枚举类型
+    uiType = currentProperty.enum.length <= 3 ? 'radio' : 'select'
+    options = currentProperty.enum.map((value: any) => ({
+      label: value,
+      value: value
+    }))
+  } else if (currentProperty.type === 'boolean') {
+    uiType = 'switch'
+  } else if (currentProperty.type === 'integer') {
+    uiType = 'integer'
+  } else if (currentProperty.type === 'number') {
+    uiType = 'number'
+  } else if (currentProperty.type === 'array') {
+    uiType = 'array'
+  } else if (currentProperty.type === 'object') {
+    uiType = 'object'
+  } else if (currentProperty.type === 'string') {
+    // 根据长度限制或其他属性判断是否使用textarea
+    if (currentProperty.maxLength && currentProperty.maxLength > 100) {
+      uiType = 'textarea'
     } else {
-      currentProperty.type = 'input'
+      uiType = 'string'
     }
   }
-  console.log(currentProperty, "| currentProperty");
-  return currentProperty
+
+  return {
+    ...currentProperty,
+    uiType,
+    options,
+    title: currentProperty.title || currentProperty.label,
+    label: currentProperty.label || currentProperty.title
+  }
 })
 
 // 获取数组项的schema
@@ -250,10 +285,76 @@ const getDefaultValueByType = (type: string, defaultValue?: any) => {
       return null
   }
 }
+
+// 处理数组项更新
+const updateArrayItem = (index: number, value: any) => {
+  const currentArray = fieldValue.value || []
+  const newArray = [...currentArray]
+  newArray[index] = value
+  emit('update:value', props.fieldPath, newArray)
+}
+
+// 显示标签
+const displayLabel = computed(() => {
+  if (props.displayPath) {
+    return fieldConfig.value.title || fieldConfig.value.label || props.displayPath
+  }
+  return fieldConfig.value.title || fieldConfig.value.label || props.fieldPath
+})
+
+// 获取字段标签
+const getFieldLabel = () => {
+  // 特殊处理 networks 字段
+  if (props.fieldPath.startsWith('networks.')) {
+    const match = props.fieldPath.match(/networks\.(\d+)\.(.+)/)
+    if (match) {
+      const index = parseInt(match[1])
+      const subField = match[2]
+      const networkLabel = index === 0 ? '节点内带宽' : index === 1 ? '节点间带宽' : `网络${index + 1}`
+      return `${networkLabel}.${subField}`
+    }
+  }
+
+  // 处理其他字段，移除 float16.
+  let label = ''
+  if (props.displayPath) {
+    label = fieldConfig.value.title || fieldConfig.value.label || props.displayPath
+  } else {
+    label = fieldConfig.value.title || fieldConfig.value.label || props.fieldPath
+  }
+
+  // 移除 float16. 部分
+  return label.replace('float16.', '')
+}
+
+// 获取显示标签
+const getDisplayLabel = () => {
+  // 特殊处理 networks 字段
+  if (props.fieldPath.startsWith('networks.')) {
+    const match = props.fieldPath.match(/networks\.(\d+)\.(.+)/)
+    if (match) {
+      const index = parseInt(match[1])
+      const subField = match[2]
+      const networkLabel = index === 0 ? '节点内带宽' : index === 1 ? '节点间带宽' : `网络${index + 1}`
+      return `${networkLabel}.${subField}`
+    }
+  }
+
+  // 处理其他字段
+  let label = ''
+  if (props.displayPath) {
+    label = fieldConfig.value.title || fieldConfig.value.label || props.displayPath
+  } else {
+    label = fieldConfig.value.title || fieldConfig.value.label || props.fieldPath
+  }
+
+  // 移除 float16. 部分
+  return label.replace('float16.', '')
+}
 </script>
 
 <style lang="less" scoped>
-.array-field {   
+.array-field {
   .array-item {
     display: flex;
     align-items: flex-start;
@@ -266,6 +367,7 @@ const getDefaultValueByType = (type: string, defaultValue?: any) => {
     .array-item-content {
       flex: 1;
       margin-right: 12px;
+
       .el-form-item {
         :deep(.el-form-item__label-wrap) {
           margin-left: 0 !important;
@@ -280,6 +382,16 @@ const getDefaultValueByType = (type: string, defaultValue?: any) => {
 
   .add-btn {
     width: 100%;
+  }
+}
+
+.object-field {
+  .object-card {
+    border: 1px solid #e4e7ed;
+
+    :deep(.el-card__body) {
+      padding: 16px;
+    }
   }
 }
 </style>

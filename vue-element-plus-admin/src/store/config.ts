@@ -4,25 +4,7 @@ export const uiConfig = {
       type: 'grid',
       columns: 2,
       gutter: 20
-    },
-    groups: [
-      {
-        title: '基本信息',
-        fields: ['name', 'type', 'processing_mode']
-      },
-      {
-        title: '算力配置',
-        fields: ['matrix.float16.tflops', 'matrix.float16.calibration_coefficient', 'vector.float16.tflops', 'vector.float16.calibration_coefficient']
-      },
-      {
-        title: '内存配置',
-        fields: ['mem1.GiB', 'mem1.GBps', 'mem1.cube_calibration_coefficient', 'mem1.vector_calibration_coefficient', 'mem2.GiB', 'mem2.GBps']
-      },
-      {
-        title: '网络配置',
-        fields: ['networks']
-      }
-    ]
+    }
   },
   table: {
     columns: [
@@ -152,7 +134,7 @@ export const uiConfig = {
         sortable: false,
         filterable: false,
         // formatter: 'bandwidth',
-        defaultHidden: true
+        defaultHidden: false
       }
     ]
   }

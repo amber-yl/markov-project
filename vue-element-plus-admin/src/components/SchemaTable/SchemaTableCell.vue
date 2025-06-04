@@ -32,14 +32,11 @@
 
     <!-- 数组格式 -->
     <div v-else-if="Array.isArray(value)" class="array-display">
-      <div v-for="(item, index) in value" :key="index">
-        <el-tag v-for="(key, idx) in Object.keys(item)" :key="idx" size="small" class="mr-1">
-          {{ key }} : {{ item[key] }}
+      <template v-for="(item, index) in value" :key="index">
+        <el-tag v-for="(key, idx) in Object.keys(item)" :key="`${index}-${idx}`" size="small" class="array-tag">
+          {{ key }}: {{ item[key] }}
         </el-tag>
-      </div>
-      <!-- <span v-if="value.length > 3" class="text-gray-500">
-        +{{ value.length - 3 }}
-      </span> -->
+      </template>
     </div>
 
     <!-- 默认文本格式 -->
@@ -142,6 +139,15 @@ const formatDefault = (value: any) => {
     justify-content: center;
     flex-wrap: wrap;
     gap: 4px;
+
+    .array-tag {
+      margin-right: 4px;
+      margin-bottom: 2px;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
   }
 }
 </style>
