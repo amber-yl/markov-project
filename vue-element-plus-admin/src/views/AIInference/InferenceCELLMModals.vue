@@ -1,5 +1,5 @@
 <template>
-  <section v-if="!centerDialogVisible">
+  <section v-if="centerDialogVisible">
     <SimulationForm @cancel="handleCancel" @formSubmit="handleSubmit" />
   </section>
   <section v-else>

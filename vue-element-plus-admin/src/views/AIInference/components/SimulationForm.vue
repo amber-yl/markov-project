@@ -559,14 +559,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, nextTick, watch, defineComponent, h } from 'vue'
+import { ref, reactive, computed, nextTick, watch, defineComponent, h, onMounted } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElSelect, ElInputNumber, ElSwitch, ElOption } from 'element-plus'
 import { Icon } from '@/components/Icon'
+import { useSystemConfigStore } from '@/store/modules/systemConfigs'
 
 const { t } = useI18n()
+const systemConfigStore = useSystemConfigStore()
 
 // 字段类型定义
 interface FormField {
@@ -594,6 +596,63 @@ const validationErrors = ref<Record<string, string>>({})
 const hasUnsavedChanges = ref(false)
 const taskName = ref('')
 const showToggle = ref(true)
+
+// 硬件选择相关的响应式数据
+const hardwareOptions = ref<Array<{ label: string; value: string }>>([])
+const selectedHardware = ref('')
+
+// 组件挂载时获取硬件配置数据
+onMounted(async () => {
+  await loadHardwareOptions()
+})
+
+// 从 store 加载硬件选项
+const loadHardwareOptions = async () => {
+  try {
+    // 设置page_size为1来获取单个硬件配置用于渲染
+    systemConfigStore.pagination.pageSize = 1
+    await systemConfigStore.fetchConfigs()
+
+    // 将硬件配置转换为选项格式
+    hardwareOptions.value = systemConfigStore.configs.map(config => ({
+      label: config.name,
+      value: config.id || config.name
+    }))
+  } catch (error) {
+    console.error('Failed to load hardware options:', error)
+    ElMessage.error('加载硬件配置失败')
+  }
+}
+
+// 监听硬件选择变化
+const onHardwareSelectionChange = async (value: string) => {
+  try {
+    // 根据选择的硬件ID获取详细配置
+    const selectedConfig = systemConfigStore.configs.find(config =>
+      (config.id || config.name) === value
+    )
+
+    if (selectedConfig) {
+      // 自动填充硬件详细信息到表单
+      const hardwareData = formData[1]
+      hardwareData.handwareSelection = value
+      hardwareData.Type = selectedConfig.type.toUpperCase()
+      hardwareData.processingMode = selectedConfig.processing_mode
+      hardwareData.MatrixSize = selectedConfig.matrix.float16.tflops
+      hardwareData.VectorSize = selectedConfig.vector.float16.tflops
+
+      // 更新内存相关信息
+      hardwareData.memorySize = selectedConfig.mem1.GiB
+      hardwareData.batchSize = 32 // 默认值
+      hardwareData.maxSequenceLength = 2048 // 默认值
+
+      ElMessage.success(`已加载硬件配置: ${selectedConfig.name}`)
+    }
+  } catch (error) {
+    console.error('Failed to load hardware details:', error)
+    ElMessage.error('加载硬件详细信息失败')
+  }
+}
 
 const formData = reactive([
   {
@@ -623,6 +682,11 @@ const formData = reactive([
   },
   {
     // Step 1: Hardware Configuration
+    handwareSelection: '',
+    Type: '',
+    processingMode: '',
+    MatrixSize: 0,
+    VectorSize: 0,
     gpuType: '',
     gpuCount: 1,
     memorySize: 32,
@@ -648,6 +712,25 @@ const formData = reactive([
     maxConnections: 1000
   }
 ])
+
+// 动态硬件选择配置
+const dynamicHardwareSelectionSection = computed(() => ({
+  key: 'handwareSelection',
+  title: 'Hardware Selection',
+  required: true,
+  fields: [
+    {
+      field: 'handwareSelection',
+      label: 'Hardware Selection',
+      component: 'Select' as const,
+      componentProps: {
+        placeholder: 'Select Hardware',
+        onChange: onHardwareSelectionChange
+      },
+      options: hardwareOptions.value
+    }
+  ]
+}))
 
 const allFormSections: FormSection[][] = [
   // Step 0: Model Selection and Configuration
@@ -835,26 +918,11 @@ const allFormSections: FormSection[][] = [
       ]
     }
   ],
-  // Step 1: Hardware Configuration
+  // Step 1: Hardware Configuration - 使用动态配置
   [
-    {
-      key: 'handwareSelection',
-      title: 'Handware Selection',
-      required: true,
-      fields: [
-        {
-          field: 'handwareSelection',
-          label: 'Handware Selection',
-          component: 'Select',
-          componentProps: { placeholder: 'Select' },
-          options: [
-            { label: 'B20', value: 'B20' },
-            { label: 'R20', value: 'R20' },
-            { label: 'H20', value: 'H20' }
-          ]
-        }
-      ]
-    },
+    // 使用计算属性的动态硬件选择部分
+    // 注意：这里需要使用computed来动态获取最新的硬件选项
+    dynamicHardwareSelectionSection.value,
     {
       key: 'hardwareDetails',
       title: 'Hardware Details',
@@ -863,7 +931,7 @@ const allFormSections: FormSection[][] = [
         {
           field: 'Type',
           label: 'GPU Type',
-          component: 'Select',
+          component: 'Select' as const,
           componentProps: { placeholder: 'Select GPU' },
           options: [
             { label: 'GPU', value: 'GPU' },
@@ -873,7 +941,7 @@ const allFormSections: FormSection[][] = [
         {
           field: 'processingMode',
           label: 'Processing Mode',
-          component: 'Select',
+          component: 'Select' as const,
           componentProps: { placeholder: 'Select' },
           options: [
             { label: 'roofline', value: 'roofline' },
@@ -883,13 +951,13 @@ const allFormSections: FormSection[][] = [
         {
           field: 'MatrixSize',
           label: 'Matrix(Float16 TFLOPS)',
-          component: 'InputNumber',
+          component: 'InputNumber' as const,
           componentProps: { controls: false, placeholder: '32' }
         },
         {
           field: 'VectorSize',
           label: 'Vector(Float16 TFLOPS)',
-          component: 'InputNumber',
+          component: 'InputNumber' as const,
           componentProps: { controls: false, placeholder: '16' }
         }
       ]
@@ -902,19 +970,19 @@ const allFormSections: FormSection[][] = [
         {
           field: 'batchSize',
           label: 'Batch Size',
-          component: 'InputNumber',
+          component: 'InputNumber' as const,
           componentProps: { controls: false, placeholder: '32' }
         },
         {
           field: 'maxSequenceLength',
           label: 'Max Sequence Length',
-          component: 'InputNumber',
+          component: 'InputNumber' as const,
           componentProps: { controls: false, placeholder: '2048' }
         },
         {
           field: 'precision',
           label: 'Precision',
-          component: 'Select',
+          component: 'Select' as const,
           componentProps: { placeholder: 'Select Precision' },
           options: [
             { label: 'FP16', value: 'fp16' },
@@ -925,7 +993,7 @@ const allFormSections: FormSection[][] = [
         {
           field: 'optimizationLevel',
           label: 'Optimization Level',
-          component: 'Select',
+          component: 'Select' as const,
           componentProps: { placeholder: 'Select Level' },
           options: [
             { label: 'O1', value: 'o1' },
@@ -1020,6 +1088,91 @@ const allFormSections: FormSection[][] = [
     }
   ]
 ]
+
+// 动态获取Step 1配置
+const getStep1Sections = computed(() => [
+  dynamicHardwareSelectionSection.value,
+  {
+    key: 'hardwareDetails',
+    title: 'Hardware Details',
+    required: true,
+    fields: [
+      {
+        field: 'Type',
+        label: 'GPU Type',
+        component: 'Select' as const,
+        componentProps: { placeholder: 'Select GPU' },
+        options: [
+          { label: 'GPU', value: 'GPU' },
+          { label: 'NPU', value: 'NPU' }
+        ]
+      },
+      {
+        field: 'processingMode',
+        label: 'Processing Mode',
+        component: 'Select' as const,
+        componentProps: { placeholder: 'Select' },
+        options: [
+          { label: 'roofline', value: 'roofline' },
+          { label: 'no_overlap', value: 'no_overlap' }
+        ]
+      },
+      {
+        field: 'MatrixSize',
+        label: 'Matrix(Float16 TFLOPS)',
+        component: 'InputNumber' as const,
+        componentProps: { controls: false, placeholder: '32' }
+      },
+      {
+        field: 'VectorSize',
+        label: 'Vector(Float16 TFLOPS)',
+        component: 'InputNumber' as const,
+        componentProps: { controls: false, placeholder: '16' }
+      }
+    ]
+  },
+  {
+    key: 'MemoryDetails',
+    title: 'Memory Details',
+    required: true,
+    fields: [
+      {
+        field: 'batchSize',
+        label: 'Batch Size',
+        component: 'InputNumber' as const,
+        componentProps: { controls: false, placeholder: '32' }
+      },
+      {
+        field: 'maxSequenceLength',
+        label: 'Max Sequence Length',
+        component: 'InputNumber' as const,
+        componentProps: { controls: false, placeholder: '2048' }
+      },
+      {
+        field: 'precision',
+        label: 'Precision',
+        component: 'Select' as const,
+        componentProps: { placeholder: 'Select Precision' },
+        options: [
+          { label: 'FP16', value: 'fp16' },
+          { label: 'FP32', value: 'fp32' },
+          { label: 'INT8', value: 'int8' }
+        ]
+      },
+      {
+        field: 'optimizationLevel',
+        label: 'Optimization Level',
+        component: 'Select' as const,
+        componentProps: { placeholder: 'Select Level' },
+        options: [
+          { label: 'O1', value: 'o1' },
+          { label: 'O2', value: 'o2' },
+          { label: 'O3', value: 'o3' }
+        ]
+      }
+    ]
+  }
+])
 
 // 根据当前步骤返回对应的表单配置
 const currentStepSections = computed(() => {
