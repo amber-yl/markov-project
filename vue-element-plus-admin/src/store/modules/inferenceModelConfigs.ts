@@ -1,24 +1,22 @@
 import { defineStore } from 'pinia'
 import { store } from '../index'
 import {
-  markov_sim_get_all_configs,
-  markov_sim_get_config_by_id,
   markov_sim_create_config,
   markov_sim_delete_configs_by_ids,
-  markov_sim_update_config,
+  markov_sim_get_all_configs,
+  markov_sim_get_config_by_id,
   markov_sim_get_create_model_schema,
-  markov_sim_get_config_stats
-} from '@/api/request/systemConfigs'
-import type { SystemConfig, TableColumn, TableFilter, PaginationConfig } from '@/store/types'
+  markov_sim_update_config
+} from '@/api/request/inferenceModelConfigs'
+import type { inferenceModelConfigs, PaginationConfig, TableFilter } from '@/store/types'
 import { ElMessage } from 'element-plus'
 import { uiConfig } from '../config'
 
-interface SystemConfigState {
-  configs: SystemConfig[]
+interface InferenceModelConfigState {
+  configs: inferenceModelConfigs[]
   loading: boolean
   pagination: PaginationConfig
   filters: TableFilter
-  columns: TableColumn[]
   selectedConfigs: string[]
   schemeConfigs: any
   serverPagination: {
@@ -32,8 +30,8 @@ interface SystemConfigState {
   }
 }
 
-export const useSystemConfigStore = defineStore('systemConfig', {
-  state: (): SystemConfigState => ({
+export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs', {
+  state: (): InferenceModelConfigState => ({
     configs: [],
     schemeConfigs: {
       uiConfig: uiConfig
@@ -55,65 +53,10 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       order_bys: []
     },
     filters: {},
-    columns: [
-      { label: '硬件名称', prop: 'name', minWidth: '150', isShow: false },
-      { label: '硬件类型', prop: 'type', minWidth: '120', isShow: false },
-      { label: '创建时间', prop: 'created_at', minWidth: '160', isShow: false },
-      { label: '更新时间', prop: 'updated_at', minWidth: '160', isShow: false },
-      { label: '性能模式', prop: 'processing_mode', minWidth: '120', isShow: false },
-      {
-        label: 'Cube-理论算力',
-        prop: 'matrix.float16.tflops',
-        minWidth: '180',
-        isShow: false
-      },
-      {
-        label: 'Cube-利用率',
-        prop: 'matrix.float16.calibration_coefficient',
-        minWidth: '180',
-        isShow: false
-      },
-      {
-        label: 'Vector-理论算力',
-        prop: 'vector.float16.tflops',
-        minWidth: '180',
-        isShow: false
-      },
-      {
-        label: 'Vector-利用率',
-        prop: 'vector.float16.calibration_coefficient',
-        minWidth: '180',
-        isShow: false
-      },
-      { label: '显存容量', prop: 'mem1.GiB', minWidth: '120', isShow: false },
-      { label: '显存带宽', prop: 'mem1.GBps', minWidth: '120', isShow: false },
-      {
-        label: 'Cube算力利用率',
-        prop: 'mem1.cube_calibration_coefficient',
-        minWidth: '180',
-        isShow: false
-      },
-      {
-        label: 'Vector算力利用率',
-        prop: 'mem1.vector_calibration_coefficient',
-        minWidth: '180',
-        isShow: false
-      },
-      { label: 'CPU内存容量', prop: 'mem2.GiB', minWidth: '120', isShow: false },
-      { label: 'CPU内存带宽', prop: 'mem2.GBps', minWidth: '120', isShow: false },
-      { label: '网络配置', prop: 'networks', minWidth: '120', isShow: false },
-      { label: '操作', prop: 'operations', fixed: 'right', minWidth: '200', isShow: true }
-    ],
     selectedConfigs: []
   }),
 
   getters: {
-    // 获取可见的列
-    visibleColumns: (state) => state.columns.filter((col) => col.isShow),
-
-    // 获取隐藏的列
-    hiddenColumns: (state) => state.columns.filter((col) => !col.isShow),
-
     // 获取某列的所有唯一值
     getColumnValues: (state) => (prop: string) => {
       const values = new Set()
@@ -197,7 +140,9 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
 
     // 创建配置
-    async createConfig(configData: Omit<SystemConfig, 'id' | 'created_at' | 'updated_at'>) {
+    async createConfig(
+      configData: Omit<inferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
+    ) {
       this.loading = true
       try {
         const { data } = await markov_sim_create_config(configData)
@@ -221,11 +166,11 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     // 更新配置
     async updateConfig(
       id: string,
-      configData: Omit<SystemConfig, 'id' | 'created_at' | 'updated_at'>
+      configData: Omit<inferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
     ) {
       this.loading = true
       try {
-        const updateData = { ...configData, id } as SystemConfig
+        const updateData = { ...configData, id } as inferenceModelConfigs
         const { data } = await markov_sim_update_config(updateData)
 
         if (data) {
@@ -246,7 +191,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
     },
 
     // 获取配置详情
-    async getConfigDetail(id: string): Promise<SystemConfig> {
+    async getConfigDetail(id: string): Promise<inferenceModelConfigs> {
       this.loading = true
       try {
         const { data } = await markov_sim_get_config_by_id(id)
@@ -345,50 +290,6 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       this.fetchConfigs()
     },
 
-    // 设置列可见性
-    // setColumnVisibility(prop: string, visible: boolean) {
-    //   const column = this.columns.find((col) => col.prop === prop)
-    //   if (column && column.prop !== 'operations') {
-    //     column.isShow = visible
-    //   }
-    // },
-
-    // 批量设置列可见性
-    // setColumnsVisibility(columns: string[]) {
-    //   this.columns.forEach((col) => {
-    //     if (col.prop !== 'operations') {
-    //       col.isShow = columns.includes(col.prop)
-    //     }
-    //   })
-    // },
-
-    // 获取Transfer数据
-    getTransferData() {
-      return this.schemeConfigs.uiConfig.table.columns
-        .filter((col) => col.prop !== 'operations')
-        .map((col) => ({
-          key: col.prop,
-          label: col.label,
-          disabled: false
-        }))
-    },
-
-    // 获取右侧已选中的列
-    getRightValue() {
-      return this.schemeConfigs.uiConfig.table.columns
-        .filter((col) => !col.defaultHidden && col.prop !== 'operations')
-        .map((col) => col.prop)
-    },
-
-    // 处理Transfer变化
-    handleTransferChange(targetKeys: string[]) {
-      this.schemeConfigs.uiConfig.table.columns.forEach((col) => {
-        if (col.prop !== 'operations') {
-          col.defaultHidden = !targetKeys.includes(col.prop)
-        }
-      })
-    },
-
     // 设置选中的配置
     setSelectedConfigs(ids: string[]) {
       this.selectedConfigs = ids
@@ -401,17 +302,6 @@ export const useSystemConfigStore = defineStore('systemConfig', {
       this.pagination.currentPage = 1
       this.selectedConfigs = []
       this.sortConfig.order_bys = []
-    },
-
-    // 获取统计信息
-    async getStats() {
-      try {
-        const { data } = await markov_sim_get_config_stats()
-        return data
-      } catch (error) {
-        console.error('Failed to fetch stats:', error)
-        return null
-      }
     }
   }
 })
@@ -421,6 +311,6 @@ function getNestedValue(obj: any, path: string): any {
   return path.split('.').reduce((current, key) => current?.[key], obj)
 }
 
-export const useSystemConfigStoreWithOut = () => {
-  return useSystemConfigStore(store)
+export const useInferenceModelConfigStoreWithOut = () => {
+  return useInferenceModelConfigStore(store)
 }

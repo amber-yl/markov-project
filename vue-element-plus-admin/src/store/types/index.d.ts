@@ -7,7 +7,6 @@ export enum ProcessingMode {
   roofline = 'roofline',
   noOverlap = 'no_overlap'
 }
-
 // 系统配置相关类型
 export interface SystemConfig {
   id?: string
@@ -45,7 +44,6 @@ export interface SystemConfig {
   created_at?: string
   updated_at?: string
 }
-
 export interface ConfigFormData {
   created_at: string
   updated_at: string
@@ -83,7 +81,6 @@ export interface ConfigFormData {
     latency: number
   }[]
 }
-
 // 表格过滤相关类型
 export interface TableFilter {
   [key: string]: string[] | string
@@ -155,5 +152,8 @@ export interface ListResponse<T> {
   page: number
   pageSize: number
 }
+
+// 系统配置相关类型
+export interface inferenceModelConfigs {}
 
 export type { User, Card, TableRow }

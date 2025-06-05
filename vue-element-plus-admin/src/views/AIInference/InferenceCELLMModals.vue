@@ -3,13 +3,25 @@
     <SimulationForm @cancel="handleCancel" @formSubmit="handleSubmit" />
   </section>
   <section v-else>
-    <TopToolbar v-model="viewMode" :models="models" :modeName="modeName" @create="createNewSimulation"
-      @change="handleModelChange" @scopeChange="handleScopeChange" />
+    <TopToolbar
+      v-model="viewMode"
+      :models="models"
+      :modeName="modeName"
+      @create="createNewSimulation"
+      @change="handleModelChange"
+      @scopeChange="handleScopeChange"
+    />
     <el-card
-      class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2">
+      class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2"
+    >
       <header class="flex justify-between mb-2">
         <section class="custom-left-box">
-          <el-button v-if="isSelectionMode" @click="jump2Comparison" type="primary" :disabled="isDisabled">
+          <el-button
+            v-if="isSelectionMode"
+            @click="jump2Comparison"
+            type="primary"
+            :disabled="isDisabled"
+          >
             <template #icon>
               <Icon :icon="'vi-ep:info-filled'" />
             </template>
@@ -25,23 +37,50 @@
         </section>
         <section class="flex gap-2">
           <section class="custom-tag-select">
-            <el-select v-model="statusValue" multiple placeholder="筛选运行状态" style="min-width: 200px; max-width: 400px"
-              collapse-tags collapse-tags-tooltip :max-collapse-tags="2" clearable>
-              <el-option v-for="(status, index) in inferenceEvalStore.getTaskStatusList" :key="index" :label="status"
-                :value="status">
+            <el-select
+              v-model="statusValue"
+              multiple
+              placeholder="筛选运行状态"
+              style="min-width: 200px; max-width: 400px"
+              collapse-tags
+              collapse-tags-tooltip
+              :max-collapse-tags="2"
+              clearable
+            >
+              <el-option
+                v-for="(status, index) in inferenceEvalStore.getTaskStatusList"
+                :key="index"
+                :label="status"
+                :value="status"
+              >
                 <div class="flex items-center">
-                  <el-tag :type="getStatusTagType(status)" size="small" style="margin-right: 8px" effect="light" />
+                  <el-tag
+                    :type="getStatusTagType(status)"
+                    size="small"
+                    style="margin-right: 8px"
+                    effect="light"
+                  />
                   <span :class="getStatusTextClass(status)">{{ status }}</span>
                 </div>
               </el-option>
             </el-select>
           </section>
           <section class="custom-right-box relative">
-            <el-input style="width: 240px" placeholder="搜索模型名称..." @input="(v: string) => onSearchInput(v)"
-              :model-value="title" @focus="onSearchFocus" @blur="onSearchBlur" clearable @clear="handleSearchClear">
+            <el-input
+              style="width: 240px"
+              placeholder="搜索模型名称..."
+              @input="(v: string) => onSearchInput(v)"
+              :model-value="title"
+              @focus="onSearchFocus"
+              @blur="onSearchBlur"
+              clearable
+              @clear="handleSearchClear"
+            >
               <template #prefix>
-                <Icon :icon="searchLoading ? 'vi-ep:loading' : 'vi-ant-design:search-outlined'"
-                  :class="{ 'animate-spin': searchLoading }" />
+                <Icon
+                  :icon="searchLoading ? 'vi-ep:loading' : 'vi-ant-design:search-outlined'"
+                  :class="{ 'animate-spin': searchLoading }"
+                />
               </template>
             </el-input>
             <div v-show="isShow" class="custom-search-result">
@@ -51,8 +90,13 @@
               <div v-else-if="filterData.length === 0 && title" class="custom-search-empty">
                 <el-empty :image-size="60" description="未找到匹配的模型" />
               </div>
-              <el-card v-else v-for="(item, index) in filterData" :key="index" class="custom-search-item"
-                @click="changeModelName(item)">
+              <el-card
+                v-else
+                v-for="(item, index) in filterData"
+                :key="index"
+                class="custom-search-item"
+                @click="changeModelName(item)"
+              >
                 <div class="flex items-center justify-between">
                   <p class="model-name">{{ item }}</p>
                   <Icon :icon="'vi-ant-design:enter-outlined'" class="select-icon" />
@@ -63,18 +107,33 @@
         </section>
       </header>
       <el-skeleton v-if="viewMode === 'Grid'" :rows="5" :loading="loading" animated>
-        <CardView :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
-          @detail="handleDetail" :isDisabled="isDisabled" />
+        <CardView
+          :displayViewModeList="currentList"
+          :isSelectionMode="isSelectionMode"
+          @select="handleSelect"
+          @detail="handleDetail"
+          :isDisabled="isDisabled"
+        />
       </el-skeleton>
       <el-skeleton v-else :rows="5" :loading="loading" animated>
-        <table-view :displayViewModeList="currentList" :isSelectionMode="isSelectionMode" @select="handleSelect"
-          @detail="handleDetail" />
+        <table-view
+          :displayViewModeList="currentList"
+          :isSelectionMode="isSelectionMode"
+          @select="handleSelect"
+          @detail="handleDetail"
+        />
       </el-skeleton>
       <footer class="flex justify-end mt-4">
-        <el-pagination v-model:current-page="pagination.currentPage.value" v-model:page-size="pagination.pageSize.value"
-          :page-sizes="[5, 10, 15, 20]" :size="'small'" layout="total, sizes, prev, pager, next, jumper"
-          :total="displayViewModeList.length" @size-change="pagination.handleSizeChange"
-          @current-change="pagination.handleCurrentChange" />
+        <el-pagination
+          v-model:current-page="pagination.currentPage.value"
+          v-model:page-size="pagination.pageSize.value"
+          :page-sizes="[5, 10, 15, 20]"
+          :size="'small'"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="displayViewModeList.length"
+          @size-change="pagination.handleSizeChange"
+          @current-change="pagination.handleCurrentChange"
+        />
       </footer>
     </el-card>
   </section>
@@ -82,7 +141,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onBeforeMount, nextTick } from 'vue'
-import { useInferenceEvalStore } from '@/store/modules/inference'
+import { useInferenceEvalStore } from '@/store/modules/inferenceModelConfigs'
 import TopToolbar from './components/TopToolbar.vue'
 import CardView from './components/CardView.vue'
 import TableView from './components/TableView.vue'
@@ -422,10 +481,12 @@ const getStatusTextClass = (status: string) => {
 
   :deep(.el-skeleton) {
     .el-skeleton__item {
-      background: linear-gradient(90deg,
-          var(--el-skeleton-color) 25%,
-          var(--el-skeleton-to-color) 37%,
-          var(--el-skeleton-color) 63%);
+      background: linear-gradient(
+        90deg,
+        var(--el-skeleton-color) 25%,
+        var(--el-skeleton-to-color) 37%,
+        var(--el-skeleton-color) 63%
+      );
     }
   }
 }

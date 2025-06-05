@@ -31,7 +31,7 @@ const setupAll = async () => {
   setupGlobCom(app)
   setupElementPlus(app)
   setupRouter(app)
-  setupPermission(app)
+  // setupPermission(app)
   app.mount('#app')
 }
 

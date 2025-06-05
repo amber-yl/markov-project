@@ -40,6 +40,7 @@ const defaultResponseInterceptors = (response: AxiosResponse) => {
     // 如果是文件流，直接过
     return response
   } else if (response.data.code === SUCCESS_CODE) {
+    ElMessage.success(response?.data?.message)
     return response.data
   } else {
     ElMessage.error(response?.data?.message)

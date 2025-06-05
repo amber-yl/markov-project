@@ -5,6 +5,8 @@ import router from '@/router'
 const { t } = useI18n()
 
 const hasPermission = (value: string): boolean => {
+  console.log(router.currentRoute, '| router.currentRoute')
+
   const permission = (router.currentRoute.value.meta.permission || []) as string[]
   if (!value) {
     throw new Error(t('permission.hasPermission'))
@@ -16,6 +18,7 @@ const hasPermission = (value: string): boolean => {
 }
 function hasPermi(el: Element, binding: DirectiveBinding) {
   const value = binding.value
+  console.log(value, '| value')
 
   const flag = hasPermission(value)
   if (!flag) {

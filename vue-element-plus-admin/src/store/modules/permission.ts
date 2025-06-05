@@ -68,6 +68,7 @@ export const usePermissionStore = defineStore('permission', {
         ])
         // 渲染菜单的所有路由
         this.routers = cloneDeep(constantRouterMap).concat(routerMap)
+        console.log(this.routers, '| this.routers')
         resolve()
       })
     },

@@ -6,7 +6,7 @@ import { useForm } from '@/hooks/web/useForm'
 import { ElInput, FormRules } from 'element-plus'
 import { useValidator } from '@/hooks/web/useValidator'
 import { BaseButton } from '@/components/Button'
-import { IAgree } from '@/components/IAgree'
+// import { IAgree } from '@/components/IAgree'
 
 const emit = defineEmits(['to-login'])
 
@@ -121,27 +121,27 @@ const schema = reactive<FormSchema[]>([
     field: 'iAgree',
     colProps: {
       span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: (formData: any) => {
-          return (
-            <>
-              <IAgree
-                v-model={formData.iAgree}
-                text="我同意《用户协议》"
-                link={[
-                  {
-                    text: '《用户协议》',
-                    url: 'https://element-plus.org/'
-                  }
-                ]}
-              />
-            </>
-          )
-        }
-      }
     }
+    // formItemProps: {
+    //   slots: {
+    //     default: (formData: any) => {
+    //       return (
+    //         <>
+    //           <IAgree
+    //             v-model={formData.iAgree}
+    //             text="我同意《用户协议》"
+    //             link={[
+    //               {
+    //                 text: '《用户协议》',
+    //                 url: 'https://element-plus.org/'
+    //               }
+    //             ]}
+    //           />
+    //         </>
+    //       )
+    //     }
+    //   }
+    // }
   },
   {
     field: 'register',

@@ -1,7 +1,7 @@
 import Mock from 'mockjs'
 import { SUCCESS_CODE } from '@/constants'
 import { toAnyString } from '@/utils'
-import { enhancedSystemConfigSchema } from './jsonschema'
+import { enhancedInferenceModelConfigSchema } from './jsonschema'
 
 const timeout = 1000
 const count = 100
@@ -325,23 +325,21 @@ const createItem = (data: Omit<ListProps, 'id' | 'created_at' | 'updated_at'>): 
 export default [
   // 获取创建模型的JSON Schema - 返回增强的schema
   {
-    url: '/markov_sim/api/v1/system_config/get_create_model_schema',
+    url: '/markov_sim/api/v1/inference_model_config/get_model_schema',
     method: 'get',
     timeout,
     response: () => {
       return {
         code: SUCCESS_CODE,
-        data: {
-          schema: enhancedSystemConfigSchema // 使用增强的schema
-          // originalSchema: userSchema // 保留原有的schema作为备用
-        }
+        message: 'operation successful SchemaResponse',
+        data: enhancedInferenceModelConfigSchema
       }
     }
   },
 
   // 创建系统配置
   {
-    url: '/markov_sim/api/v1/system_config/create',
+    url: '/markov_sim/api/v1/inference_model_config/create',
     method: 'post',
     timeout,
     response: ({ body }: { body: Omit<ListProps, 'id' | 'created_at' | 'updated_at'> }) => {
@@ -380,7 +378,7 @@ export default [
 
   // 更新系统配置
   {
-    url: '/markov_sim/api/v1/system_config/update',
+    url: '/markov_sim/api/v1/inference_model_config/update',
     method: 'put',
     timeout,
     response: ({ body }: { body: ListProps }) => {
@@ -427,8 +425,8 @@ export default [
 
   // 根据ID批量删除
   {
-    url: '/markov_sim/api/v1/system_config/delete_by_ids',
-    method: 'delete',
+    url: '/markov_sim/api/v1/inference_model_config/delete_by_ids',
+    method: 'post',
     timeout,
     response: ({ body }: { body: { ids: string[] } }) => {
       try {
@@ -464,13 +462,12 @@ export default [
 
   // 根据ID获取单个配置
   {
-    url: '/markov_sim/api/v1/system_config/get_by_id',
+    url: '/markov_sim/api/v1/inference_model_config/get_by_id/:id',
     method: 'get',
     timeout,
     response: ({ query }: { query: { id: string } }) => {
       try {
         const { id } = query
-
         if (!id) {
           return {
             code: 400,
@@ -488,6 +485,7 @@ export default [
 
         return {
           code: SUCCESS_CODE,
+          message: '查询成功',
           data: item
         }
       } catch (error) {
@@ -501,7 +499,7 @@ export default [
 
   // 获取所有配置（支持分页、筛选、排序）
   {
-    url: '/markov_sim/api/v1/system_config/get_all',
+    url: '/markov_sim/api/v1/inference_model_config/get_all',
     method: 'post',
     timeout,
     response: ({
@@ -536,8 +534,9 @@ export default [
 
         return {
           code: SUCCESS_CODE,
+          message: 'operation successful',
           data: {
-            list: paginatedResult.items,
+            items: paginatedResult.items,
             total: paginatedResult.total,
             page: paginatedResult.page,
             page_size: paginatedResult.perPage,
@@ -555,7 +554,7 @@ export default [
 
   // 获取硬件类型统计
   {
-    url: '/markov_sim/api/v1/system_config/stats',
+    url: '/markov_sim/api/v1/inference_model_config/stats',
     method: 'get',
     timeout,
     response: () => {
