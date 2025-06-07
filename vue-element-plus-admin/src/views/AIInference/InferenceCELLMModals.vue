@@ -3,13 +3,25 @@
     <SimulationForm @cancel="handleCancel" @formSubmit="handleSubmit" />
   </section>
   <section v-else>
-    <TopToolbar v-model="viewMode" :models="models" :modeName="modeName" @create="createNewSimulation"
-      @change="handleModelChange" @scopeChange="handleScopeChange" />
+    <TopToolbar
+      v-model="viewMode"
+      :models="models"
+      :modeName="modeName"
+      @create="createNewSimulation"
+      @change="handleModelChange"
+      @scopeChange="handleScopeChange"
+    />
     <el-card
-      class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2">
+      class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2"
+    >
       <header class="flex justify-between mb-2">
         <section class="custom-left-box">
-          <el-button v-if="isSelectionMode" @click="jump2Comparison" type="primary" :disabled="isDisabled">
+          <el-button
+            v-if="isSelectionMode"
+            @click="jump2Comparison"
+            type="primary"
+            :disabled="isDisabled"
+          >
             <template #icon>
               <Icon :icon="'vi-ep:info-filled'" />
             </template>
@@ -25,55 +37,75 @@
         </section>
         <section class="flex gap-2">
           <section class="custom-tag-select">
-            <el-select v-model="statusValue" multiple placeholder="筛选运行状态" style="min-width: 200px; max-width: 400px"
-              collapse-tags collapse-tags-tooltip :max-collapse-tags="2" clearable>
-              <el-option v-for="(status, index) in taskStatusList" :key="index" :label="status" :value="status">
+            <el-select
+              v-model="statusValue"
+              multiple
+              placeholder="筛选运行状态"
+              style="min-width: 200px; max-width: 400px"
+              collapse-tags
+              collapse-tags-tooltip
+              :max-collapse-tags="2"
+              clearable
+            >
+              <el-option
+                v-for="(status, index) in taskStatusList"
+                :key="index"
+                :label="status"
+                :value="status"
+              >
                 <div class="flex items-center">
-                  <el-tag :type="getStatusTagType(status)" size="small" style="margin-right: 8px" effect="light" />
+                  <el-tag
+                    :type="getStatusTagType(status)"
+                    size="small"
+                    style="margin-right: 8px"
+                    effect="light"
+                  />
                   <span :class="getStatusTextClass(status)">{{ status }}</span>
                 </div>
               </el-option>
             </el-select>
           </section>
-          <section class="custom-right-box relative">
-            <el-input style="width: 240px" placeholder="搜索模型名称..." @input="(v: string) => onSearchInput(v)"
-              :model-value="title" @focus="onSearchFocus" @blur="onSearchBlur" clearable @clear="handleSearchClear">
-              <template #prefix>
-                <Icon :icon="searchLoading ? 'vi-ep:loading' : 'vi-ant-design:search-outlined'"
-                  :class="{ 'animate-spin': searchLoading }" />
-              </template>
-            </el-input>
-            <div v-show="isShow" class="custom-search-result">
-              <div v-if="searchLoading" class="custom-search-loading">
-                <el-skeleton :rows="3" animated />
-              </div>
-              <div v-else-if="filterData.length === 0 && title" class="custom-search-empty">
-                <el-empty :image-size="60" description="未找到匹配的模型" />
-              </div>
-              <el-card v-else v-for="(item, index) in filterData" :key="index" class="custom-search-item"
-                @click="changeModelName(item)">
-                <div class="flex items-center justify-between">
-                  <p class="model-name">{{ item }}</p>
-                  <Icon :icon="'vi-ant-design:enter-outlined'" class="select-icon" />
-                </div>
-              </el-card>
-            </div>
-          </section>
+          <InputSearch
+            :title="title"
+            :filterData="filterData"
+            :searchLoading="searchLoading"
+            :isShow="isShow"
+            @onSearchInput="onSearchInput"
+            @onSearchFocus="onSearchFocus"
+            @onSearchBlur="onSearchBlur"
+            @handleSearchClear="handleSearchClear"
+            @changeModelName="changeModelName"
+          />
         </section>
       </header>
       <el-skeleton v-if="viewMode === 'Grid'" :rows="5" :loading="loading" animated>
-        <CardView :displayViewModeList="currentList as Task[]" :isSelectionMode="isSelectionMode" @select="handleSelect"
-          @detail="handleDetail" :isDisabled="isDisabled" />
+        <CardView
+          :displayViewModeList="currentList as Task[]"
+          :isSelectionMode="isSelectionMode"
+          @select="handleSelect"
+          @detail="handleDetail"
+          :isDisabled="isDisabled"
+        />
       </el-skeleton>
       <el-skeleton v-else :rows="5" :loading="loading" animated>
-        <table-view :displayViewModeList="currentList as Task[]" :isSelectionMode="isSelectionMode"
-          @select="handleSelect" @detail="handleDetail" />
+        <table-view
+          :displayViewModeList="currentList as Task[]"
+          :isSelectionMode="isSelectionMode"
+          @select="handleSelect"
+          @detail="handleDetail"
+        />
       </el-skeleton>
       <footer class="flex justify-end mt-4">
-        <el-pagination v-model:current-page="pagination.currentPage.value" v-model:page-size="pagination.pageSize.value"
-          :page-sizes="[5, 10, 15, 20]" :size="'small'" layout="total, sizes, prev, pager, next, jumper"
-          :total="displayViewModeList.length" @size-change="pagination.handleSizeChange"
-          @current-change="pagination.handleCurrentChange" />
+        <el-pagination
+          v-model:current-page="pagination.currentPage.value"
+          v-model:page-size="pagination.pageSize.value"
+          :page-sizes="[5, 10, 15, 20]"
+          :size="'small'"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="displayViewModeList.length"
+          @size-change="pagination.handleSizeChange"
+          @current-change="pagination.handleCurrentChange"
+        />
       </footer>
     </el-card>
   </section>
@@ -90,6 +122,7 @@ import { useRouter } from 'vue-router'
 import { usePagination } from '@/composables/usePagination'
 import { ElMessage } from 'element-plus'
 import { debounce } from 'lodash-es'
+import InputSearch from './components/InputSearch.vue'
 
 // Define Task interface
 interface Task {
@@ -168,7 +201,6 @@ const modelNameList = ['llama_3_70b', 'llama_3_8b', 'gpt_4', 'claude_3']
 
 const fetchTasks = async () => {
   try {
-
   } catch (error) {
     console.error('获取任务列表失败:', error)
   }
@@ -185,9 +217,7 @@ const displayViewModeList = computed(() => {
 
   // 根据状态过滤
   if (statusValue.value.length > 0) {
-    filteredTasks = filteredTasks.filter((task) =>
-      statusValue.value.includes(task.status)
-    )
+    filteredTasks = filteredTasks.filter((task) => statusValue.value.includes(task.status))
   }
 
   // 根据模型名称过滤
@@ -279,9 +309,13 @@ onMounted(async () => {
 const { currentList, ...pagination } = usePagination(displayViewModeList.value)
 
 // 监听数据变化，更新分页
-watch(displayViewModeList, () => {
-  console.log('displayViewModeList 发生变化，当前数据:', displayViewModeList.value)
-}, { immediate: true, deep: true })
+watch(
+  displayViewModeList,
+  () => {
+    console.log('displayViewModeList 发生变化，当前数据:', displayViewModeList.value)
+  },
+  { immediate: true, deep: true }
+)
 
 const jump2Comparison = () => {
   router.push({
@@ -321,24 +355,24 @@ const filterData = computed(() => {
   return filtered.slice(0, 10) // 限制显示条数，提升性能
 })
 
-const onSearchInput = (val: string) => {
-  title.value = val
-  if (val) {
+const onSearchInput = (value: string) => {
+  title.value = value
+  if (value) {
     isShow.value = true
-    debouncedSearch(val)
+    debouncedSearch(value)
   } else {
     isShow.value = false
     searchLoading.value = false
   }
 }
 
-const onSearchFocus = (val) => {
+const onSearchFocus = () => {
   if (title.value && filterData.value.length > 0) {
     isShow.value = true
   }
 }
 
-const onSearchBlur = (val) => {
+const onSearchBlur = () => {
   hideTimer.value = window.setTimeout(() => {
     isShow.value = false
   }, 200)
@@ -480,10 +514,12 @@ const getStatusTextClass = (status: string) => {
 
   :deep(.el-skeleton) {
     .el-skeleton__item {
-      background: linear-gradient(90deg,
-          var(--el-skeleton-color) 25%,
-          var(--el-skeleton-to-color) 37%,
-          var(--el-skeleton-color) 63%);
+      background: linear-gradient(
+        90deg,
+        var(--el-skeleton-color) 25%,
+        var(--el-skeleton-to-color) 37%,
+        var(--el-skeleton-color) 63%
+      );
     }
   }
 }
