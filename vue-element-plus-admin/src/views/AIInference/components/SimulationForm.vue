@@ -1,6 +1,7 @@
 <template>
   <el-card
-    class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))] relative">
+    class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))] relative"
+  >
     <div class="p-6 mb-4 flex flex-col gap-6">
       <el-steps :active="active" finish-status="success" align-center>
         <el-step :title="t('AIInference.modelSelection')" />
@@ -9,245 +10,38 @@
         <el-step :title="t('AIInference.confirmation')" />
       </el-steps>
       <section v-if="active === 0">
-        <el-form ref="formRef" :model="formData[active]" label-width="140px" label-position="left">
-          <!-- 渲染表单区块 -->
-          <div v-for="section in visibleSections" :key="section.key" class="form-section">
-            <el-divider content-position="left" class="section-title">
-              {{ section.title }}
-              <span v-if="section.required" class="required">*</span>
-            </el-divider>
-            <!-- 两列布局 -->
-            <el-row :gutter="20">
-              <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)" :key="field.field"
-                  :prop="field.field" :rules="getFieldRules(field)" :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">{{ field.label }}</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
-                </el-form-item>
-              </el-col>
-              <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)" :key="field.field"
-                  :prop="field.field" :rules="getFieldRules(field)" :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">{{ field.label }}</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </div>
-          <!-- MLA提示配置 -->
-          <div class="custom-section">
-            <el-alert v-if="formData[active].attnType === 'mla'" title="MLA Extended Options are now visible!"
-              type="success" :closable="false" show-icon />
-            <el-alert v-else-if="formData[active].attnType === 'moe'"
-              title="MOE configuration selected (MLA options hidden)" type="warning" :closable="false" show-icon />
-            <el-alert v-else :title="`Current attn_type: ${formData[active].attnType || 'Not selected'}`" type="info"
-              :closable="false" show-icon />
-          </div>
-          <!-- 高级配置切换 -->
-          <div v-if="showToggle" class="toggle-section">
-            <el-switch :model-value="showAdvancedConfig" @update:model-value="handleAdvancedConfigToggle"
-              active-text="Advanced Config" />
-          </div>
-          <!-- High-Level Options (显示在toggle下方) -->
-          <div v-if="showAdvancedConfig" class="form-section">
-            <el-divider content-position="left" class="section-title">
-              High-Level Options
-              <span class="required">*</span>
-            </el-divider>
-            <el-row :gutter="20">
-              <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item prop="norm" :rules="getFieldRules({
-                  field: 'norm',
-                  label: 'norm',
-                  component: 'Select',
-                  required: true
-                })
-                  " :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" content="norm" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">norm</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="{
-                    field: 'norm',
-                    label: 'norm',
-                    component: 'Select',
-                    componentProps: { placeholder: '请选择' },
-                    options: [
-                      { label: 'RMSNorm', value: 'rmsnorm' },
-                      { label: 'LayerNorm', value: 'layernorm' }
-                    ]
-                  }" :value="formData[active].norm" @update="(value) => handleFieldUpdate('norm', value)"
-                    style="width: 300px" />
-                </el-form-item>
-                <el-form-item prop="hybridModelEnable" :rules="getFieldRules({
-                  field: 'hybridModelEnable',
-                  label: 'hybrid_model_enable',
-                  component: 'Switch'
-                })
-                  " :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" content="hybrid_model_enable" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">hybrid_model_enable</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="{
-                    field: 'hybridModelEnable',
-                    label: 'hybrid_model_enable',
-                    component: 'Switch'
-                  }" :value="formData[active].hybridModelEnable"
-                    @update="(value) => handleFieldUpdate('hybridModelEnable', value)" style="width: 300px" />
-                </el-form-item>
-                <el-form-item prop="hybridDenseBlocksNum" :rules="getFieldRules({
-                  field: 'hybridDenseBlocksNum',
-                  label: 'hybrid_dense_blocks_num',
-                  component: 'InputNumber'
-                })
-                  " :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" content="hybrid_dense_blocks_num" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">hybrid_dense_blocks_num</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="{
-                    field: 'hybridDenseBlocksNum',
-                    label: 'hybrid_dense_blocks_num',
-                    component: 'InputNumber',
-                    componentProps: { controls: false, placeholder: '0' }
-                  }" :value="formData[active].hybridDenseBlocksNum"
-                    @update="(value) => handleFieldUpdate('hybridDenseBlocksNum', value)" style="width: 300px" />
-                </el-form-item>
-                <el-form-item prop="embeddingOutputShare" :rules="getFieldRules({
-                  field: 'embeddingOutputShare',
-                  label: 'embedding_output_share',
-                  component: 'Switch'
-                })
-                  " :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" content="embedding_output_share" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">embedding_output_share</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="{
-                    field: 'embeddingOutputShare',
-                    label: 'embedding_output_share',
-                    component: 'Switch'
-                  }" :value="formData[active].embeddingOutputShare"
-                    @update="(value) => handleFieldUpdate('embeddingOutputShare', value)" style="width: 300px" />
-                </el-form-item>
-              </el-col>
-              <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item prop="embeddingSize" :rules="getFieldRules({
-                  field: 'embeddingSize',
-                  label: 'embedding_size',
-                  component: 'InputNumber'
-                })
-                  " :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" content="embedding_size" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">embedding_size</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="{
-                    field: 'embeddingSize',
-                    label: 'embedding_size',
-                    component: 'InputNumber',
-                    componentProps: { controls: false, placeholder: '0' }
-                  }" :value="formData[active].embeddingSize"
-                    @update="(value) => handleFieldUpdate('embeddingSize', value)" style="width: 300px" />
-                </el-form-item>
-                <el-form-item prop="hybridMoeBlocksNum" :rules="getFieldRules({
-                  field: 'hybridMoeBlocksNum',
-                  label: 'hybrid_moe_blocks_num',
-                  component: 'InputNumber'
-                })
-                  " :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" content="hybrid_moe_blocks_num" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">hybrid_moe_blocks_num</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="{
-                    field: 'hybridMoeBlocksNum',
-                    label: 'hybrid_moe_blocks_num',
-                    component: 'InputNumber',
-                    componentProps: { controls: false, placeholder: '0' }
-                  }" :value="formData[active].hybridMoeBlocksNum"
-                    @update="(value) => handleFieldUpdate('hybridMoeBlocksNum', value)" style="width: 300px" />
-                </el-form-item>
-                <el-form-item prop="mtpModuleNum" :rules="getFieldRules({
-                  field: 'mtpModuleNum',
-                  label: 'mtp_module_num',
-                  component: 'InputNumber'
-                })
-                  " :label-position="'left'">
-                  <template #label>
-                    <div class="flex items-center">
-                      <el-tooltip effect="dark" content="mtp_module_num" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
-                      </el-tooltip>
-                      <span class="label-text">mtp_module_num</span>
-                    </div>
-                  </template>
-                  <FormFieldRenderer :field="{
-                    field: 'mtpModuleNum',
-                    label: 'mtp_module_num',
-                    component: 'InputNumber',
-                    componentProps: { controls: false, placeholder: '0' }
-                  }" :value="formData[active].mtpModuleNum"
-                    @update="(value) => handleFieldUpdate('mtpModuleNum', value)" style="width: 300px" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </div>
-        </el-form>
+        <div v-if="isLoadingSchemas" class="loading-placeholder">
+          <el-skeleton :rows="5" animated />
+          <p class="text-center text-gray-500 mt-4">正在加载模型配置架构...</p>
+        </div>
+        <div v-else-if="currentStepSections.length === 0" class="empty-schema">
+          <el-empty description="模型配置架构为空，使用默认配置" />
+        </div>
+        <section v-else>
+          <SchemaForm
+            ref="schemaFormRef"
+            :schema="modelSchema"
+            v-model="formItems"
+            @validate="handleFormValidate"
+            @search="handleSearch"
+          />
+        </section>
       </section>
-
       <section v-if="active === 1">
-        <el-form ref="formRef" :model="formData[active]" label-width="140px" label-position="left">
+        <div v-if="isLoadingSchemas" class="loading-placeholder">
+          <el-skeleton :rows="5" animated />
+          <p class="text-center text-gray-500 mt-4">正在加载硬件配置架构...</p>
+        </div>
+        <div v-else-if="currentStepSections.length === 0" class="empty-schema">
+          <el-empty description="硬件配置架构为空，使用默认配置" />
+        </div>
+        <el-form
+          v-else
+          ref="formRef"
+          :model="formData[active]"
+          label-width="140px"
+          label-position="left"
+        >
           <!-- 渲染表单区块 -->
           <div v-for="section in visibleSections" :key="section.key" class="form-section">
             <el-divider content-position="left" class="section-title">
@@ -257,42 +51,63 @@
             <!-- 两列布局 -->
             <el-row :gutter="20">
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)" :key="field.field"
-                  :prop="field.field" :rules="getFieldRules(field)" :label-position="'left'">
+                <el-form-item
+                  v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)"
+                  :key="field.field"
+                  :prop="field.field"
+                  :rules="getFieldRules(field)"
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="field"
+                    :value="formData[active][field.field]"
+                    @update="(value) => handleFieldUpdate(field.field, value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)" :key="field.field"
-                  :prop="field.field" :rules="getFieldRules(field)" :label-position="'left'">
+                <el-form-item
+                  v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)"
+                  :key="field.field"
+                  :prop="field.field"
+                  :rules="getFieldRules(field)"
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="field"
+                    :value="formData[active][field.field]"
+                    @update="(value) => handleFieldUpdate(field.field, value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
           </div>
         </el-form>
       </section>
-
       <section v-if="active === 2">
         <el-form ref="formRef" :model="formData[active]" label-width="140px" label-position="left">
           <!-- 渲染表单区块 -->
@@ -304,50 +119,85 @@
             <!-- 两列布局 -->
             <el-row :gutter="20">
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)" :key="field.field"
-                  :prop="field.field" :rules="getFieldRules(field)" :label-position="'left'">
+                <el-form-item
+                  v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)"
+                  :key="field.field"
+                  :prop="field.field"
+                  :rules="getFieldRules(field)"
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="field"
+                    :value="formData[active][field.field]"
+                    @update="(value) => handleFieldUpdate(field.field, value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)" :key="field.field"
-                  :prop="field.field" :rules="getFieldRules(field)" :label-position="'left'">
+                <el-form-item
+                  v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)"
+                  :key="field.field"
+                  :prop="field.field"
+                  :rules="getFieldRules(field)"
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="field" :value="formData[active][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="field"
+                    :value="formData[active][field.field]"
+                    @update="(value) => handleFieldUpdate(field.field, value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
           </div>
           <!-- MLA提示配置 -->
           <div class="custom-section">
-            <el-alert v-if="formData[active].environment === 'staging'"
-              title="Staging Extended Options are now visible!" type="success" :closable="false" show-icon />
-            <el-alert v-else="formData[active].environment === 'moe'" title="(Staging options hidden)" type="warning"
-              :closable="false" show-icon />
+            <el-alert
+              v-if="formData[active].environment === 'staging'"
+              title="Staging Extended Options are now visible!"
+              type="success"
+              :closable="false"
+              show-icon
+            />
+            <el-alert
+              v-else="formData[active].environment === 'moe'"
+              title="(Staging options hidden)"
+              type="warning"
+              :closable="false"
+              show-icon
+            />
           </div>
           <!-- 高级配置切换 -->
           <div v-if="showToggle" class="toggle-section">
-            <el-switch :model-value="showAdvancedConfig" @update:model-value="handleAdvancedConfigToggle"
-              active-text="Advanced Config" />
+            <el-switch
+              :model-value="showAdvancedConfig"
+              @update:model-value="handleAdvancedConfigToggle"
+              active-text="Advanced Config"
+            />
           </div>
           <!-- High-Level Options (显示在toggle下方) -->
           <div v-if="showAdvancedConfig" class="form-section">
@@ -357,181 +207,258 @@
             </el-divider>
             <el-row :gutter="20">
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item prop="norm" :rules="getFieldRules({
-                  field: 'norm',
-                  label: 'norm',
-                  component: 'Select',
-                  required: true
-                })
-                  " :label-position="'left'">
+                <el-form-item
+                  prop="norm"
+                  :rules="
+                    getFieldRules({
+                      field: 'norm',
+                      label: 'norm',
+                      component: 'Select',
+                      required: true
+                    })
+                  "
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="norm" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">norm</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="{
-                    field: 'norm',
-                    label: 'norm',
-                    component: 'Select',
-                    componentProps: { placeholder: '请选择' },
-                    options: [
-                      { label: 'RMSNorm', value: 'rmsnorm' },
-                      { label: 'LayerNorm', value: 'layernorm' }
-                    ]
-                  }" :value="formData[active].norm" @update="(value) => handleFieldUpdate('norm', value)"
-                    style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="{
+                      field: 'norm',
+                      label: 'norm',
+                      component: 'Select',
+                      componentProps: { placeholder: '请选择' },
+                      options: [
+                        { label: 'RMSNorm', value: 'rmsnorm' },
+                        { label: 'LayerNorm', value: 'layernorm' }
+                      ]
+                    }"
+                    :value="formData[active].norm"
+                    @update="(value) => handleFieldUpdate('norm', value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
-                <el-form-item prop="hybridModelEnable" :rules="getFieldRules({
-                  field: 'hybridModelEnable',
-                  label: 'hybrid_model_enable',
-                  component: 'Switch'
-                })
-                  " :label-position="'left'">
+                <el-form-item
+                  prop="hybridModelEnable"
+                  :rules="
+                    getFieldRules({
+                      field: 'hybridModelEnable',
+                      label: 'hybrid_model_enable',
+                      component: 'Switch'
+                    })
+                  "
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_model_enable" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">hybrid_model_enable</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="{
-                    field: 'hybridModelEnable',
-                    label: 'hybrid_model_enable',
-                    component: 'Switch'
-                  }" :value="formData[active].hybridModelEnable"
-                    @update="(value) => handleFieldUpdate('hybridModelEnable', value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="{
+                      field: 'hybridModelEnable',
+                      label: 'hybrid_model_enable',
+                      component: 'Switch'
+                    }"
+                    :value="formData[active].hybridModelEnable"
+                    @update="(value) => handleFieldUpdate('hybridModelEnable', value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
-                <el-form-item prop="hybridDenseBlocksNum" :rules="getFieldRules({
-                  field: 'hybridDenseBlocksNum',
-                  label: 'hybrid_dense_blocks_num',
-                  component: 'InputNumber'
-                })
-                  " :label-position="'left'">
+                <el-form-item
+                  prop="hybridDenseBlocksNum"
+                  :rules="
+                    getFieldRules({
+                      field: 'hybridDenseBlocksNum',
+                      label: 'hybrid_dense_blocks_num',
+                      component: 'InputNumber'
+                    })
+                  "
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_dense_blocks_num" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">hybrid_dense_blocks_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="{
-                    field: 'hybridDenseBlocksNum',
-                    label: 'hybrid_dense_blocks_num',
-                    component: 'InputNumber',
-                    componentProps: { controls: false, placeholder: '0' }
-                  }" :value="formData[active].hybridDenseBlocksNum"
-                    @update="(value) => handleFieldUpdate('hybridDenseBlocksNum', value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="{
+                      field: 'hybridDenseBlocksNum',
+                      label: 'hybrid_dense_blocks_num',
+                      component: 'InputNumber',
+                      componentProps: { controls: false, placeholder: '0' }
+                    }"
+                    :value="formData[active].hybridDenseBlocksNum"
+                    @update="(value) => handleFieldUpdate('hybridDenseBlocksNum', value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
-                <el-form-item prop="embeddingOutputShare" :rules="getFieldRules({
-                  field: 'embeddingOutputShare',
-                  label: 'embedding_output_share',
-                  component: 'Switch'
-                })
-                  " :label-position="'left'">
+                <el-form-item
+                  prop="embeddingOutputShare"
+                  :rules="
+                    getFieldRules({
+                      field: 'embeddingOutputShare',
+                      label: 'embedding_output_share',
+                      component: 'Switch'
+                    })
+                  "
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="embedding_output_share" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">embedding_output_share</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="{
-                    field: 'embeddingOutputShare',
-                    label: 'embedding_output_share',
-                    component: 'Switch'
-                  }" :value="formData[active].embeddingOutputShare"
-                    @update="(value) => handleFieldUpdate('embeddingOutputShare', value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="{
+                      field: 'embeddingOutputShare',
+                      label: 'embedding_output_share',
+                      component: 'Switch'
+                    }"
+                    :value="formData[active].embeddingOutputShare"
+                    @update="(value) => handleFieldUpdate('embeddingOutputShare', value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-                <el-form-item prop="embeddingSize" :rules="getFieldRules({
-                  field: 'embeddingSize',
-                  label: 'embedding_size',
-                  component: 'InputNumber'
-                })
-                  " :label-position="'left'">
+                <el-form-item
+                  prop="embeddingSize"
+                  :rules="
+                    getFieldRules({
+                      field: 'embeddingSize',
+                      label: 'embedding_size',
+                      component: 'InputNumber'
+                    })
+                  "
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="embedding_size" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">embedding_size</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="{
-                    field: 'embeddingSize',
-                    label: 'embedding_size',
-                    component: 'InputNumber',
-                    componentProps: { controls: false, placeholder: '0' }
-                  }" :value="formData[active].embeddingSize"
-                    @update="(value) => handleFieldUpdate('embeddingSize', value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="{
+                      field: 'embeddingSize',
+                      label: 'embedding_size',
+                      component: 'InputNumber',
+                      componentProps: { controls: false, placeholder: '0' }
+                    }"
+                    :value="formData[active].embeddingSize"
+                    @update="(value) => handleFieldUpdate('embeddingSize', value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
-                <el-form-item prop="hybridMoeBlocksNum" :rules="getFieldRules({
-                  field: 'hybridMoeBlocksNum',
-                  label: 'hybrid_moe_blocks_num',
-                  component: 'InputNumber'
-                })
-                  " :label-position="'left'">
+                <el-form-item
+                  prop="hybridMoeBlocksNum"
+                  :rules="
+                    getFieldRules({
+                      field: 'hybridMoeBlocksNum',
+                      label: 'hybrid_moe_blocks_num',
+                      component: 'InputNumber'
+                    })
+                  "
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="hybrid_moe_blocks_num" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">hybrid_moe_blocks_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="{
-                    field: 'hybridMoeBlocksNum',
-                    label: 'hybrid_moe_blocks_num',
-                    component: 'InputNumber',
-                    componentProps: { controls: false, placeholder: '0' }
-                  }" :value="formData[active].hybridMoeBlocksNum"
-                    @update="(value) => handleFieldUpdate('hybridMoeBlocksNum', value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="{
+                      field: 'hybridMoeBlocksNum',
+                      label: 'hybrid_moe_blocks_num',
+                      component: 'InputNumber',
+                      componentProps: { controls: false, placeholder: '0' }
+                    }"
+                    :value="formData[active].hybridMoeBlocksNum"
+                    @update="(value) => handleFieldUpdate('hybridMoeBlocksNum', value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
-                <el-form-item prop="mtpModuleNum" :rules="getFieldRules({
-                  field: 'mtpModuleNum',
-                  label: 'mtp_module_num',
-                  component: 'InputNumber'
-                })
-                  " :label-position="'left'">
+                <el-form-item
+                  prop="mtpModuleNum"
+                  :rules="
+                    getFieldRules({
+                      field: 'mtpModuleNum',
+                      label: 'mtp_module_num',
+                      component: 'InputNumber'
+                    })
+                  "
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" content="mtp_module_num" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">mtp_module_num</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="{
-                    field: 'mtpModuleNum',
-                    label: 'mtp_module_num',
-                    component: 'InputNumber',
-                    componentProps: { controls: false, placeholder: '0' }
-                  }" :value="formData[active].mtpModuleNum"
-                    @update="(value) => handleFieldUpdate('mtpModuleNum', value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="{
+                      field: 'mtpModuleNum',
+                      label: 'mtp_module_num',
+                      component: 'InputNumber',
+                      componentProps: { controls: false, placeholder: '0' }
+                    }"
+                    :value="formData[active].mtpModuleNum"
+                    @update="(value) => handleFieldUpdate('mtpModuleNum', value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
           </div>
         </el-form>
       </section>
-
       <div v-if="active === 3" class="flex flex-col gap-4 min-h-40 pl-20 pt-20">
         <h2>Run Simulation with selected parameters?</h2>
-        <div><el-tag size="large" effect="dark" style="width: 120px">Task Name</el-tag> :
+        <div
+          ><el-tag size="large" effect="dark" style="width: 120px">Task Name</el-tag> :
           <el-input placeholder="Enter job Name" v-model="taskName" style="width: 400px" />
         </div>
         <p v-for="(step, idx) in ['modelSelection', 'handwareSelection', 'environment']">
@@ -547,7 +474,8 @@
         }}</el-button>
         <!-- :disabled="!canProceed" -->
         <el-button type="primary" @click="handleNext" :loading="isSubmitting">
-          {{ active === 3 ? t('common.ok') : t('common.nextLabel') }}</el-button>
+          {{ active === 3 ? t('common.ok') : t('common.nextLabel') }}</el-button
+        >
         <el-button type="info"> 保存草稿 </el-button>
       </div>
     </footer>
@@ -559,17 +487,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, nextTick, watch, defineComponent, h, onMounted } from 'vue'
+import {
+  ref,
+  reactive,
+  computed,
+  nextTick,
+  watch,
+  defineComponent,
+  h,
+  onMounted,
+  onBeforeMount
+} from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElSelect, ElInputNumber, ElSwitch, ElOption } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { useSystemConfigStore } from '@/store/modules/systemConfigs'
+import { useInferenceModelConfigStore } from '@/store/modules/inferenceModelConfigs'
+import SchemaForm from './schemaForm.vue'
 
 const { t } = useI18n()
 const systemConfigStore = useSystemConfigStore()
-
+const inferenceModelConfigStore = useInferenceModelConfigStore()
+const formItems = ref<any>({})
+const schemaFormRef = ref()
 // 字段类型定义
 interface FormField {
   field: string
@@ -589,6 +531,11 @@ interface FormSection {
   fields: FormField[]
 }
 
+const formValid = ref(false)
+const handleFormValidate = (valid: boolean) => {
+  formValid.value = valid
+}
+
 const active = ref(0)
 const showAdvancedConfig = ref(false)
 const isSubmitting = ref(false)
@@ -599,12 +546,67 @@ const showToggle = ref(true)
 
 // 硬件选择相关的响应式数据
 const hardwareOptions = ref<Array<{ label: string; value: string }>>([])
-const selectedHardware = ref('')
 
+// Schema配置
+const modelSchema = ref<any>(null)
+const hardwareSchema = ref<any>(null)
+const isLoadingSchemas = ref(false)
+
+// 动态生成的表单配置
+const dynamicFormSections = ref<FormSection[][]>([[], [], []])
+// 获取schema数据
+// const schemaConfigs: any = computed(() => inferenceModelConfigStore.schemeConfigs)
 // 组件挂载时获取硬件配置数据
-onMounted(async () => {
-  await loadHardwareOptions()
+onBeforeMount(async () => {
+  isLoadingSchemas.value = true
+  // 先获取Schema配置，再获取数据
+  await Promise.all([loadHardwareOptions(), loadModelSchema(), loadHardwareSchema()])
+  isLoadingSchemas.value = false
 })
+
+// 加载模型配置Schema (Step 0)
+const loadModelSchema = async () => {
+  try {
+    console.log('开始加载模型Schema配置...')
+    await inferenceModelConfigStore.fetchSchemaConfigs()
+    const schemaData = inferenceModelConfigStore.schemeConfigs
+
+    console.log('获取的模型Schema数据:', schemaData)
+
+    if (schemaData) {
+      modelSchema.value = schemaData
+      console.log('模型Schema加载成功')
+    } else {
+      console.warn('模型Schema数据格式不正确')
+    }
+  } catch (error) {
+    console.error('Failed to load model schema:', error)
+    ElMessage.error('加载模型Schema失败')
+  }
+}
+
+// 加载硬件配置Schema (Step 1)
+const loadHardwareSchema = async () => {
+  try {
+    console.log('开始加载硬件Schema配置...')
+    await systemConfigStore.fetchSchemaConfigs()
+    const schemaData = systemConfigStore.schemeConfigs
+
+    console.log('获取的硬件Schema数据:', schemaData)
+
+    if (schemaData && schemaData.uiConfig) {
+      hardwareSchema.value = schemaData.uiConfig
+      generateFormSectionsFromSchema(hardwareSchema.value, 1)
+      generateFormDataFromSchema(hardwareSchema.value, 1)
+      console.log('硬件Schema加载成功')
+    } else {
+      console.warn('硬件Schema数据格式不正确')
+    }
+  } catch (error) {
+    console.error('Failed to load hardware schema:', error)
+    ElMessage.error('加载硬件Schema失败')
+  }
+}
 
 // 从 store 加载硬件选项
 const loadHardwareOptions = async () => {
@@ -614,7 +616,7 @@ const loadHardwareOptions = async () => {
     await systemConfigStore.fetchConfigs()
 
     // 将硬件配置转换为选项格式
-    hardwareOptions.value = systemConfigStore.configs.map(config => ({
+    hardwareOptions.value = systemConfigStore.configs.map((config) => ({
       label: config.name,
       value: config.id || config.name
     }))
@@ -624,12 +626,59 @@ const loadHardwareOptions = async () => {
   }
 }
 
+// 从Schema生成表单配置
+const generateFormSectionsFromSchema = (schema: any, stepIndex: number) => {
+  if (!schema || !schema.formSections) {
+    console.warn(`Schema中没有找到formSections，stepIndex: ${stepIndex}`)
+    return
+  }
+
+  try {
+    const sections: FormSection[] = schema.formSections.map((section: any) => ({
+      key: section.key,
+      title: section.title,
+      required: section.required || false,
+      visible: section.visible ? () => eval(section.visible) : undefined,
+      fields: section.fields.map((field: any) => ({
+        field: field.field,
+        label: field.label,
+        component: field.component as 'Select' | 'InputNumber' | 'Switch',
+        componentProps: field.componentProps || {},
+        options: field.options || [],
+        required: field.required || false,
+        validator: field.validator ? (value: any) => eval(field.validator) : undefined
+      }))
+    }))
+
+    dynamicFormSections.value[stepIndex] = sections
+    console.log(`Step ${stepIndex} 表单配置生成完成:`, sections)
+  } catch (error) {
+    console.error(`生成Step ${stepIndex}表单配置失败:`, error)
+  }
+}
+
+// 从Schema生成表单数据
+const generateFormDataFromSchema = (schema: any, stepIndex: number) => {
+  if (!schema || !schema.defaultData) {
+    console.warn(`Schema中没有找到defaultData，stepIndex: ${stepIndex}`)
+    return
+  }
+
+  try {
+    // 合并默认数据到formData中
+    Object.assign(formData[stepIndex], schema.defaultData)
+    console.log(`Step ${stepIndex} 表单数据初始化完成:`, formData[stepIndex])
+  } catch (error) {
+    console.error(`生成Step ${stepIndex}表单数据失败:`, error)
+  }
+}
+
 // 监听硬件选择变化
 const onHardwareSelectionChange = async (value: string) => {
   try {
     // 根据选择的硬件ID获取详细配置
-    const selectedConfig = systemConfigStore.configs.find(config =>
-      (config.id || config.name) === value
+    const selectedConfig = systemConfigStore.configs.find(
+      (config) => (config.id || config.name) === value
     )
 
     if (selectedConfig) {
@@ -655,31 +704,6 @@ const onHardwareSelectionChange = async (value: string) => {
 }
 
 const formData = reactive([
-  {
-    // Step 0: Model Configuration
-    modelSelection: '',
-    structureType: '',
-    feedforward: 0,
-    attnHeads: 0,
-    attnSize: 0,
-    hidden: '',
-    attnType: '',
-    numBlocks: 0,
-    numQueryGroups: 0,
-    qLoraRank: 0,
-    qkRopeHeadDim: 0,
-    qHeadDim: 0,
-    kvLoraRank: 0,
-    qkRopeHeadDim2: 0,
-    vHeadDim: 0,
-    norm: '',
-    hybridModelEnable: false,
-    hybridDenseBlocksNum: 0,
-    embeddingOutputShare: false,
-    embeddingSize: 0,
-    hybridMoeBlocksNum: 0,
-    mtpModuleNum: 0
-  },
   {
     // Step 1: Hardware Configuration
     handwareSelection: '',
@@ -733,191 +757,6 @@ const dynamicHardwareSelectionSection = computed(() => ({
 }))
 
 const allFormSections: FormSection[][] = [
-  // Step 0: Model Selection and Configuration
-  [
-    {
-      key: 'modelSelection',
-      title: 'Model Selection',
-      required: true,
-      fields: [
-        {
-          field: 'modelSelection',
-          label: 'Model Selection',
-          component: 'Select',
-          componentProps: { placeholder: 'Select' },
-          options: [
-            { label: 'llama_3_70b', value: 'llama_3_70b' },
-            { label: 'llama_3_8b', value: 'llama_3_8b' },
-            { label: 'gpt_4', value: 'gpt_4' }
-          ]
-        }
-      ]
-    },
-    {
-      key: 'baseOptions',
-      title: 'Base Options',
-      required: true,
-      fields: [
-        {
-          field: 'structureType',
-          label: 'Structure Type',
-          component: 'Select',
-          componentProps: { placeholder: '请选择' },
-          options: [
-            { label: 'llm-08', value: 'llm-08' },
-            { label: 'llm-16', value: 'llm-16' },
-            { label: 'llm-32', value: 'llm-32' }
-          ]
-        },
-        {
-          field: 'feedforward',
-          label: 'feedforward',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'attnHeads',
-          label: 'attn_heads',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'attnSize',
-          label: 'attn_size',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'hidden',
-          label: 'Hidden',
-          component: 'Select',
-          componentProps: { placeholder: '请选择' },
-          options: [
-            { label: 'Hidden Layer 1', value: 'hidden1' },
-            { label: 'Hidden Layer 2', value: 'hidden2' }
-          ]
-        },
-        {
-          field: 'attnType',
-          label: 'attn_type',
-          component: 'Select',
-          componentProps: { placeholder: '请选择' },
-          options: [
-            { label: 'MLA', value: 'mla' },
-            { label: 'MOE', value: 'moe' }
-          ]
-        },
-        {
-          field: 'numBlocks',
-          label: 'num_blocks',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'numQueryGroups',
-          label: 'num_query_groups',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        }
-      ]
-    },
-    {
-      key: 'mlaExtended',
-      title: 'MLA Extended Options',
-      required: true,
-      visible: () => formData[active.value].attnType === 'mla',
-      fields: [
-        {
-          field: 'qLoraRank',
-          label: 'q_lora_rank',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'qkRopeHeadDim',
-          label: 'qk_rope_head_dim',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'qHeadDim',
-          label: 'q_head_dim',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'kvLoraRank',
-          label: 'kv_lora_rank',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'qkRopeHeadDim2',
-          label: 'qk_rope_head_dim',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'vHeadDim',
-          label: 'v_head_dim',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        }
-      ]
-    },
-    {
-      key: 'highLevel',
-      title: 'High-Level Options',
-      required: true,
-      visible: () => showAdvancedConfig.value,
-      fields: [
-        {
-          field: 'norm',
-          label: 'norm',
-          component: 'Select',
-          componentProps: { placeholder: '请选择' },
-          options: [
-            { label: 'RMSNorm', value: 'rmsnorm' },
-            { label: 'LayerNorm', value: 'layernorm' }
-          ]
-        },
-        {
-          field: 'hybridModelEnable',
-          label: 'hybrid_model_enable',
-          component: 'Switch'
-        },
-        {
-          field: 'hybridDenseBlocksNum',
-          label: 'hybrid_dense_blocks_num',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'embeddingOutputShare',
-          label: 'embedding_output_share',
-          component: 'Switch'
-        },
-        {
-          field: 'embeddingSize',
-          label: 'embedding_size',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'hybridMoeBlocksNum',
-          label: 'hybrid_moe_blocks_num',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        },
-        {
-          field: 'mtpModuleNum',
-          label: 'mtp_module_num',
-          component: 'InputNumber',
-          componentProps: { controls: false, placeholder: '0' }
-        }
-      ]
-    }
-  ],
   // Step 1: Hardware Configuration - 使用动态配置
   [
     // 使用计算属性的动态硬件选择部分
@@ -1089,96 +928,21 @@ const allFormSections: FormSection[][] = [
   ]
 ]
 
-// 动态获取Step 1配置
-const getStep1Sections = computed(() => [
-  dynamicHardwareSelectionSection.value,
-  {
-    key: 'hardwareDetails',
-    title: 'Hardware Details',
-    required: true,
-    fields: [
-      {
-        field: 'Type',
-        label: 'GPU Type',
-        component: 'Select' as const,
-        componentProps: { placeholder: 'Select GPU' },
-        options: [
-          { label: 'GPU', value: 'GPU' },
-          { label: 'NPU', value: 'NPU' }
-        ]
-      },
-      {
-        field: 'processingMode',
-        label: 'Processing Mode',
-        component: 'Select' as const,
-        componentProps: { placeholder: 'Select' },
-        options: [
-          { label: 'roofline', value: 'roofline' },
-          { label: 'no_overlap', value: 'no_overlap' }
-        ]
-      },
-      {
-        field: 'MatrixSize',
-        label: 'Matrix(Float16 TFLOPS)',
-        component: 'InputNumber' as const,
-        componentProps: { controls: false, placeholder: '32' }
-      },
-      {
-        field: 'VectorSize',
-        label: 'Vector(Float16 TFLOPS)',
-        component: 'InputNumber' as const,
-        componentProps: { controls: false, placeholder: '16' }
-      }
-    ]
-  },
-  {
-    key: 'MemoryDetails',
-    title: 'Memory Details',
-    required: true,
-    fields: [
-      {
-        field: 'batchSize',
-        label: 'Batch Size',
-        component: 'InputNumber' as const,
-        componentProps: { controls: false, placeholder: '32' }
-      },
-      {
-        field: 'maxSequenceLength',
-        label: 'Max Sequence Length',
-        component: 'InputNumber' as const,
-        componentProps: { controls: false, placeholder: '2048' }
-      },
-      {
-        field: 'precision',
-        label: 'Precision',
-        component: 'Select' as const,
-        componentProps: { placeholder: 'Select Precision' },
-        options: [
-          { label: 'FP16', value: 'fp16' },
-          { label: 'FP32', value: 'fp32' },
-          { label: 'INT8', value: 'int8' }
-        ]
-      },
-      {
-        field: 'optimizationLevel',
-        label: 'Optimization Level',
-        component: 'Select' as const,
-        componentProps: { placeholder: 'Select Level' },
-        options: [
-          { label: 'O1', value: 'o1' },
-          { label: 'O2', value: 'o2' },
-          { label: 'O3', value: 'o3' }
-        ]
-      }
-    ]
-  }
-])
-
 // 根据当前步骤返回对应的表单配置
 const currentStepSections = computed(() => {
+  // 优先使用动态生成的配置
+  if (
+    active.value < dynamicFormSections.value.length &&
+    dynamicFormSections.value[active.value].length > 0
+  ) {
+    return dynamicFormSections.value[active.value]
+  }
+
+  // 如果动态配置不存在，回退到静态配置
   if (active.value < allFormSections.length) {
     return allFormSections[active.value]
   }
+
   return []
 })
 
@@ -1200,41 +964,52 @@ const onAttentionTypeChange = (attnType: string) => {
 }
 
 // GPU类型变化处理
-const onGpuTypeChange = (gpuType: string) => {
-  console.log('GPU type changed:', gpuType)
-  // 根据GPU类型设置推荐配置
-  switch (gpuType) {
-    case 'a100':
-      formData[active.value].memorySize = 80
-      formData[active.value].cpuCores = 32
-      break
-    case 'h100':
-      formData[active.value].memorySize = 80
-      formData[active.value].cpuCores = 48
-      break
-    case 'v100':
-      formData[active.value].memorySize = 32
-      formData[active.value].cpuCores = 16
-      break
-  }
-  emit('gpuTypeChange', gpuType)
-}
+// const onGpuTypeChange = (gpuType: string) => {
+//   console.log('GPU type changed:', gpuType)
+//   // 根据GPU类型设置推荐配置
+//   switch (gpuType) {
+//     case 'a100':
+//       formData[active.value].memorySize = 80
+//       formData[active.value].cpuCores = 32
+//       break
+//     case 'h100':
+//       formData[active.value].memorySize = 80
+//       formData[active.value].cpuCores = 48
+//       break
+//     case 'v100':
+//       formData[active.value].memorySize = 32
+//       formData[active.value].cpuCores = 16
+//       break
+//   }
+//   emit('gpuTypeChange', gpuType)
+// }
 
 // 表单验证规则
-const validationRules = {
-  0: ['modelSelection', 'structureType', 'attnType'], // Step 0 required fields
-  1: [], // Step 1 required fields
-  2: ['environment'] // Step 2 required fields
-}
+console.log(inferenceModelConfigStore.schemeConfigs, '| inferenceModelConfigStore.schemeConfigs')
+
+// const validationRules = {
+//   0: [
+//     'name',
+//     'structure_type',
+//     'hidden',
+//     'feedforward',
+//     'attn_heads',
+//     'attn_size',
+//     'attn_type',
+//     'num_blocks'
+//   ], // Step 0 required fields
+//   1: [], // Step 1 required fields
+//   2: ['environment'] // Step 2 required fields
+// }
 
 // 计算当前步骤是否可以继续
-const canProceed = computed(() => {
-  const requiredFields = validationRules[active.value] || []
-  return requiredFields.every((field) => {
-    const value = formData[active.value][field]
-    return value !== '' && value !== null && value !== undefined
-  })
-})
+// const canProceed = computed(() => {
+//   const requiredFields = validationRules[active.value] || []
+//   return requiredFields.every((field) => {
+//     const value = formData[active.value][field]
+//     return value !== '' && value !== null && value !== undefined
+//   })
+// })
 
 // 监听表单数据变化
 watch(
@@ -1254,42 +1029,49 @@ watch(active, (newStep, oldStep) => {
 })
 
 // 表单字段变化事件
-const onFieldChange = (field: string, value: any, oldValue: any) => {
-  console.log(`Field changed: ${field}`, { value, oldValue })
+// const onFieldChange = (field: string, value: any, oldValue: any) => {
+//   console.log(`Field changed: ${field}`, { value, oldValue })
 
-  // 特殊字段变化处理
-  if (field === 'modelSelection') {
-    onModelSelectionChange(value)
-  } else if (field === 'attnType') {
-    onAttentionTypeChange(value)
-  } else if (field === 'gpuType') {
-    onGpuTypeChange(value)
-  }
+//   // 特殊字段变化处理
+//   if (field === 'modelSelection') {
+//     onModelSelectionChange(value)
+//   } else if (field === 'attnType') {
+//     onAttentionTypeChange(value)
+//   } else if (field === 'gpuType') {
+//     onGpuTypeChange(value)
+//   }
 
-  // 清除该字段的验证错误
-  if (validationErrors.value[field]) {
-    delete validationErrors.value[field]
-  }
+//   // 清除该字段的验证错误
+//   if (validationErrors.value[field]) {
+//     delete validationErrors.value[field]
+//   }
 
-  // 触发自定义事件
-  emit('fieldChange', { field, value, oldValue })
-}
+//   // 触发自定义事件
+//   emit('fieldChange', { field, value, oldValue })
+// }
 
 // 区块切换事件
-const onSectionToggle = (sectionKey: string, visible: boolean) => {
-  console.log(`Section toggled: ${sectionKey}`, visible)
-  emit('sectionToggle', { sectionKey, visible })
-}
+// const onSectionToggle = (sectionKey: string, visible: boolean) => {
+//   console.log(`Section toggled: ${sectionKey}`, visible)
+//   emit('sectionToggle', { sectionKey, visible })
+// }
 
 // 验证状态变化事件
-const onValidationChange = (field: string, isValid: boolean, message?: string) => {
-  if (isValid) {
-    delete validationErrors.value[field]
-  } else {
-    validationErrors.value[field] = message || 'Validation failed'
-  }
-  emit('validationChange', { field, isValid, message })
-}
+// const onValidationChange = (field: string, isValid: boolean, message?: string) => {
+//   if (isValid) {
+//     delete validationErrors.value[field]
+//   } else {
+//     validationErrors.value[field] = message || 'Validation failed'
+//   }
+//   emit('validationChange', { field, isValid, message })
+// }
+
+// 模型选择变化处理
+// const onModelSelectionChange = (model: string) => {
+//   console.log('Model selection changed:', model)
+//   ElMessage.success(`Model ${model} selected with default configurations`)
+//   emit('modelChange', model)
+// }
 
 // 表单数据变化处理
 const onFormDataChange = (newData: any) => {
@@ -1307,30 +1089,6 @@ const onStepChange = (newStep: number, oldStep: number) => {
   }
 
   emit('stepChange', { newStep, oldStep })
-}
-
-// 模型选择变化处理
-const onModelSelectionChange = (model: string) => {
-  console.log('Model selection changed:', model)
-
-  // 根据模型选择设置默认值
-  switch (model) {
-    case 'llama_3_70b':
-      formData[active.value].attnHeads = 64
-      formData[active.value].hidden = 'hidden1'
-      break
-    case 'llama_3_8b':
-      formData[active.value].attnHeads = 32
-      formData[active.value].hidden = 'hidden2'
-      break
-    case 'gpt_4':
-      formData[active.value].attnHeads = 96
-      formData[active.value].hidden = 'hidden1'
-      break
-  }
-
-  ElMessage.success(`Model ${model} selected with default configurations`)
-  emit('modelChange', model)
 }
 
 // 验证指定步骤
@@ -1495,9 +1253,9 @@ defineExpose({
   }
 })
 
-const excuteFromData = () => {
-  console.log('获取填写完成的表单')
-}
+// const excuteFromData = () => {
+//   console.log('获取填写完成的表单')
+// }
 
 // 字段验证规则
 const getFieldRules = (field: FormField): FormRules[string] => {
@@ -1616,6 +1374,12 @@ const handleFieldUpdate = (field: string, value: any) => {
   }
 }
 
+// 搜索功能
+const handleSearch = (keyword: string) => {
+  // inferenceModelConfigStore.setFilter('name', keyword.trim() || null)
+  console.log(keyword, '| keyword')
+}
+
 // 高级配置切换
 const handleAdvancedConfigToggle = (value: boolean) => {
   showAdvancedConfig.value = value
@@ -1719,5 +1483,20 @@ const handleAdvancedConfigToggle = (value: boolean) => {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 120px;
+}
+
+.loading-placeholder {
+  padding: 20px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.empty-schema {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

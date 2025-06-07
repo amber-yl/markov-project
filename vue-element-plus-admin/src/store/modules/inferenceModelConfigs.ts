@@ -10,7 +10,6 @@ import {
 } from '@/api/request/inferenceModelConfigs'
 import type { inferenceModelConfigs, PaginationConfig, TableFilter } from '@/store/types'
 import { ElMessage } from 'element-plus'
-import { uiConfig } from '../config'
 
 interface InferenceModelConfigState {
   configs: inferenceModelConfigs[]
@@ -33,9 +32,7 @@ interface InferenceModelConfigState {
 export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs', {
   state: (): InferenceModelConfigState => ({
     configs: [],
-    schemeConfigs: {
-      uiConfig: uiConfig
-    },
+    schemeConfigs: {},
     loading: false,
     pagination: {
       currentPage: 1,

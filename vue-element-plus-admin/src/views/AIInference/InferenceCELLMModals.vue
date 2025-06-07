@@ -3,25 +3,13 @@
     <SimulationForm @cancel="handleCancel" @formSubmit="handleSubmit" />
   </section>
   <section v-else>
-    <TopToolbar
-      v-model="viewMode"
-      :models="models"
-      :modeName="modeName"
-      @create="createNewSimulation"
-      @change="handleModelChange"
-      @scopeChange="handleScopeChange"
-    />
+    <TopToolbar v-model="viewMode" :models="models" :modeName="modeName" @create="createNewSimulation"
+      @change="handleModelChange" @scopeChange="handleScopeChange" />
     <el-card
-      class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2"
-    >
+      class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--header-card-height)-var(--footer-card-height))] overflow-auto mt-2">
       <header class="flex justify-between mb-2">
         <section class="custom-left-box">
-          <el-button
-            v-if="isSelectionMode"
-            @click="jump2Comparison"
-            type="primary"
-            :disabled="isDisabled"
-          >
+          <el-button v-if="isSelectionMode" @click="jump2Comparison" type="primary" :disabled="isDisabled">
             <template #icon>
               <Icon :icon="'vi-ep:info-filled'" />
             </template>
@@ -37,50 +25,22 @@
         </section>
         <section class="flex gap-2">
           <section class="custom-tag-select">
-            <el-select
-              v-model="statusValue"
-              multiple
-              placeholder="筛选运行状态"
-              style="min-width: 200px; max-width: 400px"
-              collapse-tags
-              collapse-tags-tooltip
-              :max-collapse-tags="2"
-              clearable
-            >
-              <el-option
-                v-for="(status, index) in inferenceEvalStore.getTaskStatusList"
-                :key="index"
-                :label="status"
-                :value="status"
-              >
+            <el-select v-model="statusValue" multiple placeholder="筛选运行状态" style="min-width: 200px; max-width: 400px"
+              collapse-tags collapse-tags-tooltip :max-collapse-tags="2" clearable>
+              <el-option v-for="(status, index) in taskStatusList" :key="index" :label="status" :value="status">
                 <div class="flex items-center">
-                  <el-tag
-                    :type="getStatusTagType(status)"
-                    size="small"
-                    style="margin-right: 8px"
-                    effect="light"
-                  />
+                  <el-tag :type="getStatusTagType(status)" size="small" style="margin-right: 8px" effect="light" />
                   <span :class="getStatusTextClass(status)">{{ status }}</span>
                 </div>
               </el-option>
             </el-select>
           </section>
           <section class="custom-right-box relative">
-            <el-input
-              style="width: 240px"
-              placeholder="搜索模型名称..."
-              @input="(v: string) => onSearchInput(v)"
-              :model-value="title"
-              @focus="onSearchFocus"
-              @blur="onSearchBlur"
-              clearable
-              @clear="handleSearchClear"
-            >
+            <el-input style="width: 240px" placeholder="搜索模型名称..." @input="(v: string) => onSearchInput(v)"
+              :model-value="title" @focus="onSearchFocus" @blur="onSearchBlur" clearable @clear="handleSearchClear">
               <template #prefix>
-                <Icon
-                  :icon="searchLoading ? 'vi-ep:loading' : 'vi-ant-design:search-outlined'"
-                  :class="{ 'animate-spin': searchLoading }"
-                />
+                <Icon :icon="searchLoading ? 'vi-ep:loading' : 'vi-ant-design:search-outlined'"
+                  :class="{ 'animate-spin': searchLoading }" />
               </template>
             </el-input>
             <div v-show="isShow" class="custom-search-result">
@@ -90,13 +50,8 @@
               <div v-else-if="filterData.length === 0 && title" class="custom-search-empty">
                 <el-empty :image-size="60" description="未找到匹配的模型" />
               </div>
-              <el-card
-                v-else
-                v-for="(item, index) in filterData"
-                :key="index"
-                class="custom-search-item"
-                @click="changeModelName(item)"
-              >
+              <el-card v-else v-for="(item, index) in filterData" :key="index" class="custom-search-item"
+                @click="changeModelName(item)">
                 <div class="flex items-center justify-between">
                   <p class="model-name">{{ item }}</p>
                   <Icon :icon="'vi-ant-design:enter-outlined'" class="select-icon" />
@@ -107,41 +62,26 @@
         </section>
       </header>
       <el-skeleton v-if="viewMode === 'Grid'" :rows="5" :loading="loading" animated>
-        <CardView
-          :displayViewModeList="currentList"
-          :isSelectionMode="isSelectionMode"
-          @select="handleSelect"
-          @detail="handleDetail"
-          :isDisabled="isDisabled"
-        />
+        <CardView :displayViewModeList="currentList as Task[]" :isSelectionMode="isSelectionMode" @select="handleSelect"
+          @detail="handleDetail" :isDisabled="isDisabled" />
       </el-skeleton>
       <el-skeleton v-else :rows="5" :loading="loading" animated>
-        <table-view
-          :displayViewModeList="currentList"
-          :isSelectionMode="isSelectionMode"
-          @select="handleSelect"
-          @detail="handleDetail"
-        />
+        <table-view :displayViewModeList="currentList as Task[]" :isSelectionMode="isSelectionMode"
+          @select="handleSelect" @detail="handleDetail" />
       </el-skeleton>
       <footer class="flex justify-end mt-4">
-        <el-pagination
-          v-model:current-page="pagination.currentPage.value"
-          v-model:page-size="pagination.pageSize.value"
-          :page-sizes="[5, 10, 15, 20]"
-          :size="'small'"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="displayViewModeList.length"
-          @size-change="pagination.handleSizeChange"
-          @current-change="pagination.handleCurrentChange"
-        />
+        <el-pagination v-model:current-page="pagination.currentPage.value" v-model:page-size="pagination.pageSize.value"
+          :page-sizes="[5, 10, 15, 20]" :size="'small'" layout="total, sizes, prev, pager, next, jumper"
+          :total="displayViewModeList.length" @size-change="pagination.handleSizeChange"
+          @current-change="pagination.handleCurrentChange" />
       </footer>
     </el-card>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onBeforeMount, nextTick } from 'vue'
-import { useInferenceEvalStore } from '@/store/modules/inferenceModelConfigs'
+import { ref, computed, onMounted, watch, onBeforeMount } from 'vue'
+import { useInferenceModelConfigStore } from '@/store/modules/inferenceModelConfigs'
 import TopToolbar from './components/TopToolbar.vue'
 import CardView from './components/CardView.vue'
 import TableView from './components/TableView.vue'
@@ -165,7 +105,7 @@ interface Task {
 }
 
 const router = useRouter()
-const inferenceEvalStore = useInferenceEvalStore()
+const inferenceEvalStore = useInferenceModelConfigStore()
 const loading = ref(true)
 const viewMode = ref('Grid')
 const models = ref([{ model: 'Grid' }, { model: 'Table' }])
@@ -179,6 +119,63 @@ const centerDialogVisible = ref(false)
 const currentScope = ref('个人')
 const isDisabled = ref(false)
 
+// Mock数据和方法
+const allTasks = ref<Task[]>([
+  {
+    id: 1,
+    name: 'Test Task 1',
+    model: 'llama_3_70b',
+    status: 'running',
+    createTime: '2024-01-01 10:00:00',
+    creator: 'admin',
+    hardware: 'GPU A100',
+    deployment: 'Production'
+  },
+  {
+    id: 2,
+    name: 'Test Task 2',
+    model: 'gpt_4',
+    status: 'completed',
+    createTime: '2024-01-02 11:00:00',
+    creator: 'user1',
+    hardware: 'GPU H100',
+    deployment: 'Development'
+  },
+  {
+    id: 3,
+    name: 'Test Task 3',
+    model: 'llama_3_8b',
+    status: 'pending',
+    createTime: '2024-01-03 12:00:00',
+    creator: 'user2',
+    hardware: 'GPU V100',
+    deployment: 'Staging'
+  },
+  {
+    id: 4,
+    name: 'Test Task 4',
+    model: 'claude_3',
+    status: 'failed',
+    createTime: '2024-01-04 13:00:00',
+    creator: 'admin',
+    hardware: 'NPU',
+    deployment: 'Production'
+  }
+])
+
+const taskStatusList = ['running', 'pending', 'completed', 'failed', 'stopped']
+const modelNameList = ['llama_3_70b', 'llama_3_8b', 'gpt_4', 'claude_3']
+
+const fetchTasks = async () => {
+  try {
+    // 这里可以从 inferenceEvalStore 获取实际任务数据
+    // 目前使用mock数据，数据已经在上面初始化了
+    console.log('任务数据已加载:', allTasks.value)
+  } catch (error) {
+    console.error('获取任务列表失败:', error)
+  }
+}
+
 const handleModelChange = (model: string) => {
   viewMode.value = model
   isSelectionMode.value = false
@@ -186,14 +183,15 @@ const handleModelChange = (model: string) => {
 }
 
 const displayViewModeList = computed(() => {
-  // 先将allTasks转为unknown类型，再转为Task类型，确保类型安全
-  let filteredTasks = inferenceEvalStore.allTasks as unknown as Task[]
+  let filteredTasks = allTasks.value
+  console.log('allTasks.value:', allTasks.value)
 
   // 根据状态过滤
   if (statusValue.value.length > 0) {
     filteredTasks = filteredTasks.filter((task) =>
       statusValue.value.includes(task.status)
-    ) as Task[]
+    )
+    console.log('状态过滤后:', filteredTasks)
   }
 
   // 根据模型名称过滤
@@ -202,9 +200,11 @@ const displayViewModeList = computed(() => {
       (task) =>
         task.model.toLowerCase().includes(title.value.toLowerCase()) ||
         task.name.toLowerCase().includes(title.value.toLowerCase())
-    ) as Task[]
+    )
+    console.log('名称过滤后:', filteredTasks)
   }
-  console.log(filteredTasks, '| filteredTasks')
+
+  console.log('最终返回的任务列表:', filteredTasks)
   return filteredTasks
 })
 
@@ -218,19 +218,23 @@ watch(
 
 const isSelectionMode = ref(false)
 const createNewSimulation = () => {
+  console.log('创建新模型按钮被点击')
   centerDialogVisible.value = true
+  console.log('centerDialogVisible:', centerDialogVisible.value)
 }
 
 const handleCancel = () => {
   centerDialogVisible.value = false
 }
 
-const handleSubmit = async (formData: any, taskName: string) => {
+const handleSubmit = async (formData: any) => {
   try {
-    // await inferenceEvalStore.createTask(formData)
+    console.log('收到提交的表单数据:', formData)
+    // TODO: 这里可以处理表单提交逻辑
     centerDialogVisible.value = false
     ElMessage.success('任务创建成功')
-    // await fetchData()
+    // 刷新任务列表
+    await fetchTasks()
   } catch (error) {
     ElMessage.error('任务创建失败')
     console.error('Error creating task:', error)
@@ -277,12 +281,17 @@ const handleDetail = (task) => {
 }
 
 onMounted(async () => {
-  // await fetchData()
-  await inferenceEvalStore.fetchTasks()
+  await fetchTasks()
   loading.value = false
 })
 
+// 分页逻辑
 const { currentList, ...pagination } = usePagination(displayViewModeList.value)
+
+// 监听数据变化，更新分页
+watch(displayViewModeList, () => {
+  console.log('displayViewModeList 发生变化，当前数据:', displayViewModeList.value)
+}, { immediate: true, deep: true })
 
 const jump2Comparison = () => {
   router.push({
@@ -316,7 +325,7 @@ const filterData = computed(() => {
   if (!title.value) {
     return []
   }
-  const filtered = inferenceEvalStore.getModelNameList.filter((item) => {
+  const filtered = modelNameList.filter((item) => {
     return item.toLowerCase().includes(title.value.toLowerCase())
   })
   return filtered.slice(0, 10) // 限制显示条数，提升性能
@@ -481,12 +490,10 @@ const getStatusTextClass = (status: string) => {
 
   :deep(.el-skeleton) {
     .el-skeleton__item {
-      background: linear-gradient(
-        90deg,
-        var(--el-skeleton-color) 25%,
-        var(--el-skeleton-to-color) 37%,
-        var(--el-skeleton-color) 63%
-      );
+      background: linear-gradient(90deg,
+          var(--el-skeleton-color) 25%,
+          var(--el-skeleton-to-color) 37%,
+          var(--el-skeleton-color) 63%);
     }
   }
 }

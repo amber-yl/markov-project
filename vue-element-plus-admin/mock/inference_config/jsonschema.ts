@@ -3,6 +3,12 @@ export const enhancedInferenceModelConfigSchema = {
   type: 'object',
   title: 'InferenceModelConfigs',
   properties: {
+    name: {
+      description: '推理模型名称',
+      title: 'Name',
+      type: 'string',
+      examples: ['deepseeks']
+    },
     base_options: {
       description: '基础配置',
       title: 'Base Options',
@@ -309,7 +315,7 @@ export const enhancedInferenceModelConfigSchema = {
       description: 'MOE基础配置',
       default: null
     },
-    model_advance_options: {
+    advance_options: {
       anyOf: [
         {
           type: 'object',
@@ -384,18 +390,7 @@ export const enhancedInferenceModelConfigSchema = {
               default: true,
               title: 'Embedding Output Share',
               description: '是否共享Embedding输出'
-            }
-          }
-        }
-      ],
-      description: '模型高级配置',
-      default: null // 默认为null，表示可选，用户可以选择不设置该值，或者设置为null
-    },
-    advance_options: {
-      anyOf: [
-        {
-          type: 'object',
-          properties: {
+            },
             norm: {
               anyOf: [
                 {
@@ -427,17 +422,12 @@ export const enhancedInferenceModelConfigSchema = {
               title: 'Embedding Size',
               description: '词表大小'
             }
-          },
-          title: 'Advance Options',
-          description: '高级配置'
-        },
-        {
-          type: 'null'
+          }
         }
       ],
-      description: '高级配置',
+      description: '模型高级配置',
       default: null // 默认为null，表示可选，用户可以选择不设置该值，或者设置为null
     }
   },
-  required: ['base_options']
+  required: ['name', 'base_options']
 }
