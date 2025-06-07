@@ -11,6 +11,8 @@ import { setupStore } from '@/store'
 import { setupGlobCom } from '@/components'
 // 引入element-plus
 import { setupElementPlus } from '@/plugins/elementPlus'
+// 引入 @opentiny/vue 组件
+import { setupOpenTiny } from '@/plugins/openTiny'
 // 引入全局样式
 import '@/styles/index.less'
 // 引入动画
@@ -29,6 +31,7 @@ const setupAll = async () => {
   await setupI18n(app)
   setupStore(app)
   setupGlobCom(app)
+  setupOpenTiny(app)
   setupElementPlus(app)
   setupRouter(app)
   // setupPermission(app)

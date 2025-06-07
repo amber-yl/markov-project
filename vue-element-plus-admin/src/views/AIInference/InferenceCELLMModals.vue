@@ -168,9 +168,7 @@ const modelNameList = ['llama_3_70b', 'llama_3_8b', 'gpt_4', 'claude_3']
 
 const fetchTasks = async () => {
   try {
-    // 这里可以从 inferenceEvalStore 获取实际任务数据
-    // 目前使用mock数据，数据已经在上面初始化了
-    console.log('任务数据已加载:', allTasks.value)
+
   } catch (error) {
     console.error('获取任务列表失败:', error)
   }
@@ -184,14 +182,12 @@ const handleModelChange = (model: string) => {
 
 const displayViewModeList = computed(() => {
   let filteredTasks = allTasks.value
-  console.log('allTasks.value:', allTasks.value)
 
   // 根据状态过滤
   if (statusValue.value.length > 0) {
     filteredTasks = filteredTasks.filter((task) =>
       statusValue.value.includes(task.status)
     )
-    console.log('状态过滤后:', filteredTasks)
   }
 
   // 根据模型名称过滤
@@ -201,10 +197,7 @@ const displayViewModeList = computed(() => {
         task.model.toLowerCase().includes(title.value.toLowerCase()) ||
         task.name.toLowerCase().includes(title.value.toLowerCase())
     )
-    console.log('名称过滤后:', filteredTasks)
   }
-
-  console.log('最终返回的任务列表:', filteredTasks)
   return filteredTasks
 })
 
@@ -218,9 +211,7 @@ watch(
 
 const isSelectionMode = ref(false)
 const createNewSimulation = () => {
-  console.log('创建新模型按钮被点击')
   centerDialogVisible.value = true
-  console.log('centerDialogVisible:', centerDialogVisible.value)
 }
 
 const handleCancel = () => {
@@ -229,7 +220,6 @@ const handleCancel = () => {
 
 const handleSubmit = async (formData: any) => {
   try {
-    console.log('收到提交的表单数据:', formData)
     // TODO: 这里可以处理表单提交逻辑
     centerDialogVisible.value = false
     ElMessage.success('任务创建成功')

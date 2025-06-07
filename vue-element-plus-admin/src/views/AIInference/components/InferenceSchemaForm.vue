@@ -7,11 +7,8 @@
       type="success" :closable="false" show-icon />
   </div> -->
   <header>
-    <el-switch
-      :model-value="showAdvancedConfig"
-      @update:model-value="handleAdvancedConfigToggle"
-      :active-text="t('高级设置')"
-    />
+    <el-switch :model-value="showAdvancedConfig" @update:model-value="handleAdvancedConfigToggle"
+      :active-text="t('高级设置')" />
   </header>
   <div class="mt-2">
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="auto" :size="size">
@@ -26,29 +23,18 @@
           </el-divider>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-              <el-form-item
-                v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)"
-                :key="field.field"
-                :prop="field.field"
-                :label-position="'left'"
-              >
+              <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)" :key="field.field"
+                :prop="field.field" :label-position="'left'">
                 <template #label>
                   <div class="flex items-center">
                     <el-tooltip effect="dark" :content="field.description" placement="top">
-                      <Icon
-                        :icon="'vi-ant-design:question-circle-filled'"
-                        style="margin-right: 8px; flex-shrink: 0"
-                      />
+                      <Icon :icon="'vi-ant-design:question-circle-filled'" style="margin-right: 8px; flex-shrink: 0" />
                     </el-tooltip>
                     <span class="label-text">{{ field.label }}</span>
                   </div>
                 </template>
-                <el-input
-                  v-model="modelName"
-                  :placeholder="section.fields[0].description"
-                  clearable
-                  @input="handleSearch"
-                >
+                <el-input v-model="formData.name" :placeholder="section.fields[0].description" clearable
+                  @input="(value) => { handleFieldUpdate('name', value); handleSearch(value); }">
                   <template #prefix>
                     <Icon icon="vi-ep:search" />
                   </template>
@@ -66,83 +52,67 @@
           </el-divider>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-              <el-form-item
-                v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)"
-                :key="field.field"
-                :prop="field.field"
-                :label-position="'left'"
-              >
+              <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)" :key="field.field"
+                :prop="field.field" :label-position="'left'">
                 <template #label>
                   <div class="flex items-center">
                     <el-tooltip effect="dark" :content="field.description" placement="top">
-                      <Icon
-                        :icon="'vi-ant-design:question-circle-filled'"
-                        style="margin-right: 8px; flex-shrink: 0"
-                      />
+                      <Icon :icon="'vi-ant-design:question-circle-filled'" style="margin-right: 8px; flex-shrink: 0" />
                     </el-tooltip>
                     <span class="label-text">{{ field.label }}</span>
                   </div>
                 </template>
-                <FormFieldRenderer
-                  :field="{
-                    ...field,
-                    componentProps: {
-                      placeholder: field.description,
-                      disabled: formData.base_options?.structure_type !== 'moe'
-                    }
-                  }"
-                  :value="getFieldValue(field.field)"
-                  @update="(value) => handleFieldUpdate(field.field, value)"
-                  style="width: 300px"
-                  v-if="field.field === 'advance_options.hybrid_moe_blocks_num'"
-                />
-                <FormFieldRenderer
-                  :field="{ ...field, componentProps: { placeholder: field.description } }"
-                  :value="getFieldValue(field.field)"
-                  @update="(value) => handleFieldUpdate(field.field, value)"
-                  style="width: 300px"
-                  v-else
-                />
+                <FormFieldRenderer :field="{
+                  ...field,
+                  componentProps: {
+                    placeholder: field.description,
+                    disabled: formData.base_options?.structure_type !== 'moe'
+                  }
+                }" :value="getFieldValue(field.field)" @update="(value) => handleFieldUpdate(field.field, value)"
+                  style="width: 300px" v-if="field.field === 'advance_options.hybrid_moe_blocks_num'" />
+                <FormFieldRenderer :field="{
+                  ...field,
+                  componentProps: {
+                    placeholder: field.description,
+                    disabled: formData.base_options?.attn_type !== 'GQA'
+                  }
+                }" :value="getFieldValue(field.field)" @update="(value) => handleFieldUpdate(field.field, value)"
+                  style="width: 300px" v-else-if="field.field === 'base_options.num_query_groups'" />
+                <FormFieldRenderer :field="{ ...field, componentProps: { placeholder: field.description } }"
+                  :value="getFieldValue(field.field)" @update="(value) => handleFieldUpdate(field.field, value)"
+                  style="width: 300px" v-else />
               </el-form-item>
             </el-col>
             <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-              <el-form-item
-                v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)"
-                :key="field.field"
-                :prop="field.field"
-                :label-position="'left'"
-              >
+              <el-form-item v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)" :key="field.field"
+                :prop="field.field" :label-position="'left'">
                 <template #label>
                   <div class="flex items-center">
                     <el-tooltip effect="dark" :content="field.description" placement="top">
-                      <Icon
-                        :icon="'vi-ant-design:question-circle-filled'"
-                        style="margin-right: 8px; flex-shrink: 0"
-                      />
+                      <Icon :icon="'vi-ant-design:question-circle-filled'" style="margin-right: 8px; flex-shrink: 0" />
                     </el-tooltip>
                     <span class="label-text">{{ field.label }}</span>
                   </div>
                 </template>
-                <FormFieldRenderer
-                  :field="{
-                    ...field,
-                    componentProps: {
-                      placeholder: field.description,
-                      disabled: formData.base_options?.structure_type !== 'moe'
-                    }
-                  }"
-                  :value="getFieldValue(field.field)"
-                  @update="(value) => handleFieldUpdate(field.field, value)"
-                  style="width: 300px"
-                  v-if="field.field === 'advance_options.hybrid_moe_blocks_num'"
-                />
-                <FormFieldRenderer
-                  :field="{ ...field, componentProps: { placeholder: field.description } }"
-                  :value="getFieldValue(field.field)"
-                  @update="(value) => handleFieldUpdate(field.field, value)"
-                  style="width: 300px"
-                  v-else
-                />
+                <FormFieldRenderer :field="{
+                  ...field,
+                  componentProps: {
+                    placeholder: field.description,
+                    disabled: formData.base_options?.structure_type !== 'moe'
+                  }
+                }" :value="getFieldValue(field.field)" @update="(value) => handleFieldUpdate(field.field, value)"
+                  style="width: 300px" v-if="field.field === 'advance_options.hybrid_moe_blocks_num'" />
+                <FormFieldRenderer :field="{
+                  ...field,
+                  componentProps: {
+                    placeholder: field.description,
+                    disabled: formData.base_options?.attn_type !== 'GQA'
+                  }
+                }" :value="getFieldValue(field.field)" @update="(value) => handleFieldUpdate(field.field, value)"
+                  style="width: 300px" v-else-if="field.field === 'base_options.num_query_groups'" />
+                <FormFieldRenderer :field="{ ...field, componentProps: { placeholder: field.description } }"
+                  :value="getFieldValue(field.field)" @update="(value) => handleFieldUpdate(field.field, value)"
+                  style="width: 300px" v-else />
               </el-form-item>
             </el-col>
           </el-row>
@@ -153,9 +123,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, defineComponent, h, nextTick } from 'vue'
-import { ElSelect, ElInputNumber, ElSwitch, ElOption, ElForm, ElInput } from 'element-plus'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { ElForm } from 'element-plus'
+import FormFieldRenderer from './FormFieldRenderer.vue'
 
 const { t } = useI18n()
 interface Props {
@@ -179,7 +150,6 @@ const emit = defineEmits<{
 const formData = ref<any>({})
 const formRef = ref<InstanceType<typeof ElForm>>()
 const showAdvancedConfig = ref(false)
-const modelName = ref('')
 
 // 根据类型获取默认值
 const getDefaultValueByType = (type: string, property: any = {}) => {
@@ -748,92 +718,6 @@ const visibleSections = computed(() => {
   return sections
 })
 
-// 判断form表单渲染的组件
-const FormFieldRenderer = defineComponent({
-  name: 'FormFieldRenderer',
-  props: {
-    field: {
-      type: Object as () => FormField,
-      required: true
-    },
-    value: {
-      type: [String, Number, Boolean],
-      default: ''
-    }
-  },
-  emits: ['update'],
-  setup(props, { emit }) {
-    const handleUpdate = (value: any) => {
-      emit('update', value)
-    }
-    return () => {
-      const { field, value } = props
-      switch (field.component) {
-        case 'Select':
-          return h(
-            ElSelect,
-            {
-              modelValue: value || '',
-              'onUpdate:modelValue': handleUpdate,
-              clearable: true,
-              ...field.componentProps
-            },
-            {
-              default: () =>
-                field.options?.map((option) =>
-                  h(ElOption, {
-                    key: option.value,
-                    label: option.label,
-                    value: option.value
-                  })
-                )
-            }
-          )
-
-        case 'InputNumber':
-          const isInteger = field.dataType === 'integer'
-          return h(ElInputNumber, {
-            modelValue:
-              typeof value === 'number'
-                ? value
-                : value === '' || value === undefined || value === null
-                  ? undefined
-                  : Number(value) || undefined,
-            'onUpdate:modelValue': (newValue: number) => {
-              // 如果是整数类型，确保值为整数
-              if (isInteger && newValue !== null && newValue !== undefined) {
-                newValue = Math.round(newValue)
-              }
-              handleUpdate(newValue)
-            },
-            style: { width: '100%' },
-            min: field.min,
-            max: field.max,
-            controls: false,
-            step: isInteger ? 1 : 0.1,
-            precision: isInteger ? 0 : undefined,
-            ...field.componentProps
-          })
-
-        case 'Switch':
-          return h(ElSwitch, {
-            modelValue: value === true || value === 'true',
-            'onUpdate:modelValue': handleUpdate,
-            ...field.componentProps
-          })
-
-        case 'Input':
-        default:
-          return h(ElInput, {
-            modelValue: value !== null && value !== undefined ? String(value) : '',
-            'onUpdate:modelValue': handleUpdate,
-            ...field.componentProps
-          })
-      }
-    }
-  }
-})
-
 // 字段更新处理
 const handleFieldUpdate = (field: string, value: any) => {
   // 更新表单数据
@@ -853,13 +737,22 @@ const handleFieldUpdate = (field: string, value: any) => {
 
   // 触发验证
   nextTick(() => {
-    formRef.value?.validateField(field, () => {})
+    formRef.value?.validateField(field, () => { })
   })
 }
 
 // 注意力类型变化处理
 const onAttentionTypeChange = (attnType: string) => {
   console.log('Attention type changed:', attnType)
+
+  // 处理 num_query_groups 字段
+  if (attnType !== 'GQA') {
+    // 当注意力类型不是GQA时，清空num_query_groups
+    if (formData.value.base_options?.num_query_groups !== null) {
+      formData.value.base_options.num_query_groups = null
+    }
+  }
+
   // 当注意力类型改变时，重置相关配置
   if (attnType !== 'MLA') {
     // 清空MLA配置数据
@@ -1006,6 +899,7 @@ defineExpose({
     }
   }
 }
+
 .label-text {
   overflow: hidden;
   text-overflow: ellipsis;
