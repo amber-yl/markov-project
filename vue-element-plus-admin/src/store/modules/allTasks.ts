@@ -5,13 +5,23 @@ import {
   markov_sim_delete_configs_by_ids,
   markov_sim_get_all_configs,
   markov_sim_get_config_by_id,
-  markov_sim_get_create_model_schema,
   markov_sim_update_config
-} from '@/api/request/inferenceModelConfigs'
+} from '@/api/request/allTasks'
 import type { inferenceModelConfigs, PaginationConfig, TableFilter } from '@/store/types'
 import { ElMessage } from 'element-plus'
+interface Task {
+  id: number
+  name: string
+  model: string
+  status: string
+  createTime: string
+  updateTime?: string
+  creator?: string
+  hardware?: string
+  deployment?: string
+}
 interface InferenceModelConfigState {
-  configs: inferenceModelConfigs[]
+  tasksConfigs: Task[]
   loading: boolean
   pagination: PaginationConfig
   filters: TableFilter
@@ -28,9 +38,9 @@ interface InferenceModelConfigState {
   }
 }
 
-export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs', {
+export const useAllTasksStore = defineStore('allTasks', {
   state: (): InferenceModelConfigState => ({
-    configs: [],
+    tasksConfigs: [],
     schemeConfigs: {},
     loading: false,
     pagination: {
@@ -56,7 +66,7 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
     // 获取某列的所有唯一值
     getColumnValues: (state) => (prop: string) => {
       const values = new Set()
-      state.configs.forEach((config) => {
+      state.tasksConfigs.forEach((config) => {
         const value = getNestedValue(config, prop)
         if (value !== undefined && value !== null) {
           values.add(String(value))
@@ -98,7 +108,8 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
         }
         const { data } = await markov_sim_get_all_configs(params)
         const responseData = data
-        this.configs = responseData.items || []
+        console.log(responseData, '| responseData')
+        this.tasksConfigs = responseData.items || []
         this.serverPagination = {
           total: responseData.total || 0,
           page: responseData.page || 1,
@@ -111,24 +122,8 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
       } catch (error) {
         console.error('Failed to fetch configs:', error)
         ElMessage.error('获取配置列表失败')
-        this.configs = []
+        this.tasksConfigs = []
         this.serverPagination = { total: 0, page: 1, page_size: 10, total_pages: 0 }
-      } finally {
-        this.loading = false
-      }
-    },
-
-    // 获取Schema配置
-    async fetchSchemaConfigs() {
-      this.loading = true
-      try {
-        const { data } = await markov_sim_get_create_model_schema()
-        // data.schema 的代码正确，AI不要修改
-        this.schemeConfigs = Object.assign(this.schemeConfigs, data) || {}
-        console.log('获取到的Schema配置:', this.schemeConfigs)
-      } catch (error) {
-        console.error('Failed to fetch schema configs:', error)
-        ElMessage.error('获取Schema配置失败')
       } finally {
         this.loading = false
       }
@@ -292,7 +287,7 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
 
     // 重置状态
     resetState() {
-      this.configs = []
+      this.tasksConfigs = []
       this.filters = {}
       this.pagination.currentPage = 1
       this.selectedConfigs = []
@@ -307,5 +302,5 @@ function getNestedValue(obj: any, path: string): any {
 }
 
 export const useInferenceModelConfigStoreWithOut = () => {
-  return useInferenceModelConfigStore(store)
+  return useAllTasksStore(store)
 }

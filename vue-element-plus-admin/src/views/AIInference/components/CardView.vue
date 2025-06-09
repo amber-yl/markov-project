@@ -1,23 +1,40 @@
 <template>
   <div class="markov-cards-container grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
-    <el-card v-for="item in props.displayViewModeList" :key="item.id"
+    <el-card
+      v-for="item in props.displayViewModeList"
+      :key="item.id"
       v-memo="[item.id, item.status, selectedItems[item.id], hoveredId]"
       class="select-card relative transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-      style="max-width: 480px" @mouseenter="handleMouseEnter(item.id)" @mouseleave="handleMouseLeave"
-      @click="emit('detail', item)">
+      style="max-width: 480px"
+      @mouseenter="handleMouseEnter(item.id)"
+      @mouseleave="handleMouseLeave"
+      @click="emit('detail', item)"
+    >
       <div v-if="props.isSelectionMode" class="checkbox-wrapper absolute top-2 right-2 z-10">
-        <el-checkbox v-model="selectedItems[item.id]" class="!w-4 !h-4 border-2 border-blue-500 rounded" @click.stop
-          @change="() => handleSelect(item, selectedItems[item.id])" />
+        <el-checkbox
+          v-model="selectedItems[item.id]"
+          class="!w-4 !h-4 border-2 border-blue-500 rounded"
+          @click.stop
+          @change="() => handleSelect(item, selectedItems[item.id])"
+        />
       </div>
       <template #header>
         <div class="flex items-center justify-between">
-          <span :class="{
-            'text-blue-500 font-medium': hoveredId === item.id,
-            'text-gray-700': hoveredId !== item.id
-          }" class="transition-colors duration-200 truncate">
+          <span
+            :class="{
+              'text-blue-500 font-medium': hoveredId === item.id,
+              'text-gray-700': hoveredId !== item.id
+            }"
+            class="transition-colors duration-200 truncate"
+          >
             {{ item.model }}
           </span>
-          <el-tag :type="getStatusType(item.status)" size="small" effect="light" class="flex-shrink-0 ml-2">
+          <el-tag
+            :type="getStatusType(item.status)"
+            size="small"
+            effect="light"
+            class="flex-shrink-0 ml-2"
+          >
             {{ item.status }}
           </el-tag>
         </div>
@@ -35,10 +52,15 @@
       <template #footer>
         <section class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <Icon :icon="'vi-ant-design:check-circle-filled'" :color="item.status === 'running' ? '#10b981' : '#6b7280'"
-              class="transition-colors duration-200" />
-            <span :style="{ color: item.status === 'running' ? '#10b981' : '#6b7280' }"
-              class="text-sm font-medium transition-colors duration-200">
+            <Icon
+              :icon="'vi-ant-design:check-circle-filled'"
+              :color="item.status === 'running' ? '#10b981' : '#6b7280'"
+              class="transition-colors duration-200"
+            />
+            <span
+              :style="{ color: item.status === 'running' ? '#10b981' : '#6b7280' }"
+              class="text-sm font-medium transition-colors duration-200"
+            >
               {{ getStatusText(item.status) }}
             </span>
           </div>
@@ -48,13 +70,19 @@
           </div>
         </section>
       </template>
-      <footer class="absolute bottom-2 right-2 flex gap-2 transition-all duration-300 text-blue-500" :class="{
-        'opacity-0 transform translate-y-2': hoveredId !== item.id,
-        'opacity-100 transform translate-y-0': hoveredId === item.id
-      }">
+      <footer
+        class="absolute bottom-2 right-2 flex gap-2 transition-all duration-300 text-blue-500"
+        :class="{
+          'opacity-0 transform translate-y-2': hoveredId !== item.id,
+          'opacity-100 transform translate-y-0': hoveredId === item.id
+        }"
+      >
         <el-tooltip content="编辑任务" placement="top" :show-after="500">
-          <Icon :icon="'vi-ant-design:edit-outlined'" @click.stop="handleEditTask(item, $event)"
-            class="hover:text-blue-600 cursor-pointer transition-colors duration-200" />
+          <Icon
+            :icon="'vi-ant-design:edit-outlined'"
+            @click.stop="handleEditTask(item, $event)"
+            class="hover:text-blue-600 cursor-pointer transition-colors duration-200"
+          />
         </el-tooltip>
         <el-popover effect="light" placement="top" width="220" :show-after="300">
           <template #default>
@@ -66,21 +94,33 @@
             </div>
           </template>
           <template #reference>
-            <Icon :icon="'vi-ant-design:question-circle-outlined'" @click.stop
-              class="hover:text-blue-600 cursor-pointer transition-colors duration-200" />
+            <Icon
+              :icon="'vi-ant-design:question-circle-outlined'"
+              @click.stop
+              class="hover:text-blue-600 cursor-pointer transition-colors duration-200"
+            />
           </template>
         </el-popover>
         <el-tooltip content="删除任务" placement="top" :show-after="500">
-          <Icon :icon="'vi-ant-design:delete-outlined'" @click.stop="handleDeleteTask(item, $event)"
-            class="hover:text-red-500 cursor-pointer transition-colors duration-200" />
+          <Icon
+            :icon="'vi-ant-design:delete-outlined'"
+            @click.stop="handleDeleteTask(item, $event)"
+            class="hover:text-red-500 cursor-pointer transition-colors duration-200"
+          />
         </el-tooltip>
       </footer>
     </el-card>
   </div>
 
   <section>
-    <Dialog v-model="showEditDialog" title="Configuration Editor" align-center style="overflow: auto"
-      :maxHeight="screenHeight" @close="showEditDialog = false">
+    <Dialog
+      v-model="showEditDialog"
+      title="Configuration Editor"
+      align-center
+      style="overflow: auto"
+      :maxHeight="screenHeight"
+      @close="showEditDialog = false"
+    >
       <el-form ref="formRef" :model="formData[0]" label-width="150px" label-position="left">
         <div v-for="section in visibleSingleSections" :key="section.key" class="form-section">
           <el-divider content-position="left" class="section-title" :color="'red'">
@@ -91,18 +131,29 @@
           </el-divider>
           <el-row :gutter="20">
             <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
-              <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                :label-position="'left'" v-for="(field, index) in section.fields">
+              <el-form-item
+                :key="field.field"
+                :prop="field.field"
+                :rules="getFieldRules(field)"
+                :label-position="'left'"
+                v-for="(field, index) in section.fields"
+              >
                 <template #label>
                   <div class="flex items-center">
                     <el-tooltip effect="dark" :content="field.label" placement="top">
-                      <Icon :icon="'vi-ant-design:question-circle-filled'" style="margin-right: 8px; flex-shrink: 0" />
+                      <Icon
+                        :icon="'vi-ant-design:question-circle-filled'"
+                        style="margin-right: 8px; flex-shrink: 0"
+                      />
                     </el-tooltip>
                     <span class="label-text">{{ field.label }}</span>
                   </div>
                 </template>
-                <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                  @update="(value) => handleFieldUpdate(field.field, value)" />
+                <FormFieldRenderer
+                  :field="field"
+                  :value="formData[0][field.field]"
+                  @update="(value) => handleFieldUpdate(field.field, value)"
+                />
               </el-form-item>
             </el-col>
           </el-row>
@@ -117,37 +168,57 @@
           <el-row :gutter="20">
             <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
               <section v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 0)">
-                <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                  :label-position="'left'">
+                <el-form-item
+                  :key="field.field"
+                  :prop="field.field"
+                  :rules="getFieldRules(field)"
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="field"
+                    :value="formData[0][field.field]"
+                    @update="(value) => handleFieldUpdate(field.field, value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
               </section>
             </el-col>
             <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
               <section v-for="(field, index) in section.fields.filter((_, i) => i % 2 === 1)">
-                <el-form-item :key="field.field" :prop="field.field" :rules="getFieldRules(field)"
-                  :label-position="'left'">
+                <el-form-item
+                  :key="field.field"
+                  :prop="field.field"
+                  :rules="getFieldRules(field)"
+                  :label-position="'left'"
+                >
                   <template #label>
                     <div class="flex items-center">
                       <el-tooltip effect="dark" :content="field.label" placement="top">
-                        <Icon :icon="'vi-ant-design:question-circle-filled'"
-                          style="margin-right: 8px; flex-shrink: 0" />
+                        <Icon
+                          :icon="'vi-ant-design:question-circle-filled'"
+                          style="margin-right: 8px; flex-shrink: 0"
+                        />
                       </el-tooltip>
                       <span class="label-text">{{ field.label }}</span>
                     </div>
                   </template>
-                  <FormFieldRenderer :field="field" :value="formData[0][field.field]"
-                    @update="(value) => handleFieldUpdate(field.field, value)" style="width: 300px" />
+                  <FormFieldRenderer
+                    :field="field"
+                    :value="formData[0][field.field]"
+                    @update="(value) => handleFieldUpdate(field.field, value)"
+                    style="width: 300px"
+                  />
                 </el-form-item>
               </section>
             </el-col>
@@ -155,11 +226,15 @@
         </div>
       </el-form>
       <template #footer>
-        <el-button type="primary" @click="
-          () => {
-            console.log('submit')
-          }
-        ">Save</el-button>
+        <el-button
+          type="primary"
+          @click="
+            () => {
+              console.log('submit')
+            }
+          "
+          >Save</el-button
+        >
       </template>
     </Dialog>
   </section>
@@ -194,7 +269,7 @@ interface Task {
 }
 
 const props = defineProps<{
-  displayViewModeList: Task[]
+  displayViewModeList: any[]
   loading?: boolean
   isSelectionMode?: boolean
 }>()

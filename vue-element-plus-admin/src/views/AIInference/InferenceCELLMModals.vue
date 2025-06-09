@@ -80,7 +80,7 @@
       </header>
       <el-skeleton v-if="viewMode === 'Grid'" :rows="5" :loading="loading" animated>
         <CardView
-          :displayViewModeList="currentList as Task[]"
+          :displayViewModeList="allTasks"
           :isSelectionMode="isSelectionMode"
           @select="handleSelect"
           @detail="handleDetail"
@@ -89,7 +89,7 @@
       </el-skeleton>
       <el-skeleton v-else :rows="5" :loading="loading" animated>
         <table-view
-          :displayViewModeList="currentList as Task[]"
+          :displayViewModeList="allTasks"
           :isSelectionMode="isSelectionMode"
           @select="handleSelect"
           @detail="handleDetail"
@@ -97,14 +97,13 @@
       </el-skeleton>
       <footer class="flex justify-end mt-4">
         <el-pagination
-          v-model:current-page="pagination.currentPage.value"
-          v-model:page-size="pagination.pageSize.value"
-          :page-sizes="[5, 10, 15, 20]"
-          :size="'small'"
+          v-model:current-page="pagination.currentPage"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="pagination.pageSizes"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="displayViewModeList.length"
-          @size-change="pagination.handleSizeChange"
-          @current-change="pagination.handleCurrentChange"
+          :total="pagination.total"
+          @page-change="handleCurrentChange"
+          @size-change="handleSizeChange"
         />
       </footer>
     </el-card>
@@ -114,16 +113,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onBeforeMount } from 'vue'
 import { useInferenceModelConfigStore } from '@/store/modules/inferenceModelConfigs'
+import { useAllTasksStore } from '@/store/modules/allTasks'
 import TopToolbar from './components/TopToolbar.vue'
 import CardView from './components/CardView.vue'
 import TableView from './components/TableView.vue'
 import SimulationForm from './components/SimulationForm.vue'
 import { useRouter } from 'vue-router'
-import { usePagination } from '@/composables/usePagination'
 import { ElMessage } from 'element-plus'
 import { debounce } from 'lodash-es'
 import InputSearch from './components/InputSearch.vue'
-
 // Define Task interface
 interface Task {
   id: number
@@ -136,9 +134,9 @@ interface Task {
   hardware?: string
   deployment?: string
 }
-
 const router = useRouter()
-const inferenceEvalStore = useInferenceModelConfigStore()
+const inferenceModelConfigStore = useInferenceModelConfigStore()
+const allTasksStore = useAllTasksStore()
 const loading = ref(true)
 const viewMode = ref('Grid')
 const models = ref([{ model: 'Grid' }, { model: 'Table' }])
@@ -151,60 +149,21 @@ const modeName = ref('Inference')
 const centerDialogVisible = ref(false)
 const currentScope = ref('个人')
 const isDisabled = ref(false)
+const pagination = computed(() => allTasksStore.pagination)
 
-// Mock数据和方法
-const allTasks = ref<Task[]>([
-  {
-    id: 1,
-    name: 'Test Task 1',
-    model: 'llama_3_70b',
-    status: 'running',
-    createTime: '2024-01-01 10:00:00',
-    creator: 'admin',
-    hardware: 'GPU A100',
-    deployment: 'Production'
-  },
-  {
-    id: 2,
-    name: 'Test Task 2',
-    model: 'gpt_4',
-    status: 'completed',
-    createTime: '2024-01-02 11:00:00',
-    creator: 'user1',
-    hardware: 'GPU H100',
-    deployment: 'Development'
-  },
-  {
-    id: 3,
-    name: 'Test Task 3',
-    model: 'llama_3_8b',
-    status: 'pending',
-    createTime: '2024-01-03 12:00:00',
-    creator: 'user2',
-    hardware: 'GPU V100',
-    deployment: 'Staging'
-  },
-  {
-    id: 4,
-    name: 'Test Task 4',
-    model: 'claude_3',
-    status: 'failed',
-    createTime: '2024-01-04 13:00:00',
-    creator: 'admin',
-    hardware: 'NPU',
-    deployment: 'Production'
-  }
-])
+const handleCurrentChange = (page: number) => {
+  allTasksStore.setPagination({ currentPage: page })
+}
+const handleSizeChange = (size: number) => {
+  allTasksStore.setPagination({ pageSize: size, currentPage: 1 })
+}
+
+const allTasks = computed<any[]>(() => {
+  return allTasksStore.tasksConfigs
+})
 
 const taskStatusList = ['running', 'pending', 'completed', 'failed', 'stopped']
 const modelNameList = ['llama_3_70b', 'llama_3_8b', 'gpt_4', 'claude_3']
-
-const fetchTasks = async () => {
-  try {
-  } catch (error) {
-    console.error('获取任务列表失败:', error)
-  }
-}
 
 const handleModelChange = (model: string) => {
   viewMode.value = model
@@ -254,7 +213,7 @@ const handleSubmit = async (formData: any) => {
     centerDialogVisible.value = false
     ElMessage.success('任务创建成功')
     // 刷新任务列表
-    await fetchTasks()
+    await inferenceModelConfigStore.fetchConfigs()
   } catch (error) {
     ElMessage.error('任务创建失败')
     console.error('Error creating task:', error)
@@ -301,12 +260,9 @@ const handleDetail = (task) => {
 }
 
 onMounted(async () => {
-  await fetchTasks()
+  await allTasksStore.fetchConfigs()
   loading.value = false
 })
-
-// 分页逻辑
-const { currentList, ...pagination } = usePagination(displayViewModeList.value)
 
 // 监听数据变化，更新分页
 watch(

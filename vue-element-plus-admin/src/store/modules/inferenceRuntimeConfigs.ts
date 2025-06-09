@@ -10,8 +10,20 @@ import {
 } from '@/api/request/inferenceModelConfigs'
 import type { inferenceModelConfigs, PaginationConfig, TableFilter } from '@/store/types'
 import { ElMessage } from 'element-plus'
+interface Task {
+  id: number
+  name: string
+  model: string
+  status: string
+  createTime: string
+  updateTime?: string
+  creator?: string
+  hardware?: string
+  deployment?: string
+}
 interface InferenceModelConfigState {
   configs: inferenceModelConfigs[]
+  tasksConfigs: Task[]
   loading: boolean
   pagination: PaginationConfig
   filters: TableFilter
@@ -31,6 +43,7 @@ interface InferenceModelConfigState {
 export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs', {
   state: (): InferenceModelConfigState => ({
     configs: [],
+    tasksConfigs: [],
     schemeConfigs: {},
     loading: false,
     pagination: {
@@ -97,8 +110,86 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
           page_size: this.pagination.pageSize
         }
         const { data } = await markov_sim_get_all_configs(params)
-        const responseData = data
-        this.configs = responseData.items || []
+        const items = [
+          {
+            id: 1,
+            name: 'Test Task 1',
+            model: 'llama_3_70b',
+            status: 'running',
+            createTime: '2024-01-01 10:00:00',
+            creator: 'admin',
+            hardware: 'GPU A100',
+            deployment: 'Production'
+          },
+          {
+            id: 2,
+            name: 'Test Task 2',
+            model: 'gpt_4',
+            status: 'completed',
+            createTime: '2024-01-02 11:00:00',
+            creator: 'user1',
+            hardware: 'GPU H100',
+            deployment: 'Development'
+          },
+          {
+            id: 3,
+            name: 'Test Task 3',
+            model: 'llama_3_8b',
+            status: 'pending',
+            createTime: '2024-01-03 12:00:00',
+            creator: 'user2',
+            hardware: 'GPU V100',
+            deployment: 'Staging'
+          },
+          {
+            id: 4,
+            name: 'Test Task 4',
+            model: 'claude_3',
+            status: 'failed',
+            createTime: '2024-01-04 13:00:00',
+            creator: 'admin',
+            hardware: 'NPU',
+            deployment: 'Production'
+          },
+          {
+            id: 5,
+            name: 'Test Task 4',
+            model: 'claude_3',
+            status: 'failed',
+            createTime: '2024-01-04 13:00:00',
+            creator: 'admin',
+            hardware: 'NPU',
+            deployment: 'Production'
+          },
+          {
+            id: 6,
+            name: 'Test Task 4',
+            model: 'claude_3',
+            status: 'failed',
+            createTime: '2024-01-04 13:00:00',
+            creator: 'admin',
+            hardware: 'NPU',
+            deployment: 'Production'
+          },
+          {
+            id: 7,
+            name: 'Test Task 4',
+            model: 'claude_3',
+            status: 'failed',
+            createTime: '2024-01-04 13:00:00',
+            creator: 'admin',
+            hardware: 'NPU',
+            deployment: 'Production'
+          }
+        ]
+        const responseData = {
+          total: items.length,
+          page: 1,
+          page_size: 1,
+          total_pages: 1,
+          items
+        }
+        this.tasksConfigs = responseData.items || []
         this.serverPagination = {
           total: responseData.total || 0,
           page: responseData.page || 1,

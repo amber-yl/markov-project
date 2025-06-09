@@ -1,9 +1,26 @@
 <template>
-  <el-table :data="displayViewModeList" style="width: 100%" @select="handleSelect" @select-all="handleSelect"
-    @row-click="handleRowClick" @selection-change="handleSelectionChange" ref="tableRef" stripe highlight-current-row
-    :default-sort="{ prop: 'createTime', order: 'descending' }" class="modern-table">
+  <el-table
+    :data="displayViewModeList"
+    style="width: 100%"
+    @select="handleSelect"
+    @select-all="handleSelect"
+    @row-click="handleRowClick"
+    @selection-change="handleSelectionChange"
+    ref="tableRef"
+    stripe
+    highlight-current-row
+    :default-sort="{ prop: 'createTime', order: 'descending' }"
+    class="modern-table"
+  >
     <el-table-column v-if="props.isSelectionMode" type="selection" width="55" />
-    <el-table-column fixed prop="name" label="任务名称" min-width="150" sortable show-overflow-tooltip>
+    <el-table-column
+      fixed
+      prop="name"
+      label="任务名称"
+      min-width="150"
+      sortable
+      show-overflow-tooltip
+    >
       <template #default="scope">
         <div class="flex items-center gap-2">
           <Icon :icon="'vi-ant-design:project-outlined'" class="text-blue-500" />
@@ -22,7 +39,7 @@
       <template #default="scope">
         <section class="flex items-center gap-2">
           <el-tag :type="getStatusType(scope.row.status)" effect="light" size="small">
-            <Icon :icon="getStatusIcon(scope.row.status)" style="margin-right: 4px;" />
+            <Icon :icon="getStatusIcon(scope.row.status)" style="margin-right: 4px" />
             {{ getStatusText(scope.row.status) }}
           </el-tag>
         </section>
@@ -96,7 +113,7 @@ interface Task {
 }
 
 const props = defineProps<{
-  displayViewModeList?: Task[]
+  displayViewModeList?: any[]
   loading?: boolean
   isSelectionMode?: boolean
 }>()
@@ -108,33 +125,33 @@ const emit = defineEmits<{
 // Utility functions
 const getStatusType = (status: string): 'success' | 'warning' | 'info' | 'primary' | 'danger' => {
   const statusMap: Record<string, 'success' | 'warning' | 'info' | 'primary' | 'danger'> = {
-    'running': 'success',
-    'pending': 'warning',
-    'completed': 'info',
-    'failed': 'danger',
-    'stopped': 'info'
+    running: 'success',
+    pending: 'warning',
+    completed: 'info',
+    failed: 'danger',
+    stopped: 'info'
   }
   return statusMap[status] || 'primary'
 }
 
 const getStatusText = (status: string): string => {
   const textMap: Record<string, string> = {
-    'running': '运行中',
-    'pending': '等待中',
-    'completed': '已完成',
-    'failed': '失败',
-    'stopped': '已停止'
+    running: '运行中',
+    pending: '等待中',
+    completed: '已完成',
+    failed: '失败',
+    stopped: '已停止'
   }
   return textMap[status] || status
 }
 
 const getStatusIcon = (status: string): string => {
   const iconMap: Record<string, string> = {
-    'running': 'vi-ant-design:play-circle-filled',
-    'pending': 'vi-ant-design:clock-circle-filled',
-    'completed': 'vi-ant-design:check-circle-filled',
-    'failed': 'vi-ant-design:close-circle-filled',
-    'stopped': 'vi-ant-design:pause-circle-filled'
+    running: 'vi-ant-design:play-circle-filled',
+    pending: 'vi-ant-design:clock-circle-filled',
+    completed: 'vi-ant-design:check-circle-filled',
+    failed: 'vi-ant-design:close-circle-filled',
+    stopped: 'vi-ant-design:pause-circle-filled'
   }
   return iconMap[status] || 'vi-ant-design:question-circle-filled'
 }

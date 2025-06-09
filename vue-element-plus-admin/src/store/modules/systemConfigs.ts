@@ -146,6 +146,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
   actions: {
     // 获取配置列表（支持分页、筛选、排序）
     async fetchConfigs(resetPage = false) {
+      // filters = { value: '', fuzzy: false }
       this.loading = true
       try {
         if (resetPage) {
