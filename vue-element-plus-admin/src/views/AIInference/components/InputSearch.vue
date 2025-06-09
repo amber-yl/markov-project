@@ -41,6 +41,7 @@
 </template>
 
 <script lang="ts" setup>
+import { Skeleton } from '@opentiny/vue/pc'
 defineProps<{
   title: string
   searchLoading: boolean
