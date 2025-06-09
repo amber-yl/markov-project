@@ -97,12 +97,12 @@
       </el-skeleton>
       <footer class="flex justify-end mt-4">
         <el-pagination
-          v-model:current-page="pagination.currentPage"
-          v-model:page-size="pagination.pageSize"
+          v-model:current-page="localCurrentPage"
+          v-model:page-size="localPageSize"
           :page-sizes="pagination.pageSizes"
           layout="total, sizes, prev, pager, next, jumper"
           :total="pagination.total"
-          @page-change="handleCurrentChange"
+          @current-change="handleCurrentChange"
           @size-change="handleSizeChange"
         />
       </footer>
@@ -151,10 +151,15 @@ const currentScope = ref('个人')
 const isDisabled = ref(false)
 const pagination = computed(() => allTasksStore.pagination)
 
+const localCurrentPage = ref(pagination.value.currentPage)
+const localPageSize = ref(pagination.value.pageSize)
+
 const handleCurrentChange = (page: number) => {
+  console.log(page, '| page')
   allTasksStore.setPagination({ currentPage: page })
 }
 const handleSizeChange = (size: number) => {
+  console.log(size, '| size')
   allTasksStore.setPagination({ pageSize: size, currentPage: 1 })
 }
 

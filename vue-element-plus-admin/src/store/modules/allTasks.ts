@@ -45,7 +45,7 @@ export const useAllTasksStore = defineStore('allTasks', {
     loading: false,
     pagination: {
       currentPage: 1,
-      pageSize: 10,
+      pageSize: 5,
       total: 0,
       pageSizes: [5, 10, 20, 30, 40, 50]
     },
