@@ -1,45 +1,16 @@
 <template>
-  <el-card
-    class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]"
-  >
+  <el-card class="!min-h-[calc(100vh-var(--top-tool-height)-var(--tags-view-height)-var(--app-footer-height))]">
     <!-- Schema驱动的数据表格 -->
-    <schema-table
-      :schema="configSchema"
-      :data="configs"
-      :loading="loading"
-      :height="tableHeight"
-      :current-page="pagination.currentPage"
-      :page-size="pagination.pageSize"
-      :total="pagination.total"
-      :page-sizes="pagination.pageSizes"
-      create-button-text="创建新配置"
-      search-placeholder="搜索配置名称..."
-      @create="handleCreate"
-      @edit="handleEdit"
-      @clone="handleClone"
-      @delete="handleDelete"
-      @batch-delete="handleBatchDeleteFromTable"
-      @search="handleSearch"
-      @filter-change="handleFilterChange"
-      @page-change="handleCurrentChange"
-      @size-change="handleSizeChange"
-      @selection-change="handleSelectionChange"
-    />
+    <schema-table :schema="configSchema" :data="configs" :loading="loading" :height="tableHeight"
+      :current-page="pagination.currentPage" :page-size="pagination.pageSize" :total="pagination.total"
+      :page-sizes="pagination.pageSizes" create-button-text="创建新配置" search-placeholder="搜索配置名称..."
+      @create="handleCreate" @edit="handleEdit" @clone="handleClone" @delete="handleDelete"
+      @batch-delete="handleBatchDeleteFromTable" @search="handleSearch" @filter-change="handleFilterChange"
+      @page-change="handleCurrentChange" @size-change="handleSizeChange" @selection-change="handleSelectionChange" />
 
     <!-- Schema驱动的表单对话框 -->
-    <Dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="60%"
-      align-center
-      @close="handleDialogClose"
-    >
-      <schema-form
-        ref="schemaFormRef"
-        :schema="configSchema"
-        v-model="formData"
-        @validate="handleFormValidate"
-      />
+    <Dialog v-model="dialogVisible" :title="dialogTitle" width="60%" align-center @close="handleDialogClose">
+      <schema-form ref="schemaFormRef" :schema="configSchema" v-model="formData" @validate="handleFormValidate" />
       <template #footer>
         <el-button @click="handleDialogClose">取消</el-button>
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">
@@ -56,7 +27,7 @@ import { useSystemConfigStore } from '@/store/modules/systemConfigs'
 import { Dialog } from '@/components/Dialog'
 import SchemaTable from '@/components/SchemaTable/index.vue'
 import SchemaForm from '@/components/SchemaForm/index.vue'
-import type { SystemConfig } from '@/store/types'
+import type { SystemConfig } from '@/types/system_config'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // Table表格的高度
@@ -253,5 +224,4 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="less" scoped>
-// Schema组件自带样式，这里可以保持简洁
-</style>
+// Schema组件自带样式，这里可以保持简洁</style>

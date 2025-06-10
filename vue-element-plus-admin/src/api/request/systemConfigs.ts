@@ -1,6 +1,6 @@
 import request from '@/axios'
 import { RequestResponse } from './types'
-import type { SystemConfig } from '@/store/types'
+import type { SystemConfig } from '@/types/system_config'
 
 // API响应数据类型
 interface ListResponse {

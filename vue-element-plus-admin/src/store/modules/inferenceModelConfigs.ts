@@ -8,10 +8,11 @@ import {
   markov_sim_get_create_model_schema,
   markov_sim_update_config
 } from '@/api/request/inferenceModelConfigs'
-import type { inferenceModelConfigs, PaginationConfig, TableFilter } from '@/store/types'
+import type { PaginationConfig, TableFilter } from '@/types/system_config'
+import type { InferenceModelConfigs } from '@/types/inference_model_config'
 import { ElMessage } from 'element-plus'
 interface InferenceModelConfigState {
-  configs: inferenceModelConfigs[]
+  configs: InferenceModelConfigs[]
   loading: boolean
   pagination: PaginationConfig
   filters: TableFilter
@@ -136,7 +137,7 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
 
     // 创建配置
     async createConfig(
-      configData: Omit<inferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
+      configData: Omit<InferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
     ) {
       this.loading = true
       try {
@@ -161,11 +162,11 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
     // 更新配置
     async updateConfig(
       id: string,
-      configData: Omit<inferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
+      configData: Omit<InferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
     ) {
       this.loading = true
       try {
-        const updateData = { ...configData, id } as inferenceModelConfigs
+        const updateData = { ...configData, id } as InferenceModelConfigs
         const { data } = await markov_sim_update_config(updateData)
 
         if (data) {
@@ -186,7 +187,7 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
     },
 
     // 获取配置详情
-    async getConfigDetail(id: string): Promise<inferenceModelConfigs> {
+    async getConfigDetail(id: string): Promise<InferenceModelConfigs> {
       this.loading = true
       try {
         const { data } = await markov_sim_get_config_by_id(id)

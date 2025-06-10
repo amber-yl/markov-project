@@ -9,7 +9,7 @@ import {
   markov_sim_get_create_model_schema,
   markov_sim_get_config_stats
 } from '@/api/request/systemConfigs'
-import type { SystemConfig, TableColumn, TableFilter, PaginationConfig } from '@/store/types'
+import type { SystemConfig, TableColumn, TableFilter, PaginationConfig } from '@/types/system_config'
 import { ElMessage } from 'element-plus'
 import { uiConfig } from '../config'
 

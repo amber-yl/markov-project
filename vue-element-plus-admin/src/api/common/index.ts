@@ -5,7 +5,7 @@ import type {
   ConfigFormData,
   ModelComparison,
   ListResponse
-} from '@/store/types'
+} from '@/types/system_config'
 
 // 任务相关API
 export const taskApi = {

@@ -2,58 +2,188 @@ import Mock from 'mockjs'
 import { SUCCESS_CODE } from '@/constants'
 import { toAnyString } from '@/utils'
 import { enhancedInferenceModelConfigSchema } from './jsonschema'
+enum Type {
+  pdSplit = 'pd-split',
+  pdFusion = 'pd-fusion'
+}
+
+interface InferenceRuntimeConfigCreate {
+  id?: string;
+  /** 推理运行时名称 */
+  name: string;
+
+  /** 运行时类型 */
+  type: Type;
+
+  /** 运行时参数 */
+  runtime_details: RuntimeDetails;
+}
+
+export interface RuntimeDetails {
+  /** 指定 model config 文件，可设置多个 */
+  model_list: string[];
+
+  /** 负载输入输出长度，可设置多个 */
+  sequence_length_list: SequenceLength[];
+
+  /** 总卡数，PD分离时为P卡+D卡 */
+  num_procs_list: number[];
+
+  /** 依次为[weight_quant, activation_quant, cache_quant, communication_quant] */
+  wac_bytes_list: WacBytes[];
+
+  /** 依次为[matrix_flops_type, attn_flops_type, vector_flops_type] */
+  flops_type_list: FlopsType[];
+
+  /** TTFT和TPOT约束，单位ms，无约束时可配置[null, null] */
+  time_limit_list: TimeLimit[];
+
+  /** 芯片配置，PD分离时需分别配置P芯片和D芯片，PD融合时仅配置一个芯片 */
+  sys_list: string[];
+
+  /** 当PD分离的时候，可指定P/D各自的数目；缺省None，自动寻优最佳PD配置 */
+  pd_num_procs_list?: (PdNumProcs | null)[] | null;
+
+  /** 指定P阶段的运行时策略[DP,PP,TP]，当前pp未实现，默认1；MoE模型为Attn部分运行时策略 */
+  p_parallel_config?: (PParallelConfig | null)[] | null;
+
+  /** 指定D阶段的运行时策略[DP,PP,TP]，当前pp未实现，默认1；MoE模型为Attn部分运行时策略 */
+  d_parallel_config?: DParallelConfig[] | null; // 注意：原结构中d_parallel_config的anyOf包含null，但required中无，故用可选
+
+  /** 仅MoE模型生效，指定P阶段的MoE运行时策略[EP, Moe_TP, Moe_DP] */
+  p_moe_parallel_config?: (PMoeParallelConfig | null)[] | null;
+
+  /** 仅MoE模型生效，指定D阶段的MoE运行时策略[EP, Moe_TP, Moe_DP] */
+  d_moe_parallel_config?: DMoEParallelConfig[] | null; // 注意：原结构中d_moe_parallel_config的anyOf包含null，但required中无，故用可选
+
+  /** P阶段batch_size设置[global_bs, num_bs, bs],建议默认[1,1,1]节省寻优时间 */
+  p_micro_batch_size?: (PMicroBatchSize | null)[] | null;
+
+  /** D阶段batch_size设置[global_bs, num_bs, bs],建议默认[32,1,32] */
+  d_micro_batch_size?: (DMicroBatchSize | null)[] | null;
+
+  /** 仅MoE模型decode生效，D阶段基于卡数寻优不同冗余专家个数时的运行时策略 */
+  num_redundant_expert_config?: number[] | number | null;
+
+  /** 仅MOE模型decode生效，指定True时，考虑decode阶段每卡运行时1个共享专家 */
+  deploy_shared_expert_config?: boolean | null;
+
+  /** 序列长度 */
+  seq_size?: number | null;
+
+  /** 输出序列长度 */
+  output_seq?: number | null;
+
+  /** 吸收启动 */
+  absorb_enabled?: boolean | null;
+
+  /** 共享专家数量 */
+  num_shared_experts?: number | null;
+
+  /** 冗余专家数量 */
+  num_redundant_experts?: number | null;
+
+  /** 是否使用冗余专家（原注释可能有误，应为是否使用Flash Attention） */
+  use_flash_attn?: boolean | null;
+}
+
+interface SequenceLength {
+  /** 输入长度 */
+  input_seq_length: number;
+  /** 输出长度 */
+  output_seq_length: number;
+}
+
+interface WacBytes {
+  /** 权重精度 */
+  weight_quant: number;
+  /** 激活精度 */
+  activation_quant: number;
+  /** 缓存精度 */
+  cache_quant: number;
+  /** 通信精度 */
+  communication_quant: number;
+}
+
+interface FlopsType {
+  /** 矩阵运算精度 */
+  matrix_flops_type: number;
+  /** 注意力运算精度 */
+  attn_flops_type: number;
+  /** 向量运算精度 */
+  vector_flops_type: number;
+}
+
+interface TimeLimit {
+  /** TTFT约束 */
+  TTFT: number | null;
+  /** TPOT约束 */
+  TPOT: number | null;
+}
+
+interface PdNumProcs {
+  /** P卡数目 */
+  p_num_procs: number;
+  /** D卡数目 */
+  d_num_procs: number;
+}
+
+interface PParallelConfig {
+  /** P阶段DP策略 */
+  DP: number;
+  /** P阶段PP策略 */
+  PP: number;
+  /** P阶段TP策略 */
+  TP: number;
+}
+
+interface DParallelConfig {
+  /** D阶段DP策略 */
+  DP: number;
+  /** D阶段PP策略 */
+  PP: number;
+  /** D阶段TP策略 */
+  TP: number;
+}
+
+interface PMoeParallelConfig {
+  /** P阶段EP策略 */
+  EP: number;
+  /** P阶段Moe_TP策略 */
+  Moe_TP: number;
+  /** P阶段Moe_DP策略 */
+  Moe_DP: number;
+}
+
+interface DMoEParallelConfig {
+  /** D阶段EP策略 */
+  EP: number;
+  /** D阶段Moe_TP策略 */
+  Moe_TP: number;
+  /** D阶段Moe_DP策略 */
+  Moe_DP: number;
+}
+
+interface PMicroBatchSize {
+  /** 全局batch_size */
+  global_bs: number;
+  /** num_bs */
+  num_bs: number;
+  /** bs */
+  bs: number;
+}
+
+interface DMicroBatchSize {
+  /** 全局batch_size */
+  global_bs: number;
+  /** num_bs */
+  num_bs: number;
+  /** bs */
+  bs: number;
+}
 
 const timeout = 1000
 const count = 100
-
-enum Type {
-  npu = 'npu',
-  gpu = 'gpu'
-}
-
-enum ProcessingMode {
-  roofline = 'roofline',
-  noOverlap = 'no_overlap'
-}
-
-interface ListProps {
-  id?: string
-  created_at: string
-  updated_at: string
-  name: string // 硬件名称
-  type: Type // 硬件类型
-  matrix: {
-    float16: {
-      tflops: number
-      calibration_coefficient: number
-    }
-  }
-  vector: {
-    float16: {
-      tflops: number
-      calibration_coefficient: number
-    }
-  }
-  mem1: {
-    GiB: number
-    GBps: number
-    cube_calibration_coefficient: number
-    vector_calibration_coefficient: number
-  }
-  mem2: {
-    GiB: number
-    GBps: number
-    cube_calibration_coefficient?: number
-    vector_calibration_coefficient?: number
-  }
-  processing_mode: ProcessingMode
-  networks: {
-    bandWidth: number
-    efficiency: number
-    size: number
-    latency: number
-  }[]
-}
 
 // 真实的硬件名称数据
 const GPU_NAMES = [
@@ -101,100 +231,32 @@ const NPU_NAMES = [
 ]
 
 // 生成更真实的硬件配置数据
-const generateHardwareConfig = (type: Type): Partial<ListProps> => {
-  const names = type === Type.gpu ? GPU_NAMES : NPU_NAMES
+const generateHardwareConfig = (type: Type): Partial<InferenceRuntimeConfigCreate> => {
+  const names = type === Type.pdFusion ? GPU_NAMES : NPU_NAMES
   const name = Mock.Random.pick(names)
 
-  if (type === Type.gpu) {
+  if (type === Type.pdFusion) {
     // GPU配置参数范围
     return {
       name,
       type,
-      matrix: {
-        float16: {
-          tflops: Mock.Random.integer(50, 320), // GPU Matrix性能范围
-          calibration_coefficient: Mock.Random.float(0.6, 0.95, 2, 2)
-        }
-      },
-      vector: {
-        float16: {
-          tflops: Mock.Random.integer(20, 160), // GPU Vector性能范围
-          calibration_coefficient: Mock.Random.float(0.7, 0.9, 2, 2)
-        }
-      },
-      mem1: {
-        GiB: Mock.Random.pick([8, 12, 16, 24, 32, 48, 64, 80, 128]), // 常见GPU显存配置
-        GBps: Mock.Random.integer(400, 2000), // GPU显存带宽
-        cube_calibration_coefficient: Mock.Random.float(0.5, 0.8, 2, 2),
-        vector_calibration_coefficient: Mock.Random.float(0.3, 0.7, 2, 2)
-      },
-      mem2: {
-        GiB: Mock.Random.pick([16, 32, 64, 128, 256, 512]), // 系统内存
-        GBps: Mock.Random.integer(50, 200) // 系统内存带宽
-      },
-      processing_mode: Mock.Random.pick([ProcessingMode.roofline, ProcessingMode.noOverlap]),
-      networks: Mock.Random.pick([
-        [{ bandWidth: 100, efficiency: 0.8, size: 1, latency: 0.001 }], // 单卡
-        [{ bandWidth: 400, efficiency: 0.85, size: 2, latency: 0.002 }], // 双卡
-        [{ bandWidth: 600, efficiency: 0.9, size: 4, latency: 0.003 }], // 四卡
-        [{ bandWidth: 800, efficiency: 0.92, size: 8, latency: 0.005 }] // 八卡
-      ])
+
     }
   } else {
     // NPU配置参数范围
     return {
       name,
       type,
-      matrix: {
-        float16: {
-          tflops: Mock.Random.integer(64, 512), // NPU Matrix性能通常更高
-          calibration_coefficient: Mock.Random.float(0.7, 0.95, 2, 2)
-        }
-      },
-      vector: {
-        float16: {
-          tflops: Mock.Random.integer(32, 256), // NPU Vector性能
-          calibration_coefficient: Mock.Random.float(0.75, 0.92, 2, 2)
-        }
-      },
-      mem1: {
-        GiB: Mock.Random.pick([32, 64, 128, 256, 512]), // NPU显存配置
-        GBps: Mock.Random.integer(900, 3000), // NPU显存带宽通常更高
-        cube_calibration_coefficient: Mock.Random.float(0.6, 0.85, 2, 2),
-        vector_calibration_coefficient: Mock.Random.float(0.4, 0.75, 2, 2)
-      },
-      mem2: {
-        GiB: Mock.Random.pick([64, 128, 256, 512, 1024]), // NPU系统内存
-        GBps: Mock.Random.integer(100, 400)
-      },
-      processing_mode: Mock.Random.pick([ProcessingMode.roofline, ProcessingMode.noOverlap]),
-      networks: Mock.Random.pick([
-        [
-          { bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 },
-          { bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }
-        ],
-        [
-          { bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 },
-          { bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }
-        ],
-        [
-          { bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 },
-          { bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }
-        ],
-        [
-          { bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 },
-          { bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 }
-        ]
-      ])
+
     }
   }
 }
 
-let List: ListProps[] = []
+let List: InferenceRuntimeConfigCreate[] = []
 
 // 生成更真实的mock数据
 for (let i = 0; i < count; i++) {
-  const type = Mock.Random.pick([Type.npu, Type.gpu])
+  const type = Mock.Random.pick([Type.pdFusion, Type.pdSplit])
   const config = generateHardwareConfig(type)
   const now = new Date()
   const createdAt = new Date(now.getTime() - Mock.Random.integer(0, 365 * 24 * 60 * 60 * 1000))
@@ -207,11 +269,11 @@ for (let i = 0; i < count; i++) {
     created_at: createdAt.toISOString(),
     updated_at: updatedAt.toISOString(),
     ...config
-  } as ListProps)
+  } as InferenceRuntimeConfigCreate)
 }
 
 // 工具函数：处理分页
-const paginate = (data: ListProps[], page: number, perPage: number) => {
+const paginate = (data: InferenceRuntimeConfigCreate[], page: number, perPage: number) => {
   const start = (page - 1) * perPage
   const end = start + perPage
   return {
@@ -224,7 +286,7 @@ const paginate = (data: ListProps[], page: number, perPage: number) => {
 }
 
 // 工具函数：处理筛选
-const filterData = (data: ListProps[], filters: any) => {
+const filterData = (data: InferenceRuntimeConfigCreate[], filters: any) => {
   console.log('Mock API - 接收到的筛选条件:', filters)
 
   if (!filters) return data
@@ -233,7 +295,7 @@ const filterData = (data: ListProps[], filters: any) => {
     for (const [key, value] of Object.entries(filters)) {
       if (value === null || value === undefined || value === '') continue
 
-      console.log(`筛选字段 ${key}, 筛选值:`, value, '数据项值:', item[key as keyof ListProps])
+      console.log(`筛选字段 ${key}, 筛选值:`, value, '数据项值:', item[key as keyof InferenceRuntimeConfigCreate])
 
       if (key === 'name') {
         if (typeof value === 'string') {
@@ -247,12 +309,6 @@ const filterData = (data: ListProps[], filters: any) => {
         } else if (Array.isArray(value)) {
           if (!value.includes(item.type)) return false
         }
-      } else if (key === 'processing_mode') {
-        if (typeof value === 'string') {
-          if (value !== item.processing_mode) return false
-        } else if (Array.isArray(value)) {
-          if (!value.includes(item.processing_mode)) return false
-        }
       }
     }
     return true
@@ -260,7 +316,7 @@ const filterData = (data: ListProps[], filters: any) => {
 }
 
 // 工具函数：处理排序
-const sortData = (data: ListProps[], orderBys: string[]) => {
+const sortData = (data: InferenceRuntimeConfigCreate[], orderBys: string[]) => {
   if (!orderBys || orderBys.length === 0) return data
 
   return data.sort((a, b) => {
@@ -268,8 +324,8 @@ const sortData = (data: ListProps[], orderBys: string[]) => {
       const isDesc = orderBy.startsWith('-')
       const field = isDesc ? orderBy.slice(1) : orderBy
 
-      let aVal: any = a[field as keyof ListProps]
-      let bVal: any = b[field as keyof ListProps]
+      let aVal: any = a[field as keyof InferenceRuntimeConfigCreate]
+      let bVal: any = b[field as keyof InferenceRuntimeConfigCreate]
 
       // 处理日期字段
       if (field === 'created_at' || field === 'updated_at') {
@@ -285,7 +341,7 @@ const sortData = (data: ListProps[], orderBys: string[]) => {
 }
 
 // 工具函数：查找单项数据
-const findById = (id: string): ListProps | undefined => {
+const findById = (id: string): InferenceRuntimeConfigCreate | undefined => {
   return List.find((item) => item.id === id)
 }
 
@@ -297,26 +353,23 @@ const deleteByIds = (ids: string[]): boolean => {
 }
 
 // 工具函数：更新数据
-const updateItem = (id: string, updateData: Partial<ListProps>): ListProps | null => {
+const updateItem = (id: string, updateData: Partial<InferenceRuntimeConfigCreate>): InferenceRuntimeConfigCreate | null => {
   const index = List.findIndex((item) => item.id === id)
   if (index === -1) return null
 
   List[index] = {
     ...List[index],
     ...updateData,
-    id,
-    updated_at: new Date().toISOString()
+    id
   }
   return List[index]
 }
 
 // 工具函数：创建数据
-const createItem = (data: Omit<ListProps, 'id' | 'created_at' | 'updated_at'>): ListProps => {
-  const newItem: ListProps = {
+const createItem = (data: Omit<InferenceRuntimeConfigCreate, 'id' | 'created_at' | 'updated_at'>): InferenceRuntimeConfigCreate => {
+  const newItem: InferenceRuntimeConfigCreate = {
     ...data,
-    id: toAnyString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    id: toAnyString()
   }
   List.push(newItem)
   return newItem
@@ -342,7 +395,7 @@ export default [
     url: '/markov_sim/api/v1/runtime_config/create',
     method: 'post',
     timeout,
-    response: ({ body }: { body: Omit<ListProps, 'id' | 'created_at' | 'updated_at'> }) => {
+    response: ({ body }: { body: Omit<InferenceRuntimeConfigCreate, 'id' | 'created_at' | 'updated_at'> }) => {
       try {
         // 验证必填字段
         if (!body.name || !body.type) {
@@ -381,7 +434,7 @@ export default [
     url: '/markov_sim/api/v1/runtime_config/update',
     method: 'put',
     timeout,
-    response: ({ body }: { body: ListProps }) => {
+    response: ({ body }: { body: InferenceRuntimeConfigCreate }) => {
       try {
         if (!body.id) {
           return {

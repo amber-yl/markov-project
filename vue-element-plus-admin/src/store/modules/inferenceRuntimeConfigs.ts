@@ -7,23 +7,13 @@ import {
   markov_sim_get_config_by_id,
   markov_sim_get_create_model_schema,
   markov_sim_update_config
-} from '@/api/request/inferenceModelConfigs'
-import type { inferenceModelConfigs, PaginationConfig, TableFilter } from '@/store/types'
+} from '@/api/request/inferenceRunTimeConfigs'
+import type { PaginationConfig, TableFilter } from '@/types/system_config'
+import type { InferenceRuntimeConfigCreate } from '@/types/runtime_config'
 import { ElMessage } from 'element-plus'
-interface Task {
-  id: number
-  name: string
-  model: string
-  status: string
-  createTime: string
-  updateTime?: string
-  creator?: string
-  hardware?: string
-  deployment?: string
-}
+
 interface InferenceModelConfigState {
-  configs: inferenceModelConfigs[]
-  tasksConfigs: Task[]
+  configs: InferenceRuntimeConfigCreate[]
   loading: boolean
   pagination: PaginationConfig
   filters: TableFilter
@@ -43,7 +33,6 @@ interface InferenceModelConfigState {
 export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs', {
   state: (): InferenceModelConfigState => ({
     configs: [],
-    tasksConfigs: [],
     schemeConfigs: {},
     loading: false,
     pagination: {
@@ -110,86 +99,8 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
           page_size: this.pagination.pageSize
         }
         const { data } = await markov_sim_get_all_configs(params)
-        const items = [
-          {
-            id: 1,
-            name: 'Test Task 1',
-            model: 'llama_3_70b',
-            status: 'running',
-            createTime: '2024-01-01 10:00:00',
-            creator: 'admin',
-            hardware: 'GPU A100',
-            deployment: 'Production'
-          },
-          {
-            id: 2,
-            name: 'Test Task 2',
-            model: 'gpt_4',
-            status: 'completed',
-            createTime: '2024-01-02 11:00:00',
-            creator: 'user1',
-            hardware: 'GPU H100',
-            deployment: 'Development'
-          },
-          {
-            id: 3,
-            name: 'Test Task 3',
-            model: 'llama_3_8b',
-            status: 'pending',
-            createTime: '2024-01-03 12:00:00',
-            creator: 'user2',
-            hardware: 'GPU V100',
-            deployment: 'Staging'
-          },
-          {
-            id: 4,
-            name: 'Test Task 4',
-            model: 'claude_3',
-            status: 'failed',
-            createTime: '2024-01-04 13:00:00',
-            creator: 'admin',
-            hardware: 'NPU',
-            deployment: 'Production'
-          },
-          {
-            id: 5,
-            name: 'Test Task 4',
-            model: 'claude_3',
-            status: 'failed',
-            createTime: '2024-01-04 13:00:00',
-            creator: 'admin',
-            hardware: 'NPU',
-            deployment: 'Production'
-          },
-          {
-            id: 6,
-            name: 'Test Task 4',
-            model: 'claude_3',
-            status: 'failed',
-            createTime: '2024-01-04 13:00:00',
-            creator: 'admin',
-            hardware: 'NPU',
-            deployment: 'Production'
-          },
-          {
-            id: 7,
-            name: 'Test Task 4',
-            model: 'claude_3',
-            status: 'failed',
-            createTime: '2024-01-04 13:00:00',
-            creator: 'admin',
-            hardware: 'NPU',
-            deployment: 'Production'
-          }
-        ]
-        const responseData = {
-          total: items.length,
-          page: 1,
-          page_size: 1,
-          total_pages: 1,
-          items
-        }
-        this.tasksConfigs = responseData.items || []
+        const responseData = data
+        this.configs = responseData.items || []
         this.serverPagination = {
           total: responseData.total || 0,
           page: responseData.page || 1,
@@ -227,7 +138,7 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
 
     // 创建配置
     async createConfig(
-      configData: Omit<inferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
+      configData: Omit<InferenceRuntimeConfigCreate, 'id' | 'created_at' | 'updated_at'>
     ) {
       this.loading = true
       try {
@@ -252,11 +163,11 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
     // 更新配置
     async updateConfig(
       id: string,
-      configData: Omit<inferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
+      configData: Omit<InferenceRuntimeConfigCreate, 'id' | 'created_at' | 'updated_at'>
     ) {
       this.loading = true
       try {
-        const updateData = { ...configData, id } as inferenceModelConfigs
+        const updateData = { ...configData, id } as InferenceRuntimeConfigCreate
         const { data } = await markov_sim_update_config(updateData)
 
         if (data) {
@@ -277,7 +188,7 @@ export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs',
     },
 
     // 获取配置详情
-    async getConfigDetail(id: string): Promise<inferenceModelConfigs> {
+    async getConfigDetail(id: string): Promise<InferenceRuntimeConfigCreate> {
       this.loading = true
       try {
         const { data } = await markov_sim_get_config_by_id(id)

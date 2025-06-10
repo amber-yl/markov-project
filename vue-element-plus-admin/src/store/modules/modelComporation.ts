@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { store } from '../index'
 import { comparisonApi } from '@/api/common'
-import type { ModelComparison, CollapseItem } from '../types'
+import type { ModelComparison, CollapseItem } from '../../types/system_config'
 
 interface Task {
   hidden: number,

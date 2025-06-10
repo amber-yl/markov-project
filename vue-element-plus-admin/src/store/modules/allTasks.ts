@@ -7,7 +7,7 @@ import {
   markov_sim_get_config_by_id,
   markov_sim_update_config
 } from '@/api/request/allTasks'
-import type { inferenceModelConfigs, PaginationConfig, TableFilter } from '@/store/types'
+import type { PaginationConfig, TableFilter } from '@/types/system_config'
 import { ElMessage } from 'element-plus'
 interface Task {
   id: number
@@ -131,7 +131,7 @@ export const useAllTasksStore = defineStore('allTasks', {
 
     // 创建配置
     async createConfig(
-      configData: Omit<inferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
+      configData: Omit<any, 'id' | 'created_at' | 'updated_at'>
     ) {
       this.loading = true
       try {
@@ -156,11 +156,11 @@ export const useAllTasksStore = defineStore('allTasks', {
     // 更新配置
     async updateConfig(
       id: string,
-      configData: Omit<inferenceModelConfigs, 'id' | 'created_at' | 'updated_at'>
+      configData: Omit<any, 'id' | 'created_at' | 'updated_at'>
     ) {
       this.loading = true
       try {
-        const updateData = { ...configData, id } as inferenceModelConfigs
+        const updateData = { ...configData, id } as any
         const { data } = await markov_sim_update_config(updateData)
 
         if (data) {
@@ -181,7 +181,7 @@ export const useAllTasksStore = defineStore('allTasks', {
     },
 
     // 获取配置详情
-    async getConfigDetail(id: string): Promise<inferenceModelConfigs> {
+    async getConfigDetail(id: string): Promise<any> {
       this.loading = true
       try {
         const { data } = await markov_sim_get_config_by_id(id)
