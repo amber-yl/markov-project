@@ -106,7 +106,7 @@
       <div class="flex justify-center mt-4 space-x-4">
         <el-button @click="handlePrevious" :disabled="active === 0">{{
           t('common.prevLabel')
-        }}</el-button>
+          }}</el-button>
         <!-- :disabled="!canProceed" -->
         <el-button type="primary" @click="handleNext" :loading="isSubmitting">
           {{ active === 3 ? t('common.ok') : t('common.nextLabel') }}</el-button>
@@ -155,7 +155,7 @@ const systemConfigStore = useSystemConfigStore()
 const inferenceModelConfigStore = useInferenceModelConfigStore()
 const runtimeConfigStore = useRuntimeConfigStore()
 // 步骤条
-const active = ref(2)
+const active = ref(0)
 const showAdvancedConfig = ref(false)
 const isSubmitting = ref(false)
 const isSavingDraft = ref(false)
@@ -331,7 +331,14 @@ const validateStep = async (step: number) => {
         break
       case 2:
         // 验证部署配置
-        isValid = true // 部署配置暂时没有复杂验证
+        if (runtimeSchemaFormRef.value) {
+          isValid = await runtimeSchemaFormRef.value.validate()
+          if (!isValid) {
+            errorMessage = '硬件配置有误，请检查必填项'
+          }
+        } else {
+          errorMessage = '硬件配置表单未加载'
+        }
         break
       case 3:
         // 验证任务名称
