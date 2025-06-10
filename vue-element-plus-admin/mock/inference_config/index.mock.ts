@@ -2,216 +2,103 @@ import Mock from 'mockjs'
 import { SUCCESS_CODE } from '@/constants'
 import { toAnyString } from '@/utils'
 import { enhancedInferenceModelConfigSchema } from './jsonschema'
+import { InferenceModelConfigs, STRUCTUR_TYPE, ATTN_TYPE, NORM_TYPE } from './inference_model_config'
 
 const timeout = 1000
-const count = 100
+const count = 50
 
-enum Type {
-  npu = 'npu',
-  gpu = 'gpu'
-}
-
-enum ProcessingMode {
-  roofline = 'roofline',
-  noOverlap = 'no_overlap'
-}
-
-interface ListProps {
-  id?: string
-  created_at: string
-  updated_at: string
-  name: string // 硬件名称
-  type: Type // 硬件类型
-  matrix: {
-    float16: {
-      tflops: number
-      calibration_coefficient: number
-    }
-  }
-  vector: {
-    float16: {
-      tflops: number
-      calibration_coefficient: number
-    }
-  }
-  mem1: {
-    GiB: number
-    GBps: number
-    cube_calibration_coefficient: number
-    vector_calibration_coefficient: number
-  }
-  mem2: {
-    GiB: number
-    GBps: number
-    cube_calibration_coefficient?: number
-    vector_calibration_coefficient?: number
-  }
-  processing_mode: ProcessingMode
-  networks: {
-    bandWidth: number
-    efficiency: number
-    size: number
-    latency: number
-  }[]
-}
-
-// 真实的硬件名称数据
-const GPU_NAMES = [
-  'NVIDIA RTX 4090',
-  'NVIDIA RTX 4080',
-  'NVIDIA RTX 4070 Ti',
-  'NVIDIA RTX 4070',
-  'NVIDIA RTX 4060 Ti',
-  'NVIDIA RTX 4060',
-  'NVIDIA RTX 3090 Ti',
-  'NVIDIA RTX 3090',
-  'NVIDIA RTX 3080 Ti',
-  'NVIDIA RTX 3080',
-  'NVIDIA RTX 3070 Ti',
-  'NVIDIA RTX 3070',
-  'NVIDIA A100',
-  'NVIDIA H100',
-  'NVIDIA V100',
-  'NVIDIA T4',
-  'Tesla P100',
-  'AMD RX 7900 XTX',
-  'AMD RX 7900 XT',
-  'AMD RX 7800 XT',
-  'AMD RX 7700 XT'
+// 真实的模型名称数据
+const MODEL_NAMES = [
+  'deepseek-v2', 'deepseek-coder', 'llama-3-70b', 'llama-3-8b', 'qwen-72b', 'qwen-14b',
+  'baichuan-13b', 'chatglm-6b', 'internlm-7b', 'yi-34b', 'mixtral-8x7b', 'gpt-4-turbo'
 ]
 
-const NPU_NAMES = [
-  'Huawei Ascend 910B',
-  'Huawei Ascend 910A',
-  'Huawei Ascend 310P',
-  'Huawei Ascend 310',
-  'Intel Gaudi2',
-  'Intel Gaudi',
-  'Google TPU v4',
-  'Google TPU v3',
-  'Google TPU v2',
-  'Cambricon MLU370',
-  'Cambricon MLU290',
-  'Cambricon MLU270',
-  'Cambricon MLU220',
-  'Horizon Journey-5',
-  'Horizon Journey-3',
-  'Rockchip RK3588',
-  'Sophgo BM1684X'
-]
+// 生成基础配置
+const generateBaseOptions = (structureType: STRUCTUR_TYPE) => {
+  const attnType = Mock.Random.pick([ATTN_TYPE.GQA, ATTN_TYPE.MHA, ATTN_TYPE.MLA])
 
-// 生成更真实的硬件配置数据
-const generateHardwareConfig = (type: Type): Partial<ListProps> => {
-  const names = type === Type.gpu ? GPU_NAMES : NPU_NAMES
-  const name = Mock.Random.pick(names)
-
-  if (type === Type.gpu) {
-    // GPU配置参数范围
-    return {
-      name,
-      type,
-      matrix: {
-        float16: {
-          tflops: Mock.Random.integer(50, 320), // GPU Matrix性能范围
-          calibration_coefficient: Mock.Random.float(0.6, 0.95, 2, 2)
-        }
-      },
-      vector: {
-        float16: {
-          tflops: Mock.Random.integer(20, 160), // GPU Vector性能范围
-          calibration_coefficient: Mock.Random.float(0.7, 0.9, 2, 2)
-        }
-      },
-      mem1: {
-        GiB: Mock.Random.pick([8, 12, 16, 24, 32, 48, 64, 80, 128]), // 常见GPU显存配置
-        GBps: Mock.Random.integer(400, 2000), // GPU显存带宽
-        cube_calibration_coefficient: Mock.Random.float(0.5, 0.8, 2, 2),
-        vector_calibration_coefficient: Mock.Random.float(0.3, 0.7, 2, 2)
-      },
-      mem2: {
-        GiB: Mock.Random.pick([16, 32, 64, 128, 256, 512]), // 系统内存
-        GBps: Mock.Random.integer(50, 200) // 系统内存带宽
-      },
-      processing_mode: Mock.Random.pick([ProcessingMode.roofline, ProcessingMode.noOverlap]),
-      networks: Mock.Random.pick([
-        [{ bandWidth: 100, efficiency: 0.8, size: 1, latency: 0.001 }], // 单卡
-        [{ bandWidth: 400, efficiency: 0.85, size: 2, latency: 0.002 }], // 双卡
-        [{ bandWidth: 600, efficiency: 0.9, size: 4, latency: 0.003 }], // 四卡
-        [{ bandWidth: 800, efficiency: 0.92, size: 8, latency: 0.005 }] // 八卡
-      ])
-    }
-  } else {
-    // NPU配置参数范围
-    return {
-      name,
-      type,
-      matrix: {
-        float16: {
-          tflops: Mock.Random.integer(64, 512), // NPU Matrix性能通常更高
-          calibration_coefficient: Mock.Random.float(0.7, 0.95, 2, 2)
-        }
-      },
-      vector: {
-        float16: {
-          tflops: Mock.Random.integer(32, 256), // NPU Vector性能
-          calibration_coefficient: Mock.Random.float(0.75, 0.92, 2, 2)
-        }
-      },
-      mem1: {
-        GiB: Mock.Random.pick([32, 64, 128, 256, 512]), // NPU显存配置
-        GBps: Mock.Random.integer(900, 3000), // NPU显存带宽通常更高
-        cube_calibration_coefficient: Mock.Random.float(0.6, 0.85, 2, 2),
-        vector_calibration_coefficient: Mock.Random.float(0.4, 0.75, 2, 2)
-      },
-      mem2: {
-        GiB: Mock.Random.pick([64, 128, 256, 512, 1024]), // NPU系统内存
-        GBps: Mock.Random.integer(100, 400)
-      },
-      processing_mode: Mock.Random.pick([ProcessingMode.roofline, ProcessingMode.noOverlap]),
-      networks: Mock.Random.pick([
-        [
-          { bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 },
-          { bandWidth: 200, efficiency: 0.85, size: 1, latency: 0.0005 }
-        ],
-        [
-          { bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 },
-          { bandWidth: 800, efficiency: 0.9, size: 4, latency: 0.001 }
-        ],
-        [
-          { bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 },
-          { bandWidth: 1600, efficiency: 0.92, size: 8, latency: 0.002 }
-        ],
-        [
-          { bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 },
-          { bandWidth: 3200, efficiency: 0.95, size: 16, latency: 0.003 }
-        ]
-      ])
-    }
+  return {
+    structure_type: structureType,
+    hidden: Mock.Random.integer(512, 8192), // 隐藏层维度
+    feedforward: Mock.Random.integer(1024, 16384), // 反馈层维度
+    attn_heads: Mock.Random.pick([8, 16, 32, 64, 128]), // 注意力头数
+    attn_size: Mock.Random.integer(64, 256), // 注意力大小
+    attn_type: attnType,
+    num_blocks: Mock.Random.integer(12, 96), // 模型层数
+    num_query_groups: Mock.Random.boolean() ? Mock.Random.integer(1, 16) : null
   }
 }
 
-let List: ListProps[] = []
+// 生成MLA扩展配置
+const generateMlaExtendOptions = () => {
+  if (Mock.Random.boolean()) { // 50%的概率生成MLA配置
+    return {
+      q_lora_rank: Mock.Random.boolean() ? Mock.Random.integer(64, 512) : null,
+      kv_lora_rank: Mock.Random.boolean() ? Mock.Random.integer(64, 512) : null,
+      qk_rope_head_dim: Mock.Random.boolean() ? Mock.Random.integer(32, 128) : null,
+      qk_nope_head_dim: Mock.Random.boolean() ? Mock.Random.integer(32, 128) : null,
+      q_head_dim: Mock.Random.boolean() ? Mock.Random.integer(64, 256) : null,
+      v_head_dim: Mock.Random.boolean() ? Mock.Random.integer(64, 256) : null
+    }
+  }
+  return null
+}
 
-// 生成更真实的mock数据
-for (let i = 0; i < count; i++) {
-  const type = Mock.Random.pick([Type.npu, Type.gpu])
-  const config = generateHardwareConfig(type)
-  const now = new Date()
-  const createdAt = new Date(now.getTime() - Mock.Random.integer(0, 365 * 24 * 60 * 60 * 1000))
-  const updatedAt = new Date(
-    createdAt.getTime() + Mock.Random.integer(0, now.getTime() - createdAt.getTime())
-  )
+// 生成MOE基础配置
+const generateMoeBaseOptions = (structureType: STRUCTUR_TYPE) => {
+  if (structureType === STRUCTUR_TYPE.moe) {
+    return {
+      num_experts: Mock.Random.integer(8, 64),
+      route_expert_hidden: Mock.Random.boolean() ? Mock.Random.integer(256, 2048) : null,
+      num_shared_experts: Mock.Random.boolean() ? Mock.Random.integer(1, 8) : null,
+      shared_expert_hidden: Mock.Random.boolean() ? Mock.Random.integer(256, 2048) : null,
+      top_experts_activation: Mock.Random.boolean() ? Mock.Random.integer(1, 8) : null,
+      moe_capacity_factor: Mock.Random.boolean() ? Mock.Random.float(1, 10, 1, 2) : null,
+      moe_block_interval: Mock.Random.boolean() ? Mock.Random.integer(1, 4) : null
+    }
+  }
+  return null
+}
 
-  List.push({
+// 生成高级配置
+const generateAdvanceOptions = () => {
+  if (Mock.Random.boolean()) { // 50%的概率生成高级配置
+    return {
+      hybrid_model_enable: Mock.Random.boolean(),
+      hybrid_moe_blocks_num: Mock.Random.boolean() ? Mock.Random.integer(0, 48) : null,
+      hybrid_dense_blocks_num: Mock.Random.boolean() ? Mock.Random.integer(0, 48) : null,
+      mtp_module_num: Mock.Random.boolean() ? Mock.Random.integer(1, 8) : null,
+      embedding_output_share: Mock.Random.boolean(),
+      norm: Mock.Random.pick([NORM_TYPE.RMSNorm, NORM_TYPE.LayerNorm]),
+      embedding_size: Mock.Random.boolean() ? Mock.Random.integer(32000, 128000) : null
+    }
+  }
+  return null
+}
+
+// 生成完整的推理模型配置
+const generateInferenceModelConfig = (): InferenceModelConfigs => {
+  const structureType = Mock.Random.pick([STRUCTUR_TYPE.dense, STRUCTUR_TYPE.moe])
+  const name = Mock.Random.pick(MODEL_NAMES)
+
+  return {
     id: toAnyString(),
-    created_at: createdAt.toISOString(),
-    updated_at: updatedAt.toISOString(),
-    ...config
-  } as ListProps)
+    name: `${name}-${Mock.Random.string('lower', 3, 5)}`,
+    base_options: generateBaseOptions(structureType),
+    mla_extend_options: generateMlaExtendOptions(),
+    moe_base_options: generateMoeBaseOptions(structureType),
+    advance_options: generateAdvanceOptions()
+  }
+}
+
+// 初始化数据
+let List: InferenceModelConfigs[] = []
+for (let i = 0; i < count; i++) {
+  List.push(generateInferenceModelConfig())
 }
 
 // 工具函数：处理分页
-const paginate = (data: ListProps[], page: number, perPage: number) => {
+const paginate = (data: InferenceModelConfigs[], page: number, perPage: number) => {
   const start = (page - 1) * perPage
   const end = start + perPage
   return {
@@ -224,7 +111,7 @@ const paginate = (data: ListProps[], page: number, perPage: number) => {
 }
 
 // 工具函数：处理筛选
-const filterData = (data: ListProps[], filters: any) => {
+const filterData = (data: InferenceModelConfigs[], filters: any) => {
   console.log('Mock API - 接收到的筛选条件:', filters)
 
   if (!filters) return data
@@ -233,7 +120,7 @@ const filterData = (data: ListProps[], filters: any) => {
     for (const [key, value] of Object.entries(filters)) {
       if (value === null || value === undefined || value === '') continue
 
-      console.log(`筛选字段 ${key}, 筛选值:`, value, '数据项值:', item[key as keyof ListProps])
+      console.log(`筛选字段 ${key}, 筛选值:`, value, '数据项值:', item[key as keyof InferenceModelConfigs])
 
       if (key === 'name') {
         if (typeof value === 'string') {
@@ -241,17 +128,17 @@ const filterData = (data: ListProps[], filters: any) => {
         } else if (Array.isArray(value)) {
           if (!value.some((v) => item.name.toLowerCase().includes(v.toLowerCase()))) return false
         }
-      } else if (key === 'type') {
+      } else if (key === 'structure_type') {
         if (typeof value === 'string') {
-          if (value !== item.type) return false
+          if (value !== item.base_options.structure_type) return false
         } else if (Array.isArray(value)) {
-          if (!value.includes(item.type)) return false
+          if (!value.includes(item.base_options.structure_type)) return false
         }
-      } else if (key === 'processing_mode') {
+      } else if (key === 'attn_type') {
         if (typeof value === 'string') {
-          if (value !== item.processing_mode) return false
+          if (value !== item.base_options.attn_type) return false
         } else if (Array.isArray(value)) {
-          if (!value.includes(item.processing_mode)) return false
+          if (!value.includes(item.base_options.attn_type)) return false
         }
       }
     }
@@ -260,7 +147,7 @@ const filterData = (data: ListProps[], filters: any) => {
 }
 
 // 工具函数：处理排序
-const sortData = (data: ListProps[], orderBys: string[]) => {
+const sortData = (data: InferenceModelConfigs[], orderBys: string[]) => {
   if (!orderBys || orderBys.length === 0) return data
 
   return data.sort((a, b) => {
@@ -268,13 +155,19 @@ const sortData = (data: ListProps[], orderBys: string[]) => {
       const isDesc = orderBy.startsWith('-')
       const field = isDesc ? orderBy.slice(1) : orderBy
 
-      let aVal: any = a[field as keyof ListProps]
-      let bVal: any = b[field as keyof ListProps]
+      let aVal: any
+      let bVal: any
 
-      // 处理日期字段
-      if (field === 'created_at' || field === 'updated_at') {
-        aVal = new Date(aVal).getTime()
-        bVal = new Date(bVal).getTime()
+      // 处理嵌套字段
+      if (field === 'structure_type') {
+        aVal = a.base_options.structure_type
+        bVal = b.base_options.structure_type
+      } else if (field === 'attn_type') {
+        aVal = a.base_options.attn_type
+        bVal = b.base_options.attn_type
+      } else {
+        aVal = a[field as keyof InferenceModelConfigs]
+        bVal = b[field as keyof InferenceModelConfigs]
       }
 
       if (aVal < bVal) return isDesc ? 1 : -1
@@ -285,7 +178,7 @@ const sortData = (data: ListProps[], orderBys: string[]) => {
 }
 
 // 工具函数：查找单项数据
-const findById = (id: string): ListProps | undefined => {
+const findById = (id: string): InferenceModelConfigs | undefined => {
   return List.find((item) => item.id === id)
 }
 
@@ -297,26 +190,23 @@ const deleteByIds = (ids: string[]): boolean => {
 }
 
 // 工具函数：更新数据
-const updateItem = (id: string, updateData: Partial<ListProps>): ListProps | null => {
+const updateItem = (id: string, updateData: Partial<InferenceModelConfigs>): InferenceModelConfigs | null => {
   const index = List.findIndex((item) => item.id === id)
   if (index === -1) return null
 
   List[index] = {
     ...List[index],
     ...updateData,
-    id,
-    updated_at: new Date().toISOString()
+    id
   }
   return List[index]
 }
 
 // 工具函数：创建数据
-const createItem = (data: Omit<ListProps, 'id' | 'created_at' | 'updated_at'>): ListProps => {
-  const newItem: ListProps = {
+const createItem = (data: Omit<InferenceModelConfigs, 'id'>): InferenceModelConfigs => {
+  const newItem: InferenceModelConfigs = {
     ...data,
-    id: toAnyString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    id: toAnyString()
   }
   List.push(newItem)
   return newItem
@@ -342,13 +232,24 @@ export default [
     url: '/markov_sim/api/v1/inference_model_config/create',
     method: 'post',
     timeout,
-    response: ({ body }: { body: Omit<ListProps, 'id' | 'created_at' | 'updated_at'> }) => {
+    response: ({ body }: { body: Omit<InferenceModelConfigs, 'id'> }) => {
       try {
         // 验证必填字段
-        if (!body.name || !body.type) {
+        if (!body.name || !body.base_options) {
           return {
             code: 400,
-            message: '缺少必填字段：name 和 type'
+            message: '缺少必填字段：name 和 base_options'
+          }
+        }
+
+        // 验证base_options必填字段
+        const requiredBaseFields = ['structure_type', 'hidden', 'feedforward', 'attn_heads', 'attn_size', 'attn_type', 'num_blocks']
+        for (const field of requiredBaseFields) {
+          if (!body.base_options[field as keyof typeof body.base_options]) {
+            return {
+              code: 400,
+              message: `缺少base_options必填字段：${field}`
+            }
           }
         }
 
@@ -357,7 +258,7 @@ export default [
         if (existing) {
           return {
             code: 400,
-            message: '硬件名称已存在'
+            message: '模型名称已存在'
           }
         }
 
@@ -381,7 +282,7 @@ export default [
     url: '/markov_sim/api/v1/inference_model_config/update',
     method: 'put',
     timeout,
-    response: ({ body }: { body: ListProps }) => {
+    response: ({ body }: { body: InferenceModelConfigs }) => {
       try {
         if (!body.id) {
           return {
@@ -396,7 +297,7 @@ export default [
           if (existing) {
             return {
               code: 400,
-              message: '硬件名称已被其他配置使用'
+              message: '模型名称已被其他配置使用'
             }
           }
         }
@@ -506,7 +407,11 @@ export default [
       body
     }: {
       body: {
-        filters?: { name?: string; type?: Type; processing_mode?: ProcessingMode }
+        filters?: {
+          name?: string
+          structure_type?: STRUCTUR_TYPE
+          attn_type?: ATTN_TYPE
+        }
         order_bys?: string[]
         page?: number
         page_size?: number
@@ -551,35 +456,4 @@ export default [
       }
     }
   },
-
-  // 获取硬件类型统计
-  {
-    url: '/markov_sim/api/v1/inference_model_config/stats',
-    method: 'get',
-    timeout,
-    response: () => {
-      const stats = List.reduce(
-        (acc, item) => {
-          acc[item.type] = (acc[item.type] || 0) + 1
-          return acc
-        },
-        {} as Record<Type, number>
-      )
-
-      return {
-        code: SUCCESS_CODE,
-        data: {
-          total: List.length,
-          by_type: stats,
-          by_processing_mode: List.reduce(
-            (acc, item) => {
-              acc[item.processing_mode] = (acc[item.processing_mode] || 0) + 1
-              return acc
-            },
-            {} as Record<ProcessingMode, number>
-          )
-        }
-      }
-    }
-  }
 ]

@@ -26,7 +26,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useInferenceModelConfigStore } from '@/store/modules/inferenceModelConfigs'
 import { Dialog } from '@/components/Dialog'
-import SchemaTable from '@/components/SchemaTable/index.vue'
+import SchemaTable from './components/SchemaTable/index.vue'
 import type { SystemConfig } from '@/types/system_config'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import InferenceSchemaForm from '@/views/AIInference/components/InferenceSchemaForm.vue'
