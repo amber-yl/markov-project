@@ -30,7 +30,7 @@ interface InferenceModelConfigState {
   }
 }
 
-export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs', {
+export const useRuntimeConfigStore = defineStore('runtimeConfigs', {
   state: (): InferenceModelConfigState => ({
     configs: [],
     schemeConfigs: {},
@@ -309,5 +309,5 @@ function getNestedValue(obj: any, path: string): any {
 }
 
 export const useInferenceModelConfigStoreWithOut = () => {
-  return useInferenceModelConfigStore(store)
+  return useRuntimeConfigStore(store)
 }

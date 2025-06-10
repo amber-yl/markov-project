@@ -45,7 +45,8 @@
           <el-empty description="部署配置架构为空，使用默认配置" />
         </div>
         <section v-else>
-          数据加载成功
+          <RuntimeSchemaForm ref="runtimeSchemaFormRef" :schema="runtimeSchema" v-model="runtimeFormItems"
+            @validate="handleFormValidate" @search="handleSearch" />
         </section>
       </section>
       <div v-if="active === 3" class="confirmation-section">
@@ -105,7 +106,7 @@
       <div class="flex justify-center mt-4 space-x-4">
         <el-button @click="handlePrevious" :disabled="active === 0">{{
           t('common.prevLabel')
-          }}</el-button>
+        }}</el-button>
         <!-- :disabled="!canProceed" -->
         <el-button type="primary" @click="handleNext" :loading="isSubmitting">
           {{ active === 3 ? t('common.ok') : t('common.nextLabel') }}</el-button>
@@ -130,7 +131,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSystemConfigStore } from '@/store/modules/systemConfigs'
 import { useInferenceModelConfigStore } from '@/store/modules/inferenceModelConfigs'
 import InferenceSchemaForm from './InferenceSchemaForm.vue'
+import RuntimeSchemaForm from './RuntimeSchemaForm.vue'
 import SchemaForm from '@/components/SchemaForm/index.vue'
+import { useRuntimeConfigStore } from '@/store/modules/inferenceRuntimeConfigs'
 const { t } = useI18n()
 // 定义事件
 const emit = defineEmits<{
@@ -150,8 +153,9 @@ const emit = defineEmits<{
 // store仓库相关定义
 const systemConfigStore = useSystemConfigStore()
 const inferenceModelConfigStore = useInferenceModelConfigStore()
+const runtimeConfigStore = useRuntimeConfigStore()
 // 步骤条
-const active = ref(0)
+const active = ref(2)
 const showAdvancedConfig = ref(false)
 const isSubmitting = ref(false)
 const isSavingDraft = ref(false)
@@ -161,8 +165,11 @@ const taskName = ref('')
 const validationErrors = ref<Record<string, string>>({})
 // Schema配置
 const inferenceSchemaFormRef = ref()
+const runtimeSchemaFormRef = ref()
 const inferenceModelSchema = ref<any>({})
+const runtimeSchema = ref<any>({})
 const inferenceFormItems = ref<any>({})
+const runtimeFormItems = ref<any>({})
 const hardwareModelSchema = ref<any>({})
 const hardwareSchemaFormRef = ref()
 const hardwareFormItems = ref<any>({})
@@ -225,6 +232,21 @@ const loadHardwareModelSchema = async () => {
     }
   } catch (error) {
     ElMessage.error('加载硬件Schema失败')
+  }
+}
+
+// 加载模型配置RuntimeSchema
+const loadRuntimeSchema = async () => {
+  try {
+    await runtimeConfigStore.fetchSchemaConfigs()
+    const schemaData = runtimeConfigStore.schemeConfigs
+    if (schemaData) {
+      runtimeSchema.value = schemaData
+    } else {
+      ElMessage.warning('模型Schema数据格式不正确')
+    }
+  } catch (error) {
+    ElMessage.error('加载模型Schema失败')
   }
 }
 // 监听步骤变化
@@ -366,7 +388,9 @@ const handleNext = async () => {
       if (active.value === 1) {
         await loadHardwareModelSchema()
       }
-
+      if (active.value === 2) {
+        await loadRuntimeSchema()
+      }
       ElMessage.success(`第${oldStep + 1}步验证通过`)
 
       // 滚动到顶部

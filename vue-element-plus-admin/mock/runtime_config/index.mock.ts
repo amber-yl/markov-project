@@ -559,7 +559,7 @@ export default [
       body
     }: {
       body: {
-        filters?: { name?: string; type?: Type; processing_mode?: ProcessingMode }
+        filters?: { name?: string; type?: Type }
         order_bys?: string[]
         page?: number
         page_size?: number

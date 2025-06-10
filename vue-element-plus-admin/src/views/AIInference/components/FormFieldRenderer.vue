@@ -34,6 +34,7 @@ export default defineComponent({
     const handleUpdate = (value: any) => {
       emit('update', value)
     }
+
     return () => {
       const { field, value } = props
       switch (field.component) {
