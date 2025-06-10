@@ -11,7 +11,7 @@ import {
 } from '@/api/request/systemConfigs'
 import type { SystemConfig, TableColumn, TableFilter, PaginationConfig } from '@/types/system_config'
 import { ElMessage } from 'element-plus'
-import { uiConfig } from '../config'
+import { uiConfig } from '../table_config/config'
 
 interface SystemConfigState {
   configs: SystemConfig[]
@@ -36,7 +36,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
   state: (): SystemConfigState => ({
     configs: [],
     schemeConfigs: {
-      uiConfig: uiConfig
+      uiConfig
     },
     loading: false,
     pagination: {

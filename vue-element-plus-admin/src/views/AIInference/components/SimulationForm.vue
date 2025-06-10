@@ -106,7 +106,7 @@
       <div class="flex justify-center mt-4 space-x-4">
         <el-button @click="handlePrevious" :disabled="active === 0">{{
           t('common.prevLabel')
-          }}</el-button>
+        }}</el-button>
         <!-- :disabled="!canProceed" -->
         <el-button type="primary" @click="handleNext" :loading="isSubmitting">
           {{ active === 3 ? t('common.ok') : t('common.nextLabel') }}</el-button>
@@ -334,10 +334,10 @@ const validateStep = async (step: number) => {
         if (runtimeSchemaFormRef.value) {
           isValid = await runtimeSchemaFormRef.value.validate()
           if (!isValid) {
-            errorMessage = '硬件配置有误，请检查必填项'
+            errorMessage = 'Runtime配置有误，请检查必填项'
           }
         } else {
-          errorMessage = '硬件配置表单未加载'
+          errorMessage = 'Runtime配置表单未加载'
         }
         break
       case 3:

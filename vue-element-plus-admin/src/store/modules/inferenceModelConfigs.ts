@@ -11,6 +11,8 @@ import {
 import type { PaginationConfig, TableFilter } from '@/types/system_config'
 import type { InferenceModelConfigs } from '@/types/inference_model_config'
 import { ElMessage } from 'element-plus'
+import { uiConfig } from '../table_config/model_config'
+
 interface InferenceModelConfigState {
   configs: InferenceModelConfigs[]
   loading: boolean
@@ -32,7 +34,9 @@ interface InferenceModelConfigState {
 export const useInferenceModelConfigStore = defineStore('inferenceModelConfigs', {
   state: (): InferenceModelConfigState => ({
     configs: [],
-    schemeConfigs: {},
+    schemeConfigs: {
+      uiConfig
+    },
     loading: false,
     pagination: {
       currentPage: 1,

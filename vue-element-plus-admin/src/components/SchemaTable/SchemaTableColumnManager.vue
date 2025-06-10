@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useSystemConfigStore } from '@/store/modules/systemConfigs'
-import { defaultVisible } from '@/store/config'
+import { defaultVisible } from '@/store/table_config/config'
 
 // interface Column {
 //   prop: string
